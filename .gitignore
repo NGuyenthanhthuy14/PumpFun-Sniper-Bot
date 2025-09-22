@@ -1,4 +1,4 @@
 target
 assets
-Config.toml
 .env
+Config.toml
