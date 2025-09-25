@@ -53,13 +53,13 @@ macro_rules! alert {
 #[macro_export]
 macro_rules! dev_log {
     ($($arg:tt)*) => {{
-        if *DEV_MODE {
-            let now = Local::now();
+        if *$crate::DEV_MODE {
+            let now = chrono::Local::now();
             let formatted_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
             let millis = format!("{:03}", now.timestamp_subsec_millis());
             let micros = format!("{:03}", now.timestamp_subsec_micros() % 1000);
             let timestamp = format!("{}.{} {}", formatted_time, millis, micros);
-            let tab_prefix = iter::repeat("\t").take($crate::DEV_LEVEL as usize).collect::<String>();
+            let tab_prefix = std::iter::repeat("\t").take($crate::DEV_LEVEL as usize).collect::<String>();
             let msg = format!($($arg)*);
             let file_msg = format!("{} {} {}{}", timestamp, $crate::DEV_LEVEL_STR, tab_prefix, msg);
             log!("{}", file_msg);

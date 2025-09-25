@@ -1,6 +1,11 @@
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
+pub struct ModeConfig {
+    pub is_dev_mode: bool
+}
+
+#[derive(Debug, Deserialize)]
 pub struct WalletCredentialConfig {
     pub private_key: String,
 }
@@ -23,6 +28,36 @@ pub struct RelayerConfig {
 #[derive(Debug, Deserialize)]
 pub struct BuySetting {
     pub buy_amount_sol: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SellSetting {
+    pub take_profit_1: f64,
+    pub take_profit_1_sell_percentage: f64,
+    pub take_profit_2: f64,
+    pub take_profit_2_sell_percentage: f64,
+    pub take_profit_3: f64,
+    pub take_profit_3_sell_percentage: f64,
+    pub take_profit_4: f64,
+    pub take_profit_4_sell_percentage: f64,
+    pub take_profit_5: f64,
+    pub take_profit_5_sell_percentage: f64,
+    pub stop_loss: f64,
+    pub trailing_1: f64,
+    pub trailing_1_stop: f64,
+    pub trailing_1_sell_percentage: f64,
+    pub trailing_2: f64,
+    pub trailing_2_stop: f64,
+    pub trailing_2_sell_percentage: f64,
+    pub trailing_3: f64,
+    pub trailing_3_stop: f64,
+    pub trailing_3_sell_percentage: f64,
+    pub trailing_4: f64,
+    pub trailing_4_stop: f64,
+    pub trailing_4_sell_percentage: f64,
+    pub trailing_5: f64,
+    pub trailing_5_stop: f64,
+    pub trailing_5_sell_percentage: f64,
 }
 
 #[derive(Debug, Deserialize)]

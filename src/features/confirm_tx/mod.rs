@@ -2,9 +2,8 @@ use crate::*;
 use futures::FutureExt;
 use futures::future::BoxFuture;
 use solana_relayer_adapter_rust::*;
-use solana_sdk::signature::{Keypair, Signature};
-use solana_sdk::signer::Signer;
-use solana_sdk::{instruction::Instruction, native_token::lamports_to_sol};
+use solana_sdk::signature::{Signature};
+use solana_sdk::{instruction::Instruction};
 use tokio::time::{Duration, sleep};
 
 // --- Your Nozomi, ZSlot, Jito clients assumed imported here ---
@@ -19,11 +18,7 @@ pub enum TradeType {
 
 pub fn confirm(
     raw_instructions: Vec<Instruction>,
-    // tag: String,
-    // force_sell: bool,
-    // trade_type: TradeType,
-    // buy_sol_lamport: u64,
-    // temp: usize,
+    tag: String,
 ) -> BoxFuture<'static, Option<Signature>> {
     async move {
         let (cu, priority_fee_micro_lamport, third_party_fee) = *PRIORITY_FEE;
@@ -88,7 +83,6 @@ pub fn confirm(
                     tip_sol_amount: third_party_fee,
                 });
                 let recent_blockhash = get_slot();
-                println!("recent blockhash --- {:?}", recent_blockhash);
                 let encoded_tx = jito.build_v0_bs64(
                     ixs,
                     &*SIGNER_PUBKEY,
@@ -108,26 +102,17 @@ pub fn confirm(
             "[SUBMIT]
                 \t* Service: Jito
                 \t* Hash : {:?}
-                \t* Force_sell : ok
-                \t* ok",
-            results, 
-            // force_sell, tag
+                \t* {}",
+            results,
+            tag.clone()
         );
 
         if let Some(signature_str) = results {
-            if let Some(confirmed_sig) = wait_for_confirmation(&signature_str).await {
+            if let Some(confirmed_sig) = wait_for_confirmation(&signature_str, tag.clone()).await {
                 return Some(confirmed_sig);
             } else {
                 // Recursive retry
-                return confirm(
-                    raw_instructions.clone(),
-                    // tag.clone(),
-                    // force_sell,
-                    // trade_type,
-                    // buy_sol_lamport,
-                    // temp,
-                )
-                .await;
+                return confirm(raw_instructions.clone(), tag.clone()).await;
             }
         }
 
@@ -136,15 +121,11 @@ pub fn confirm(
                 Ok(sig) => {
                     success!(
                         "[CONFIRM]
-                            \t* Hash : {}
-                            \t* Force_sell : ok
-                            \t* ok
-                            ",
-                        sig.to_string(),
-                        // force_sell,
-                        // tag
+                            \t* CHECK : {}
+                            \t* {}",
+                        solscan!(sig.to_string()),
+                        tag.clone()
                     );
-
                     Some(sig)
                 }
                 Err(_) => None,
@@ -156,17 +137,16 @@ pub fn confirm(
     .boxed()
 }
 
-pub async fn wait_for_confirmation(signature_str: &str) -> Option<Signature> {
+pub async fn wait_for_confirmation(signature_str: &str, tag: String) -> Option<Signature> {
     let signature = match signature_str.parse::<Signature>() {
         Ok(sig) => sig,
         Err(_) => {
             error!(
                 "[FORCE_CHECK]
-                \t* Hash : {}
-                \t* States : Invalid signature
-                \t* ",
-                signature_str,
-                //  tag
+                \t* Check : {}
+                \t* {}
+                \t* States : Invalid signature",
+                solscan!(signature_str), tag.clone()
             );
 
             return None;
@@ -182,56 +162,28 @@ pub async fn wait_for_confirmation(signature_str: &str) -> Option<Signature> {
                     if status.confirmations.is_none() || status.confirmations.unwrap_or(0) > 0 {
                         success!(
                             "[FORCE_CHECK]
-                            \t* Hash : {}
+                            \t* Check : {}
                             \t* States : Confirmed
-                            \t* Check : https://solscan.io/tx/{}
-                            \t* ",
-                            signature,
-                            signature,
-                            // tag
+                            \t* {}",
+                            solscan!(signature),
+                            tag
                         );
                         return Some(signature);
-                    } else {
-                        // err!(
-                        //     "[FORCE_CHECK] => HASH : {}
-                        //     \t* STATES : Not Yet Confirmed
-                        //     \t* {}",
-                        //     signature,
-                        //     tag
-                        // );
                     }
-                } else {
-                    // err!(
-                    //     "[FORCE_CHECK] => HASH : {}
-                    //     \t* STATES : States Not Found
-                    //     \t* {}",
-                    //     signature,
-                    //     tag
-                    // );
                 }
             }
-            Err(err) => {
-                // err!(
-                //     "[FORCE_CHECK]
-                //     \t* HASH : {}
-                //     \t* STATES : Error Fetching Status
-                //     \t* {}",
-                //     signature,
-                //     tag
-                // );
-            }
+            Err(_) => {}
         }
 
         attempts += 1;
         if attempts >= 15 {
             error!(
                 "[FORCE_CHECK]
-                \t* Hash : {}
-                \t* States : Failed
                 \t* Check : https://solscan.io/tx/{}
-                \t* ",
-                signature, signature, 
-                // tag
+                \t* States : Failed
+                \t* {}",
+                signature,
+                tag.clone()
             );
             return None;
         }

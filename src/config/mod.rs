@@ -4,16 +4,20 @@ use serde::Deserialize;
 
 pub mod toml_config;
 pub mod bot_config;
+pub mod trade_setting;
 
 pub use toml_config::*;
 pub use bot_config::*;
+pub use trade_setting::*;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
+  pub mode: ModeConfig,
   pub wallet_config: WalletCredentialConfig,
   pub connection_config: ConnectionConfig,
   pub relayer_config: RelayerConfig,
   pub buy_setting: BuySetting,
+  pub sell_setting: SellSetting,
   pub slippage_config: SlippageConfig,
   pub fee_config: FeeConfig
 }

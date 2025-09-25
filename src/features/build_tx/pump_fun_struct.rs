@@ -2,17 +2,16 @@ use borsh::BorshDeserialize;
 use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
-    system_instruction
 };
+use solana_sdk::system_instruction;
 use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
-// use spl_token::instruction::sync_native;
 
 use crate::*;
 
 #[derive(Debug, Clone, BorshDeserialize)]
-pub struct PumpFunSwap {
+pub struct PumpFunSwapAccounts {
     pub global: Pubkey,
     pub fee_recipient: Pubkey,
     pub mint: Pubkey,
@@ -31,19 +30,21 @@ pub struct PumpFunSwap {
     pub fee_program: Pubkey,
 }
 
-impl PumpFunSwap {
-    pub fn from_mint(mint_instruction_account: &MintInstructionAccounts) -> Self {
+impl PumpFunSwapAccounts {
+    pub fn from_mint(
+        mint_instruction_account: &MintInstructionAccounts,
+        mint_event: &MintEvent,
+    ) -> Self {
         let associated_user = get_associated_token_address_with_program_id(
             &SIGNER_PUBKEY,
             &mint_instruction_account.mint,
             &spl_token::ID,
         );
         let (creator_vault, _) = Pubkey::find_program_address(
-            &[CREATOR_VAULT_SEED, &mint_instruction_account.user.as_ref()],
-            &PUMPFUN_PROGRAM_ID
+            &[CREATOR_VAULT_SEED, &mint_event.creator.as_ref()],
+            &PUMPFUN_PROGRAM_ID,
         );
 
-        println!("User: {:?}", &mint_instruction_account.user);
         Self {
             global: mint_instruction_account.global,
             fee_recipient: PUMPFUN_FEE_RECIPIENT,
@@ -101,7 +102,7 @@ impl PumpFunSwap {
 
         let accounts = vec![
             AccountMeta::new_readonly(self.global, false), // #1 - Global
-            AccountMeta::new(self.fee_recipient, false),       // #2 - Fee Recipient
+            AccountMeta::new(self.fee_recipient, false),   // #2 - Fee Recipient
             AccountMeta::new_readonly(self.mint, false),   // #3 - Mint
             AccountMeta::new(self.bonding_curve, false),   // #4 - BondingCurve
             AccountMeta::new(self.associated_bonding_curve, false), // #5 - Quote Mint (TSFart)
@@ -116,6 +117,39 @@ impl PumpFunSwap {
             AccountMeta::new(self.user_volume_accumulator.unwrap(), false), // #14 - User volume accumulator
             AccountMeta::new_readonly(self.fee_config, false),              // #15 - Fee Config
             AccountMeta::new_readonly(self.fee_program, false),             //#16 - Fee Program
+        ];
+
+        Instruction {
+            program_id: PUMPFUN_PROGRAM_ID,
+            accounts,
+            data,
+        }
+    }
+
+    pub fn get_sell_ix(&mut self, sell_amount: u64) -> Instruction {
+        let mut data = Vec::new();
+
+        let min_sol_out: u64 = 1;
+
+        data.extend_from_slice(&PUMP_FUN_SELL_DISCRIMINATOR);
+        data.extend_from_slice(&sell_amount.to_le_bytes());
+        data.extend_from_slice(&min_sol_out.to_le_bytes());
+
+        let accounts = vec![
+            AccountMeta::new_readonly(self.global, false), // #1 - Global
+            AccountMeta::new(self.fee_recipient, false),   // #2 - Fee Recipient
+            AccountMeta::new_readonly(self.mint, false),   // #3 - Mint
+            AccountMeta::new(self.bonding_curve, false),   // #4 - BondingCurve
+            AccountMeta::new(self.associated_bonding_curve, false), // #5 - Quote Mint (TSFart)
+            AccountMeta::new(self.associated_user, false), // #6 - Associated User
+            AccountMeta::new(self.user, true),             // #7 - User
+            AccountMeta::new_readonly(self.system_program, false), // #8 - System Program
+            AccountMeta::new(self.creator_vault, false),   // #9 - Creator Vault
+            AccountMeta::new_readonly(self.token_program, false), // #10 - Token Program
+            AccountMeta::new_readonly(self.event_authority, false), // #11 - Event authority
+            AccountMeta::new_readonly(self.program, false), // #12 - Pump.fun program
+            AccountMeta::new_readonly(self.fee_config, false),              // #13 - Fee Config
+            AccountMeta::new_readonly(self.fee_program, false),             //#14 - Fee Program
         ];
 
         Instruction {

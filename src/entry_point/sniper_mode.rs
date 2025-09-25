@@ -36,5 +36,5 @@ pub async fn main() {
         .await
         .unwrap();
 
-      process_sniper_mode(subscribe_rx).await;
+      let _ = process_sniper_mode(subscribe_rx).await;
 }

@@ -1,0 +1,30 @@
+use crate::*;
+use dashmap::DashMap;
+use solana_sdk::pubkey::Pubkey;
+use std::sync::Arc;
+use once_cell::sync::Lazy;
+
+type BoxError = Box<dyn std::error::Error + Send + Sync + 'static>;
+
+pub static TOKEN_DB: Lazy<TokenDatabase> = Lazy::new(||TokenDatabase { map: Arc::new(DashMap::new()) });
+
+#[derive(Clone, Debug)]
+pub struct TokenDatabase {
+    pub map: Arc<DashMap<Pubkey, TokenDatabaseSchema>>,
+}
+
+impl TokenDatabase {
+    pub fn upsert(&self, key: Pubkey, data: TokenDatabaseSchema) -> Result<(), BoxError> {
+        self.map.insert(key, data.clone());
+        Ok(())
+    }
+
+    pub fn get(&self, key: Pubkey) -> Result<Option<TokenDatabaseSchema>, BoxError> {
+        Ok(self.map.get(&key).map(|data| data.clone()))
+    }
+
+    pub fn delete(&self, key: Pubkey) -> Result<(), BoxError> {
+        self.map.remove(&key);
+        Ok(())
+    }
+}
