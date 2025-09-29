@@ -12,25 +12,35 @@ pub fn update_status_from_buy_event(
     token_data.token_peak_price = token_data.token_price.max(updated_token_price);
     token_data.token_price = updated_token_price;
     token_data.token_marketcap = updated_token_price * token_data.token_total_supply as f64;
-    token_data.token_volume += buy_event.sol_amount as f64 / 10f64.powi(9);
+
+    token_data.token_volume = if let Some(val) = token_data.token_volume {
+        Some(val + buy_event.sol_amount as f64 / 10f64.powi(9))
+    } else {
+        None
+    };
+
     token_data.last_event = LastEvent {
         tx_hash: tx_id.clone(),
         last_tracked_event: TokenEvent::BuyTokenEvent,
     };
 
     info!(
-        "[{}]\t*Mint: {}\t*MC: {:.2} SOL\t*Volume: {:.4} SOL",
-        "Buy ".green(),
+        "[{}]\t*Mint: {}\t*MC: {:.2} SOL\t{}",
+        "Detect holding",
         token_data.token_mint,
         token_data.token_marketcap,
-        token_data.token_volume
+        match token_data.token_volume {
+            Some(val) => format!("*Volume: {:.4} SOL", val),
+            None => "".to_string(),
+        }
     );
 
     token_data.update_sell_state_flag(tx_id.clone());
 
     if buy_event.user == *SIGNER_PUBKEY {
         info!(
-            "[My tx]\t*Hash: {}\t*Trade: Buy\t*mint: {}",
+            "[My tx]\t[{}]\t*Hash: {}\t*mint: {}",
+            "Buy".green(),
             tx_id,
             buy_event.mint.to_string()
         );
@@ -56,7 +66,7 @@ pub fn update_status_from_buy_event(
         };
 
         update!(
-            "mint: {}\t*TSStopSellingPlan: {:#?}\t*TPSellingPlan {:#?}",
+            "Mint: {}\t*TSStopSellingPlan: {:#?}\t*TPSellingPlan {:#?}",
             buy_event.mint.to_string(),
             token_data.tp_selling_plan,
             token_data.ts_stop_selling_plan
@@ -77,7 +87,12 @@ pub fn update_status_from_sell_event(
     token_data.token_peak_price = token_data.token_price.max(updated_token_price);
     token_data.token_price = updated_token_price;
     token_data.token_marketcap = updated_token_price * token_data.token_total_supply as f64;
-    token_data.token_volume += sell_event.sol_amount as f64 / 10f64.powi(9);
+
+    token_data.token_volume = if let Some(val) = token_data.token_volume {
+        Some(val + sell_event.sol_amount as f64 / 10f64.powi(9))
+    } else {
+        None
+    };
 
     if token_data.last_event.tx_hash == tx_id
         && token_data.last_event.last_tracked_event == TokenEvent::BuyTokenEvent
@@ -93,25 +108,29 @@ pub fn update_status_from_sell_event(
             token_data.bundle_tx_counter
         );
     }
-    
+
     token_data.last_event = LastEvent {
         tx_hash: tx_id.clone(),
         last_tracked_event: TokenEvent::SellTokenEvent,
     };
 
     info!(
-        "[{}]\t*Mint: {}\t*MC: {:.2} SOL\t*Volume: {:.4} SOL",
-        "Sell".red(),
+        "[{}]\t*Mint: {}\t*MC: {:.2} SOL\t{}",
+        "Detect holding",
         token_data.token_mint,
         token_data.token_marketcap,
-        token_data.token_volume
+        match token_data.token_volume {
+            Some(val) => format!("*Volume: {:.4} SOL", val),
+            None => "".to_string(),
+        }
     );
 
     token_data.update_sell_state_flag(tx_id.clone());
 
     if sell_event.user == *SIGNER_PUBKEY {
         info!(
-            "[My Trade]\t*Hash: {}\t*Trade: Sell\t*mint: {}",
+            "[My Tx]\t[{}]\t*Hash: {}\t*mint: {}",
+            "Sell".red(),
             tx_id,
             sell_event.mint.to_string()
         );

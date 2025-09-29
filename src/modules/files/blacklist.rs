@@ -1,26 +1,6 @@
-use console::Emoji;
 use itertools::Itertools;
 use std::io::BufRead;
 use std::{fs, io};
-use colored::*;
-
-use crate::*;
-
-pub fn load_blacklist() {
-  println!("{} {}", Emoji("\n💳", "") ,"Loading wallet blacklist...".green());
-  let wallet_black_list = BlackList::get_blacklist(&*WALLET_BLACKLIST_PATH);
-  for blacklisted_wallet in wallet_black_list.iter(){
-    println!("- {}", blacklisted_wallet.red());
-  }
-  println!("Loaded {} blacked wallets.\n", wallet_black_list.len());
-
-  println!("{} {}", Emoji("💱", "") ,"Loading token blacklist...".yellow());
-  let token_black_list = BlackList::get_blacklist(&*&TOKEN_BLACKLIST_PATH);
-  for blacklisted_wallet in token_black_list.iter(){
-    println!("- {}", blacklisted_wallet.red());
-  }
-  println!("Loaded {} blacked tokens.\n", token_black_list.len());
-}
 
 #[derive(Clone, Debug)]
 pub struct BlackList {

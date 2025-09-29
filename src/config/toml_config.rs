@@ -88,5 +88,7 @@ pub struct FilterSetting {
     pub volume_filter: bool,
     pub min_volume_limit_sol: i32,
     pub market_cap_filter: bool,
-    pub min_market_cap_limit_sol: i32
+    pub min_market_cap_limit_sol: i32,
+    pub max_token_holder_filter: bool,
+    pub max_token_holder_limit: u64 
 }

@@ -2,7 +2,6 @@ use crate::*;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
-use std::sync::atomic::{AtomicI32, Ordering};
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
@@ -10,20 +9,21 @@ use solana_sdk::{
     pubkey::Pubkey,
     signer::{Signer, keypair::Keypair},
 };
+use std::sync::atomic::{AtomicI32, Ordering};
+
+use console::Emoji;
+use colored::*;
 
 use crate::CONFIG;
 
 //Bot mode
 pub static DEV_MODE: Lazy<bool> = Lazy::new(|| CONFIG.mode.is_dev_mode);
-pub static BUY_TX_COUNTER: Lazy<AtomicI32> = Lazy::new(|| {
-    AtomicI32::new(CONFIG.mode.buy_tx_counter)
-});
-
+pub static BUY_TX_COUNTER: Lazy<AtomicI32> =
+    Lazy::new(|| AtomicI32::new(CONFIG.mode.buy_tx_counter));
 
 pub fn decrese_buy_tx_remain_counter() {
     BUY_TX_COUNTER.fetch_sub(1, Ordering::SeqCst);
 }
-
 
 pub fn get_buy_tx_remain_counter() -> i32 {
     BUY_TX_COUNTER.load(Ordering::SeqCst)
@@ -41,7 +41,8 @@ pub static SIGNER_PUBKEY: Lazy<Pubkey> = Lazy::new(|| {
 });
 
 //Target wallets
-pub static TARGET_WALLETS: Lazy<Vec<String>> = Lazy::new(||CONFIG.target_config.target_wallets.clone());
+pub static TARGET_WALLETS: Lazy<Vec<String>> =
+    Lazy::new(|| CONFIG.target_config.target_wallets.clone());
 
 //RPC endpoint
 pub static RPC_ENDPOINT: Lazy<String> = Lazy::new(|| CONFIG.connection_config.rpc_endpoint.clone());
@@ -83,18 +84,32 @@ pub static PRIORITY_FEE: Lazy<(u64, u64, f64)> = Lazy::new(|| {
 });
 
 //Filter
-pub static BLACK_LIST_FILTER:Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.black_list_filter);
-pub static WALLET_BLACKLIST_PATH: Lazy<String> = Lazy::new(||CONFIG.filter_setting.wallet_blacklist_path.clone());
-pub static TOKEN_BLACKLIST_PATH: Lazy<String> = Lazy::new(||CONFIG.filter_setting.rug_token_blacklist_path.clone());
+pub static BLACK_LIST_FILTER: Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.black_list_filter);
+pub static WALLET_BLACKLIST_PATH: Lazy<String> =
+    Lazy::new(|| CONFIG.filter_setting.wallet_blacklist_path.clone());
+pub static TOKEN_BLACKLIST_PATH: Lazy<String> =
+    Lazy::new(|| CONFIG.filter_setting.rug_token_blacklist_path.clone());
 
-pub static RUG_DETECT:Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.rug_detect);
-pub static BUNDLE_TX_LIMIT: Lazy<i32> = Lazy::new(||CONFIG.filter_setting.bundle_tx_limit);
+pub static WALLET_BLACKLIST: Lazy<Vec<String>> =
+    Lazy::new(|| BlackList::get_blacklist(&*WALLET_BLACKLIST_PATH));
+pub static TOKEN_BLACKLIST: Lazy<Vec<String>> =
+    Lazy::new(|| BlackList::get_blacklist(&*TOKEN_BLACKLIST_PATH));
 
-pub static VOLUME_FILTER:Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.volume_filter);
-pub static MIN_VOLUME_LIMIT_SOL: Lazy<i32> = Lazy::new(||CONFIG.filter_setting.min_volume_limit_sol);
+pub static RUG_DETECT: Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.rug_detect);
+pub static BUNDLE_TX_LIMIT: Lazy<i32> = Lazy::new(|| CONFIG.filter_setting.bundle_tx_limit);
 
-pub static MARKET_CAP_FILTER:Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.market_cap_filter);
-pub static MIN_MARKET_CAP_LIMIT_SOL: Lazy<i32> = Lazy::new(||CONFIG.filter_setting.min_market_cap_limit_sol);
+pub static VOLUME_FILTER: Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.volume_filter);
+pub static MIN_VOLUME_LIMIT_SOL: Lazy<i32> =
+    Lazy::new(|| CONFIG.filter_setting.min_volume_limit_sol);
+
+pub static MARKET_CAP_FILTER: Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.market_cap_filter);
+pub static MIN_MARKET_CAP_LIMIT_SOL: Lazy<i32> =
+    Lazy::new(|| CONFIG.filter_setting.min_market_cap_limit_sol);
+
+pub static MAX_TOKEN_HOLDER_FILTER: Lazy<bool> =
+    Lazy::new(|| CONFIG.filter_setting.max_token_holder_filter);
+pub static MAX_TOKEN_HOLDER_LIMIT: Lazy<u64> =
+    Lazy::new(|| CONFIG.filter_setting.max_token_holder_limit);
 
 pub fn show_bot_settings() {
     log!("Public key: {:?}", *SIGNER_PUBKEY);
@@ -153,4 +168,26 @@ pub fn show_bot_settings() {
         *TS_5 * (1.0 - *TS_5_STOP) * 100.0,
         *TS_5_SELL_PCNT * 100.0
     );
+
+    println!(
+        "{} {}",
+        Emoji("\n💳", ""),
+        "Loading wallet blacklist...".green()
+    );
+
+    for blacklisted_wallet in WALLET_BLACKLIST.iter() {
+        println!("- {}", blacklisted_wallet.red());
+    }
+    println!("Loaded {} blacked wallets.\n", WALLET_BLACKLIST.len());
+
+    println!(
+        "{} {}",
+        Emoji("💱", ""),
+        "Loading token blacklist...".yellow()
+    );
+
+    for blacklisted_wallet in TOKEN_BLACKLIST.iter() {
+        println!("- {}", blacklisted_wallet.red());
+    }
+    println!("Loaded {} blacked tokens.\n", TOKEN_BLACKLIST.len());
 }

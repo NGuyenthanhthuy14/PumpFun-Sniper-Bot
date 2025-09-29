@@ -11,8 +11,6 @@ pub async fn main() {
     init_nozomi().await;
     init_zero_slot().await;
 
-    load_blacklist();
-
     tokio::spawn({
         async {
             loop {

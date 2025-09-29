@@ -20,7 +20,7 @@ where
 
                 let trade_token_data_map = handle_sniper_event(trade_data, tx_id).await;
 
-                make_tx(&trade_token_data_map);
+                make_sniper_tx(&trade_token_data_map);
             }
 
             Err(e) => {

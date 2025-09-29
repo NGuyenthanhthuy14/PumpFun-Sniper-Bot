@@ -4,13 +4,9 @@ use dashmap::DashMap;
 use solana_sdk::{instruction::Instruction, pubkey::Pubkey};
 use std::time::Instant;
 
-pub fn make_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
+pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
     for trade_token_data in trade_token_data_map.iter() {
         let mut token_data = trade_token_data.value().clone();
-
-        if *BLACK_LIST_FILTER && check_blacklisted(&token_data) {
-            continue;
-        };
 
         let instructions: (Vec<Instruction>, String) = if token_data.token_is_purchased
             && token_data.bundle_tx_counter >= *BUNDLE_TX_LIMIT
@@ -38,12 +34,7 @@ pub fn make_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
             );
 
             (ix, tag)
-        } else if !token_data.token_is_purchased
-            && (!*MARKET_CAP_FILTER
-                || token_data.token_marketcap >= *MIN_MARKET_CAP_LIMIT_SOL as f64)
-            && (!*VOLUME_FILTER || token_data.token_volume >= *MIN_VOLUME_LIMIT_SOL as f64)
-            && (!*RUG_DETECT || token_data.bundle_tx_counter < *BUNDLE_TX_LIMIT)
-        {
+        } else if !token_data.token_is_purchased && token_data.last_event.last_tracked_event == TokenEvent::BuyTokenEvent && half_copy_buy_filter_check(token_data.clone()) {
             let buy_tx_remaining_counter = get_buy_tx_remain_counter();
 
             if !*DEV_MODE || buy_tx_remaining_counter != 0 {
