@@ -6,8 +6,11 @@ edition = "2024"
 [dependencies]
 borsh = "1.5.7"
 chrono = "0.4.42"
+colored = "3.0.0"
+console = "0.16.1"
 dashmap = "6.1.0"
 futures = "0.3.31"
+itertools = "0.14.0"
 lazy_static = "1.5.0"
 once_cell = "1.21.3"
 serde = { version = "1.0.226", features = ["derive"] }

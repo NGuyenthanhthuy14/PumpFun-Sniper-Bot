@@ -18,8 +18,9 @@ where
                 let ix_info = filter_by_program_id(ixs, inner_ixs, account_keys.clone(), PUMPFUN_PROGRAM_ID).unwrap();
                 let trade_data = get_trade_info(ix_info, account_keys.clone());
 
-                let trade_token_data_map = handle_trade_events(trade_data, tx_id).await;
-                handle_sniper(&trade_token_data_map);
+                let trade_token_data_map = handle_sniper_event(trade_data, tx_id).await;
+
+                make_tx(&trade_token_data_map);
             }
 
             Err(e) => {

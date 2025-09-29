@@ -2,7 +2,7 @@ use crate::*;
 use dashmap::DashMap;
 use solana_sdk::pubkey::Pubkey;
 
-pub async fn handle_trade_events(
+pub async fn handle_sniper_event(
     trade_data: (
         Vec<MintEvent>,
         Vec<BuyEvent>,

@@ -1,4 +1,5 @@
 use crate::*;
+use colored::*;
 
 pub fn update_status_from_buy_event(
     mut token_data: TokenDatabaseSchema,
@@ -7,15 +8,29 @@ pub fn update_status_from_buy_event(
 ) -> TokenDatabaseSchema {
     let updated_token_price = (buy_event.virtual_sol_reserves as f64 / 10f64.powi(9))
         / (buy_event.virtual_token_reserves as f64 / 10f64.powi(6));
-        
-    token_data.token_event = TokenEventType::BuyTokenEvent;
-    token_data.update_status(updated_token_price, tx_id.clone());
+
+    token_data.token_peak_price = token_data.token_price.max(updated_token_price);
+    token_data.token_price = updated_token_price;
+    token_data.token_marketcap = updated_token_price * token_data.token_total_supply as f64;
+    token_data.token_volume += buy_event.sol_amount as f64 / 10f64.powi(9);
+    token_data.last_event = LastEvent {
+        tx_hash: tx_id.clone(),
+        last_tracked_event: TokenEvent::BuyTokenEvent,
+    };
+
+    info!(
+        "[{}]\t*Mint: {}\t*MC: {:.2} SOL\t*Volume: {:.4} SOL",
+        "Buy ".green(),
+        token_data.token_mint,
+        token_data.token_marketcap,
+        token_data.token_volume
+    );
+
+    token_data.update_sell_state_flag(tx_id.clone());
 
     if buy_event.user == *SIGNER_PUBKEY {
         info!(
-            "[MY_TRADE] => HASH : {}
-                \t* TRADE : BUY
-                \t* MINT : {}",
+            "[My tx]\t*Hash: {}\t*Trade: Buy\t*mint: {}",
             tx_id,
             buy_event.mint.to_string()
         );
@@ -41,9 +56,7 @@ pub fn update_status_from_buy_event(
         };
 
         update!(
-            "MINT : {}
-            \t* TSStopSellingPlan : {:#?}
-            \t* TPSellingPlan {:#?}",
+            "mint: {}\t*TSStopSellingPlan: {:#?}\t*TPSellingPlan {:#?}",
             buy_event.mint.to_string(),
             token_data.tp_selling_plan,
             token_data.ts_stop_selling_plan
@@ -61,44 +74,50 @@ pub fn update_status_from_sell_event(
     let updated_token_price = (sell_event.virtual_sol_reserves as f64 / 10f64.powi(9))
         / (sell_event.virtual_token_reserves as f64 / 10f64.powi(6));
 
-    token_data.token_event = TokenEventType::SellTokenEvent;
-    token_data.update_status(updated_token_price, tx_id.clone());
+    token_data.token_peak_price = token_data.token_price.max(updated_token_price);
+    token_data.token_price = updated_token_price;
+    token_data.token_marketcap = updated_token_price * token_data.token_total_supply as f64;
+    token_data.token_volume += sell_event.sol_amount as f64 / 10f64.powi(9);
+
+    if token_data.last_event.tx_hash == tx_id
+        && token_data.last_event.last_tracked_event == TokenEvent::BuyTokenEvent
+    {
+        token_data.bundle_tx_counter += 1;
+
+        warning!(
+            "{}\t*Tx: {}
+            *Mint: {}\t*Bundle_counter: {}",
+            "[Bundle tx]".yellow(),
+            token_data.token_mint,
+            solscan!(tx_id),
+            token_data.bundle_tx_counter
+        );
+    }
+    
+    token_data.last_event = LastEvent {
+        tx_hash: tx_id.clone(),
+        last_tracked_event: TokenEvent::SellTokenEvent,
+    };
+
+    info!(
+        "[{}]\t*Mint: {}\t*MC: {:.2} SOL\t*Volume: {:.4} SOL",
+        "Sell".red(),
+        token_data.token_mint,
+        token_data.token_marketcap,
+        token_data.token_volume
+    );
+
+    token_data.update_sell_state_flag(tx_id.clone());
 
     if sell_event.user == *SIGNER_PUBKEY {
         info!(
-            "[MY_TRADE] => HASH : {}
-                \t* TRADE : SELL
-                \t* MINT : {}",
+            "[My Trade]\t*Hash: {}\t*Trade: Sell\t*mint: {}",
             tx_id,
             sell_event.mint.to_string()
         );
         token_data.token_balance -= sell_event.token_amount;
 
         if token_data.token_balance > 0 {
-            token_data.tp_selling_plan = TPSellingPlan {
-                tp_1: (*TAKE_PROFIT_1_PCNT * (token_data.token_balance as f64)) as u64,
-                tp_2: (*TAKE_PROFIT_2_PCNT * (token_data.token_balance as f64)) as u64,
-                tp_3: (*TAKE_PROFIT_3_PCNT * (token_data.token_balance as f64)) as u64,
-                tp_4: (*TAKE_PROFIT_4_PCNT * (token_data.token_balance as f64)) as u64,
-                tp_5: (*TAKE_PROFIT_5_PCNT * (token_data.token_balance as f64)) as u64,
-            };
-
-            token_data.ts_stop_selling_plan = TSStopSellingPlan {
-                ts_1_stop: (*TS_1_SELL_PCNT * (token_data.token_balance as f64)) as u64,
-                ts_2_stop: (*TS_2_SELL_PCNT * (token_data.token_balance as f64)) as u64,
-                ts_3_stop: (*TS_3_SELL_PCNT * (token_data.token_balance as f64)) as u64,
-                ts_4_stop: (*TS_4_SELL_PCNT * (token_data.token_balance as f64)) as u64,
-                ts_5_stop: (*TS_5_SELL_PCNT * (token_data.token_balance as f64)) as u64,
-            };
-
-            update!(
-                "MINT : {}
-                \t* TSStopSellingPlan : {:#?}
-                \t* TPSellingPlan {:#?}",
-                sell_event.mint.to_string(),
-                token_data.tp_selling_plan,
-                token_data.ts_stop_selling_plan
-            );
             let _ = TOKEN_DB.upsert(sell_event.mint.clone(), token_data.clone());
             Some(token_data.clone())
         } else {

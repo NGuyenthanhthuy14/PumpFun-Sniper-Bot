@@ -1,20 +1,28 @@
 use crate::*;
+use colored::*;
 use solana_sdk::pubkey::Pubkey;
 
 #[derive(Clone, Debug)]
 pub struct TokenDatabaseSchema {
     pub token_mint: Pubkey,
+    pub token_creator: Pubkey,
+    pub token_total_supply: u64,
     pub token_price: f64,
     pub token_peak_price: f64,
     pub token_balance: u64,
     pub token_buying_point_price: f64,
-    pub token_event: TokenEventType,
+    pub token_marketcap: f64,
+    pub token_volume: f64,
     pub token_is_purchased: bool,
-    pub tp_states: TPMode,
-    pub ts_states: TSMode,
+    pub tp_state: TPMode,
+    pub tracked_tp_state: TPMode,
+    pub ts_state: TSMode,
+    pub tracked_ts_state: TSMode,
     pub ts_stop_selling_plan: TSStopSellingPlan,
     pub tp_selling_plan: TPSellingPlan,
     pub pump_fun_swap_accounts: PumpFunSwapAccounts,
+    pub last_event: LastEvent,
+    pub bundle_tx_counter: i32,
 }
 
 impl TokenDatabaseSchema {
@@ -24,23 +32,31 @@ impl TokenDatabaseSchema {
         tx_id: String,
     ) -> Self {
         info!(
-            "[NEW_MINT] => MINT : {}
-            \t* TX HASH : {:?}",
+            "[{}]\t*Mint: {}\t*Tx: {:?}",
+            "Mint".blue(),
             mint_event.mint.to_string(),
             solscan!(tx_id)
         );
+
+        let initial_token_price = (mint_event.virtual_sol_reserves as f64 / 10f64.powi(9))
+            / (mint_event.virtual_token_reserves as f64 / 10f64.powi(6));
+        let initial_token_marketcap = initial_token_price * mint_event.token_total_supply as f64;
+
         let token_data = Self {
             token_mint: mint_event.mint,
+            token_creator: mint_event.creator,
+            token_total_supply: mint_event.token_total_supply / 10u64.pow(6),
             token_balance: 0,
-            token_price: (mint_event.virtual_sol_reserves as f64 / 10f64.powi(9))
-                / (mint_event.virtual_token_reserves as f64 / 10f64.powi(6)),
-            token_peak_price: (mint_event.virtual_sol_reserves as f64 / 10f64.powi(9))
-                / (mint_event.virtual_token_reserves as f64 / 10f64.powi(6)),
+            token_price: initial_token_price,
+            token_peak_price: initial_token_price,
+            token_marketcap: initial_token_marketcap,
+            token_volume: 0.0,
             token_buying_point_price: 0.0,
-            token_event: TokenEventType::MintTokenEvent,
             token_is_purchased: false,
-            tp_states: TPMode::None,
-            ts_states: TSMode::None,
+            tp_state: TPMode::None,
+            tracked_tp_state: TPMode::None,
+            ts_state: TSMode::None,
+            tracked_ts_state: TSMode::None,
             tp_selling_plan: TPSellingPlan {
                 tp_1: 0,
                 tp_2: 0,
@@ -59,254 +75,304 @@ impl TokenDatabaseSchema {
                 &mint_instruction_accounts,
                 &mint_event,
             ),
+            last_event: LastEvent {
+                tx_hash: tx_id,
+                last_tracked_event: TokenEvent::MintTokenEvent,
+            },
+            bundle_tx_counter: 0,
         };
         let _ = TOKEN_DB.upsert(mint_event.mint.clone(), token_data.clone());
         token_data
     }
 
-    pub fn update_status(&mut self, updated_token_price: f64, tx_id: String) {
-        self.token_price = updated_token_price;
-        self.token_peak_price = self.token_price.max(updated_token_price);
+    pub fn new_from_target_buy(
+        buy_event: BuyEvent,
+        buy_instruction_accounts: BuyInstructionAccounts,
+        tx_id: String,
+    ) -> Self {
+        let token_price = (buy_event.virtual_sol_reserves as f64 / 10f64.powi(9))
+            / (buy_event.virtual_token_reserves as f64 / 10f64.powi(6));
+        let token_marketcap = token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
+        let token_data = Self {
+            token_mint: buy_event.mint,
+            token_creator: buy_event.creator,
+            token_total_supply: PUMP_FUN_TOKEN_TOTAL_SUPPLY,
+            token_price: token_price,
+            token_peak_price: token_price,
+            token_balance: 0,
+            token_buying_point_price: 0.0,
+            token_marketcap: token_marketcap,
+            token_volume: 0.0,
+            token_is_purchased: false,
+            tp_state: TPMode::None,
+            tracked_tp_state: TPMode::None,
+            ts_state: TSMode::None,
+            tracked_ts_state: TSMode::None,
+            ts_stop_selling_plan: TSStopSellingPlan {
+                ts_1_stop: 0,
+                ts_2_stop: 0,
+                ts_3_stop: 0,
+                ts_4_stop: 0,
+                ts_5_stop: 0,
+            },
+            tp_selling_plan: TPSellingPlan {
+                tp_1: 0,
+                tp_2: 0,
+                tp_3: 0,
+                tp_4: 0,
+                tp_5: 0,
+            },
+            pump_fun_swap_accounts: PumpFunSwapAccounts::from_target_buy(buy_instruction_accounts),
+            last_event: LastEvent {
+                tx_hash: tx_id,
+                last_tracked_event: TokenEvent::BuyTokenEvent,
+            },
+            bundle_tx_counter: 0,
+        };
+        let _ = TOKEN_DB.upsert(buy_event.mint.clone(), token_data.clone());
+        token_data
+    }
 
+    pub fn update_sell_state_flag(&mut self, tx_id: String) {
         if self.token_balance > 0 {
-            self.tp_states = if self.token_price > self.token_buying_point_price * *TAKE_PROFIT_5
-                && self.tp_states < TPMode::TP5
+            self.tp_state = if self.token_price > self.token_buying_point_price * *TAKE_PROFIT_5
+                && self.tp_state < TPMode::TP5
             {
-                info!(
-                    "[TP_UPDATED] => MINT : {}
-                    \t* TP STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TP_UPDATED]\t*MINT: {}
+                    \t*TP STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.tp_states,
+                    self.tp_state,
                     TPMode::TP5,
                     self.token_buying_point_price,
                     self.token_price,
                 );
                 TPMode::TP5
             } else if self.token_price > self.token_buying_point_price * *TAKE_PROFIT_4
-                && self.tp_states < TPMode::TP4
+                && self.tp_state < TPMode::TP4
             {
-                info!(
-                    "[TP_UPDATED] => MINT : {}
-                    \t* TP STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TP_UPDATED]\t*MINT: {}
+                    \t*TP STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.tp_states,
+                    self.tp_state,
                     TPMode::TP4,
                     self.token_buying_point_price,
                     self.token_price,
                 );
                 TPMode::TP4
             } else if self.token_price > self.token_buying_point_price * *TAKE_PROFIT_3
-                && self.tp_states < TPMode::TP3
+                && self.tp_state < TPMode::TP3
             {
-                info!(
-                    "[TP_UPDATED] => MINT : {}
-                    \t* TP STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TP_UPDATED]\t*MINT: {}
+                    \t*TP STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.tp_states,
+                    self.tp_state,
                     TPMode::TP4,
                     self.token_buying_point_price,
                     self.token_price,
                 );
                 TPMode::TP3
             } else if self.token_price > self.token_buying_point_price * *TAKE_PROFIT_2
-                && self.tp_states < TPMode::TP2
+                && self.tp_state < TPMode::TP2
             {
-                info!(
-                    "[TP_UPDATED] => MINT : {}
-                    \t* TP STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TP_UPDATED]\t*MINT: {}
+                    \t*TP STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.tp_states,
+                    self.tp_state,
                     TPMode::TP2,
                     self.token_buying_point_price,
                     self.token_price,
                 );
                 TPMode::TP2
             } else if self.token_price > self.token_buying_point_price * *TAKE_PROFIT_1
-                && self.tp_states < TPMode::TP1
+                && self.tp_state < TPMode::TP1
             {
-                info!(
-                    "[TP_UPDATED] => MINT : {}
-                    \t* TP STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TP_UPDATED]\t*MINT: {}
+                    \t*TP STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.tp_states,
+                    self.tp_state,
                     TPMode::TP1,
                     self.token_buying_point_price,
                     self.token_price,
                 );
                 TPMode::TP1
             } else if self.token_price < self.token_buying_point_price * *STOP_LOSS
-                && self.tp_states < TPMode::SL
+                && self.tp_state < TPMode::SL
             {
-                info!(
-                    "[TP_UPDATED] => MINT : {}
-                    \t* TP STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TP_UPDATED]\t*MINT: {}
+                    \t*TP STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.tp_states,
+                    self.tp_state,
                     TPMode::SL,
                     self.token_buying_point_price,
                     self.token_price,
                 );
                 TPMode::SL
             } else {
-                self.tp_states.clone()
+                self.tp_state.clone()
             };
 
-            self.ts_states = if self.ts_states == TSMode::TS5Triggered
+            self.ts_state = if self.ts_state == TSMode::TS5Triggered
                 && self.token_price < self.token_peak_price * (1.0 - *TS_5_STOP)
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS5Stop,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS5Stop
-            } else if self.ts_states == TSMode::TS4Triggered
+            } else if self.ts_state == TSMode::TS4Triggered
                 && self.token_price < self.token_peak_price * (1.0 - *TS_4_STOP)
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS4Stop,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS4Stop
-            } else if self.ts_states == TSMode::TS3Triggered
+            } else if self.ts_state == TSMode::TS3Triggered
                 && self.token_price < self.token_peak_price * (1.0 - *TS_3_STOP)
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS3Stop,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS3Stop
-            } else if self.ts_states == TSMode::TS2Triggered
+            } else if self.ts_state == TSMode::TS2Triggered
                 && self.token_price < self.token_peak_price * (1.0 - *TS_2_STOP)
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS2Stop,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS2Stop
-            } else if self.ts_states == TSMode::TS1Triggered
+            } else if self.ts_state == TSMode::TS1Triggered
                 && self.token_price < self.token_peak_price * (1.0 - *TS_1_STOP)
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS1Stop,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS1Stop
             } else if self.token_price > self.token_buying_point_price * *TS_5
-                && self.ts_states < TSMode::TS5Triggered
+                && self.ts_state < TSMode::TS5Triggered
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS5Triggered,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS5Triggered
             } else if self.token_price > self.token_buying_point_price * *TS_4
-                && self.ts_states < TSMode::TS4Triggered
+                && self.ts_state < TSMode::TS4Triggered
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS4Triggered,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS4Triggered
             } else if self.token_price > self.token_buying_point_price * *TS_3
-                && self.ts_states < TSMode::TS3Triggered
+                && self.ts_state < TSMode::TS3Triggered
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS3Triggered,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS3Triggered
             } else if self.token_price > self.token_buying_point_price * *TS_2
-                && self.ts_states < TSMode::TS2Triggered
+                && self.ts_state < TSMode::TS2Triggered
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS2Triggered,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS2Triggered
             } else if self.token_price > self.token_buying_point_price * *TS_1
-                && self.ts_states < TSMode::TS1Triggered
+                && self.ts_state < TSMode::TS1Triggered
             {
-                info!(
-                    "[TS_UPDATED] => MINT : {}
-                    \t* TS STATE : {:?} -> {:?},
-                    \t* PRICE VARIANT : {} (BUY) -> {} (NOW)",
+                update!(
+                    "[TS_UPDATED]\t*MINT: {}
+                    \t*TS STATE: {:?} -> {:?},
+                    \t*PRICE VARIANT: {} (BUY) -> {} (NOW)",
                     self.pump_fun_swap_accounts.mint,
-                    self.ts_states,
+                    self.ts_state,
                     TSMode::TS1Triggered,
                     self.token_buying_point_price,
                     self.token_price
                 );
                 TSMode::TS1Triggered
             } else {
-                self.ts_states.clone()
+                self.ts_state.clone()
             };
 
             dev_log!(
-                "[POOL STATE UPDATE] => MINT {:<12} ,
-                \t* TX HASH : {}
-                \t* CURRENT PRICE : {:<12} , PEAK PRICE : {:<12} , BUYING POINT PRICE : {:<12}
-                \t* PRICE VARIANT PCNT : {:3.5} % , FALL PCNT : {:3.5} %
-                \t* ts_states : {:?} , tp_states : {:?}",
+                "[POOL STATE UPDATE]\t*MINT {:<12} ,
+                \t*TX HASH: {}
+                \t*CURRENT PRICE: {:<12} , PEAK PRICE: {:<12} , BUYING POINT PRICE: {:<12}
+                \t*PRICE VARIANT PCNT: {:3.5} % , FALL PCNT: {:3.5} %
+                \t*ts_state: {:?} , tp_state: {:?}",
                 &self.pump_fun_swap_accounts.mint.to_string(),
                 solscan!(tx_id),
                 &self.token_price,
@@ -314,8 +380,8 @@ impl TokenDatabaseSchema {
                 &self.token_buying_point_price,
                 &self.token_price * 100.0 / &self.token_buying_point_price,
                 100.0 * (&self.token_peak_price - &self.token_price) / &self.token_peak_price,
-                self.ts_states,
-                self.tp_states,
+                self.ts_state,
+                self.tp_state,
             );
         }
     }
@@ -348,10 +414,10 @@ pub enum TPMode {
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
-pub enum TokenEventType {
+pub enum TokenEvent {
     MintTokenEvent,
     BuyTokenEvent,
-    SellTokenEvent
+    SellTokenEvent,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -370,4 +436,10 @@ pub struct TPSellingPlan {
     pub tp_3: u64,
     pub tp_4: u64,
     pub tp_5: u64,
+}
+
+#[derive(Debug, Clone)]
+pub struct LastEvent {
+    pub tx_hash: String,
+    pub last_tracked_event: TokenEvent,
 }

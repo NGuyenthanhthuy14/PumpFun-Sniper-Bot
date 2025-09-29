@@ -2,12 +2,18 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct ModeConfig {
-    pub is_dev_mode: bool
+    pub is_dev_mode: bool,
+    pub buy_tx_counter: i32,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct WalletCredentialConfig {
     pub private_key: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct TargetConfig {
+    pub target_wallets: Vec<String>
 }
 
 #[derive(Debug, Deserialize)]
@@ -70,4 +76,17 @@ pub struct FeeConfig {
     pub cu: u64,
     pub priority_fee_micro_lamport: u64,
     pub third_party_fee: f64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct FilterSetting {
+    pub black_list_filter: bool,
+    pub wallet_blacklist_path: String,
+    pub rug_token_blacklist_path: String,
+    pub rug_detect: bool,
+    pub bundle_tx_limit: i32,
+    pub volume_filter: bool,
+    pub min_volume_limit_sol: i32,
+    pub market_cap_filter: bool,
+    pub min_market_cap_limit_sol: i32
 }

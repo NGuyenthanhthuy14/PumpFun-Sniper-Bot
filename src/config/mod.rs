@@ -14,12 +14,14 @@ pub use trade_setting::*;
 pub struct Config {
   pub mode: ModeConfig,
   pub wallet_config: WalletCredentialConfig,
+  pub target_config: TargetConfig,
   pub connection_config: ConnectionConfig,
   pub relayer_config: RelayerConfig,
   pub buy_setting: BuySetting,
   pub sell_setting: SellSetting,
   pub slippage_config: SlippageConfig,
-  pub fee_config: FeeConfig
+  pub fee_config: FeeConfig,
+  pub filter_setting: FilterSetting
 }
 
 pub static CONFIG: Lazy<Config> = Lazy::new(||{

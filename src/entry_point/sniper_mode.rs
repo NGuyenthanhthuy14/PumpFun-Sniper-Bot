@@ -1,14 +1,17 @@
 use pumpfun_sniper::*;
 use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
+use colored::*;
 
 #[tokio::main]
 pub async fn main() {
-    info!("{}", SNIPER_MODE_STR);
+    info!("{}", SNIPER_MODE_STR.green());
     show_bot_settings();
 
     init_jito().await;
     init_nozomi().await;
     init_zero_slot().await;
+
+    load_blacklist();
 
     tokio::spawn({
         async {

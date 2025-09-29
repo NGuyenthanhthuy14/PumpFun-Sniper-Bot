@@ -9,7 +9,7 @@ macro_rules! update {
         let tab_prefix = std::iter::repeat("\t").take($crate::UPDATE_LEVEL as usize).collect::<String>();
         let msg = format!($($arg)*);
         let file_msg = format!("{} {} {}{}", timestamp, $crate::UPDATE_LEVEL_STR, tab_prefix, msg);
-        log!("{}", file_msg);
+        println!("{}", file_msg);
         $crate::log_to_file(&file_msg);
     }};
 }
@@ -27,7 +27,7 @@ macro_rules! result {
         let msg = format!($($arg)*);
         let _log_msg = format!("{} {} {}{}", timestamp.cyan(), level_display, tab_prefix, msg);
         let file_msg = format!("{} {} {}{}", timestamp, $crate::RESULT_LEVEL_RAW, tab_prefix, msg);
-        log!("{}", file_msg);
+        println!("{}", file_msg);
         $crate::log_to_file(&file_msg);
     }};
 }
@@ -45,7 +45,7 @@ macro_rules! alert {
         let msg = format!($($arg)*);
         let _log_msg = format!("{} {} {}{}", timestamp.cyan(), level_display, tab_prefix, msg);
         let file_msg = format!("{} {} {}{}", timestamp, $crate::ALERT_LEVEL_STR, tab_prefix, msg);
-        log!("{}", file_msg);
+        println!("{}", file_msg);
         $crate::log_to_file(&file_msg);
     }};
 }
@@ -62,7 +62,7 @@ macro_rules! dev_log {
             let tab_prefix = std::iter::repeat("\t").take($crate::DEV_LEVEL as usize).collect::<String>();
             let msg = format!($($arg)*);
             let file_msg = format!("{} {} {}{}", timestamp, $crate::DEV_LEVEL_STR, tab_prefix, msg);
-            log!("{}", file_msg);
+            println!("{}", file_msg);
             $crate::log_to_file(&file_msg);
         }
     }};

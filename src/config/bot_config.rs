@@ -2,6 +2,7 @@ use crate::*;
 use std::sync::Arc;
 
 use once_cell::sync::Lazy;
+use std::sync::atomic::{AtomicI32, Ordering};
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
@@ -14,6 +15,19 @@ use crate::CONFIG;
 
 //Bot mode
 pub static DEV_MODE: Lazy<bool> = Lazy::new(|| CONFIG.mode.is_dev_mode);
+pub static BUY_TX_COUNTER: Lazy<AtomicI32> = Lazy::new(|| {
+    AtomicI32::new(CONFIG.mode.buy_tx_counter)
+});
+
+
+pub fn decrese_buy_tx_remain_counter() {
+    BUY_TX_COUNTER.fetch_sub(1, Ordering::SeqCst);
+}
+
+
+pub fn get_buy_tx_remain_counter() -> i32 {
+    BUY_TX_COUNTER.load(Ordering::SeqCst)
+}
 
 //Wallet key
 pub static SIGNER_KEYPAIR: Lazy<Keypair> = Lazy::new(|| {
@@ -25,6 +39,9 @@ pub static SIGNER_PUBKEY: Lazy<Pubkey> = Lazy::new(|| {
     let wallet: Keypair = Keypair::from_base58_string(&CONFIG.wallet_config.private_key);
     wallet.pubkey()
 });
+
+//Target wallets
+pub static TARGET_WALLETS: Lazy<Vec<String>> = Lazy::new(||CONFIG.target_config.target_wallets.clone());
 
 //RPC endpoint
 pub static RPC_ENDPOINT: Lazy<String> = Lazy::new(|| CONFIG.connection_config.rpc_endpoint.clone());
@@ -55,7 +72,7 @@ pub static BUY_AMOUNT_SOL: Lazy<f64> = Lazy::new(|| CONFIG.buy_setting.buy_amoun
 //Slippage
 pub static SLIPPAGE: Lazy<u32> = Lazy::new(|| CONFIG.slippage_config.slippage);
 
-//Fee config
+//Fee
 pub static PRIORITY_FEE: Lazy<(u64, u64, f64)> = Lazy::new(|| {
     let cu: u64 = CONFIG.fee_config.cu;
     let priority_fee_micro_lamport = CONFIG.fee_config.priority_fee_micro_lamport;
@@ -65,6 +82,20 @@ pub static PRIORITY_FEE: Lazy<(u64, u64, f64)> = Lazy::new(|| {
     (cu, priority_fee_micro_lamport, third_party_fee)
 });
 
+//Filter
+pub static BLACK_LIST_FILTER:Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.black_list_filter);
+pub static WALLET_BLACKLIST_PATH: Lazy<String> = Lazy::new(||CONFIG.filter_setting.wallet_blacklist_path.clone());
+pub static TOKEN_BLACKLIST_PATH: Lazy<String> = Lazy::new(||CONFIG.filter_setting.rug_token_blacklist_path.clone());
+
+pub static RUG_DETECT:Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.rug_detect);
+pub static BUNDLE_TX_LIMIT: Lazy<i32> = Lazy::new(||CONFIG.filter_setting.bundle_tx_limit);
+
+pub static VOLUME_FILTER:Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.volume_filter);
+pub static MIN_VOLUME_LIMIT_SOL: Lazy<i32> = Lazy::new(||CONFIG.filter_setting.min_volume_limit_sol);
+
+pub static MARKET_CAP_FILTER:Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.market_cap_filter);
+pub static MIN_MARKET_CAP_LIMIT_SOL: Lazy<i32> = Lazy::new(||CONFIG.filter_setting.min_market_cap_limit_sol);
+
 pub fn show_bot_settings() {
     log!("Public key: {:?}", *SIGNER_PUBKEY);
     log!("Confirm service: {:?}", *CONFIRM_SERVICE);
@@ -73,6 +104,13 @@ pub fn show_bot_settings() {
     log!("Grpc endpoint: {:?}", *GRPC_ENDPOINT);
     log!("Grpc token: {:?}", *GRPC_TOKEN);
     log!("RPC endpoint: {:?}", *RPC_ENDPOINT);
+    log!("Blacklist filter: {:?}", *BLACK_LIST_FILTER);
+    log!("Rug detect: {:?}", *RUG_DETECT);
+    log!("Bundle tx limit: {:?}", *BUNDLE_TX_LIMIT);
+    log!("Volume filter: {:?}", *VOLUME_FILTER);
+    log!("Min volume limit: {:?} SOL", *MIN_VOLUME_LIMIT_SOL);
+    log!("Marketcap filter: {:?}", *MARKET_CAP_FILTER);
+    log!("Min marketcap limit: {:?} SOL", *MIN_MARKET_CAP_LIMIT_SOL);
 
     init_validator();
 

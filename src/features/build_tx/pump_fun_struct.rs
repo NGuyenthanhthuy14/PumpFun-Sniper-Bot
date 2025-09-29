@@ -1,9 +1,9 @@
 use borsh::BorshDeserialize;
+use solana_sdk::system_instruction;
 use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
 };
-use solana_sdk::system_instruction;
 use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
 use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
@@ -65,6 +65,32 @@ impl PumpFunSwapAccounts {
         }
     }
 
+    pub fn from_target_buy(buy_instruction_accounts: BuyInstructionAccounts) -> Self {
+        let associated_user = get_associated_token_address_with_program_id(
+            &SIGNER_PUBKEY,
+            &buy_instruction_accounts.mint,
+            &spl_token::ID,
+        );
+        Self {
+            global: buy_instruction_accounts.global,
+            fee_recipient: buy_instruction_accounts.fee_recipient,
+            mint: buy_instruction_accounts.mint,
+            bonding_curve: buy_instruction_accounts.bonding_curve,
+            associated_bonding_curve: buy_instruction_accounts.associated_bonding_curve,
+            associated_user: associated_user,
+            user: *SIGNER_PUBKEY,
+            system_program: buy_instruction_accounts.system_program,
+            token_program: buy_instruction_accounts.token_program,
+            creator_vault: buy_instruction_accounts.creator_vault,
+            event_authority: buy_instruction_accounts.event_authority,
+            program: buy_instruction_accounts.program,
+            global_volume_accumulator: Some(PUMPFUN_GLOBAL_VOLUME_ACCUMULATOR),
+            user_volume_accumulator: Some(*PUMPFUN_USER_VOLUME_ACCUMULATOR),
+            fee_config: buy_instruction_accounts.fee_config,
+            fee_program: buy_instruction_accounts.fee_program,
+        }
+    }
+
     pub fn get_create_ata_idempotent_ix(&self) -> Instruction {
         let create_token_ata = create_associated_token_account_idempotent(
             &*SIGNER_PUBKEY,
@@ -84,7 +110,6 @@ impl PumpFunSwapAccounts {
             &self.bonding_curve,
             turncated_slippage_calculated_buy_amount,
         );
-        // let wrap_ix = sync_native(&spl_token::ID, &wsol_ata).unwrap();
         transfer_ix
     }
 
@@ -148,8 +173,8 @@ impl PumpFunSwapAccounts {
             AccountMeta::new_readonly(self.token_program, false), // #10 - Token Program
             AccountMeta::new_readonly(self.event_authority, false), // #11 - Event authority
             AccountMeta::new_readonly(self.program, false), // #12 - Pump.fun program
-            AccountMeta::new_readonly(self.fee_config, false),              // #13 - Fee Config
-            AccountMeta::new_readonly(self.fee_program, false),             //#14 - Fee Program
+            AccountMeta::new_readonly(self.fee_config, false), // #13 - Fee Config
+            AccountMeta::new_readonly(self.fee_program, false), //#14 - Fee Program
         ];
 
         Instruction {
