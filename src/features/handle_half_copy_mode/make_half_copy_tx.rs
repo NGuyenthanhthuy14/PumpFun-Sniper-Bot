@@ -358,7 +358,7 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSch
             );
 
             (ix, tag)
-        } else if token_data.tp_state == TPMode::SL && token_data.tp_state != TPMode::SL {
+        } else if token_data.tp_state == TPMode::SL && token_data.tracked_tp_state != TPMode::SL {
             let sell_ix: Instruction = token_data
                 .pump_fun_swap_accounts
                 .get_sell_ix(token_data.token_balance);
