@@ -152,6 +152,7 @@ pub fn update_status_from_sell_event(
             None
         }
     } else {
+        let _ = TOKEN_DB.upsert(sell_event.mint.clone(), token_data.clone());
         Some(token_data.clone())
     }
 }

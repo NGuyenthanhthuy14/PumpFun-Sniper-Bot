@@ -4,9 +4,9 @@ use dashmap::DashMap;
 use solana_sdk::{instruction::Instruction, pubkey::Pubkey};
 use std::time::Instant;
 
-pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
+pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenDatabaseSchema, u64)>) {
     for trade_token_data in trade_token_data_map.iter() {
-        let mut token_data = trade_token_data.value().clone();
+        let (mut token_data, target_trade_amount) = trade_token_data.value().clone();
 
         let instructions: (Vec<Instruction>, String) = if token_data.token_is_purchased
             && token_data.bundle_tx_counter >= *BUNDLE_TX_LIMIT
@@ -34,8 +34,7 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSch
             );
 
             (ix, tag)
-        } else if !token_data.token_buy_is_tracked
-            && token_data.last_event.last_tracked_event == TokenEvent::BuyTokenEvent
+        } else if token_data.token_copy_trade_status == TokenCopyTradeStatus::TargetBought
             && half_copy_buy_filter_check(token_data.clone())
         {
             let buy_tx_remaining_counter = get_buy_tx_remain_counter();
@@ -47,7 +46,13 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSch
                     continue;
                 }
 
-                token_data.token_buy_is_tracked = true;
+                let half_copy_trade_amount = if *HALF_COPY_PCNT_MODE {
+                    target_trade_amount as f64 * (*BUY_AMOUNT_PERCENT as f64 / 100.0)
+                }else{
+                    *BUY_AMOUNT_SOL * 10f64.powi(9)
+                };
+
+                token_data.token_copy_trade_status = TokenCopyTradeStatus::CopyTradeSubmitted;
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
                 let build_tx_start = Instant::now();
@@ -55,10 +60,10 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSch
                 let create_ata_ix = token_data
                     .pump_fun_swap_accounts
                     .get_create_ata_idempotent_ix();
-                let transfer_sol_ix = token_data.pump_fun_swap_accounts.get_sol_ix();
+                let transfer_sol_ix = token_data.pump_fun_swap_accounts.get_half_copy_sol_ix(half_copy_trade_amount);
                 let buy_ix = token_data
                     .pump_fun_swap_accounts
-                    .get_buy_ix(token_data.token_price);
+                    .get_half_copy_buy_ix(half_copy_trade_amount, token_data.token_price);
 
                 ix.push(create_ata_ix);
                 ix.push(transfer_sol_ix);

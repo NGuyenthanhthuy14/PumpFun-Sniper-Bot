@@ -22,7 +22,8 @@ pub struct TokenDatabaseSchema {
     pub tp_selling_plan: TPSellingPlan,
     pub pump_fun_swap_accounts: PumpFunSwapAccounts,
     pub last_event: LastEvent,
-    pub token_buy_is_tracked: bool,
+    pub token_sniper_status: TokenSniperStatus,
+    pub token_copy_trade_status: TokenCopyTradeStatus,
     pub bundle_tx_counter: i32,
 }
 
@@ -80,7 +81,8 @@ impl TokenDatabaseSchema {
                 tx_hash: tx_id,
                 last_tracked_event: TokenEvent::MintTokenEvent,
             },
-            token_buy_is_tracked: false,
+            token_sniper_status: TokenSniperStatus::TokenMinted,
+            token_copy_trade_status: TokenCopyTradeStatus::None,
             bundle_tx_counter: 0,
         };
         let _ = TOKEN_DB.upsert(mint_event.mint.clone(), token_data.clone());
@@ -130,7 +132,8 @@ impl TokenDatabaseSchema {
                 tx_hash: tx_id,
                 last_tracked_event: TokenEvent::BuyTokenEvent,
             },
-            token_buy_is_tracked: false,
+            token_sniper_status: TokenSniperStatus::None,
+            token_copy_trade_status: TokenCopyTradeStatus::TargetBought,
             bundle_tx_counter: 0,
         };
         let _ = TOKEN_DB.upsert(buy_event.mint.clone(), token_data.clone());
@@ -415,6 +418,21 @@ pub enum TPMode {
     TP4,
     TP5,
     SL,
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
+pub enum TokenSniperStatus {
+    None,
+    TokenMinted,
+    SniperTradeSubmitted,
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
+pub enum TokenCopyTradeStatus {
+    None,
+    TargetBought,
+    TargetSold,
+    CopyTradeSubmitted
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]

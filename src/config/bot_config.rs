@@ -11,8 +11,8 @@ use solana_sdk::{
 };
 use std::sync::atomic::{AtomicI32, Ordering};
 
-use console::Emoji;
 use colored::*;
+use console::Emoji;
 
 use crate::CONFIG;
 
@@ -72,6 +72,8 @@ pub static BUY_AMOUNT_SOL: Lazy<f64> = Lazy::new(|| CONFIG.buy_setting.buy_amoun
 
 //Slippage
 pub static SLIPPAGE: Lazy<u32> = Lazy::new(|| CONFIG.slippage_config.slippage);
+pub static HALF_COPY_PCNT_MODE: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.half_copy_pcnt_mode);
+pub static BUY_AMOUNT_PERCENT: Lazy<u32> = Lazy::new(|| CONFIG.buy_setting.buy_amount_percent);
 
 //Fee
 pub static PRIORITY_FEE: Lazy<(u64, u64, f64)> = Lazy::new(|| {
