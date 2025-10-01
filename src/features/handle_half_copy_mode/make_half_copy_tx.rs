@@ -43,6 +43,10 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSch
             if !*DEV_MODE || buy_tx_remaining_counter != 0 {
                 decrese_buy_tx_remain_counter();
 
+                if !max_token_holder_check(token_data.clone()) {
+                    continue;
+                }
+
                 token_data.token_buy_is_tracked = true;
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 

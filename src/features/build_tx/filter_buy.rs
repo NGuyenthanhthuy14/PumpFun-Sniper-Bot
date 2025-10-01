@@ -47,6 +47,7 @@ pub fn sniper_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
 
 pub fn half_copy_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
     let mut blacklist_valid = true;
+    let mut market_cap_valid = true;
 
     if *BLACK_LIST_FILTER {
         if WALLET_BLACKLIST.contains(&token_data.token_creator.to_string()) {
@@ -70,7 +71,13 @@ pub fn half_copy_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
         }
     }
 
-    blacklist_valid
+    if *MARKET_CAP_FILTER {
+        if token_data.token_marketcap < *MIN_MARKET_CAP_LIMIT_SOL as f64 {
+            market_cap_valid = false;
+        }
+    }
+
+    blacklist_valid && market_cap_valid
 }
 
 pub fn max_token_holder_check(token_data: TokenDatabaseSchema) -> bool {
