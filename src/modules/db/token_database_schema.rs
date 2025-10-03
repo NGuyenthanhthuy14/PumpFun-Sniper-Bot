@@ -26,6 +26,7 @@ pub struct TokenDatabaseSchema {
     pub token_copy_trade_status: TokenCopyTradeStatus,
     pub token_sell_status: TokenSellStatus,
     pub bundle_tx_counter: i32,
+    pub token_is_blacklisted: TokenBlacklistInfo,
 }
 
 impl TokenDatabaseSchema {
@@ -87,6 +88,7 @@ impl TokenDatabaseSchema {
             token_copy_trade_status: TokenCopyTradeStatus::None,
             token_sell_status: TokenSellStatus::None,
             bundle_tx_counter: 0,
+            token_is_blacklisted: TokenBlacklistInfo::None
         };
         let _ = TOKEN_DB.upsert(mint_event.mint.clone(), token_data.clone());
         token_data
@@ -140,6 +142,7 @@ impl TokenDatabaseSchema {
             token_copy_trade_status: TokenCopyTradeStatus::TargetBought,
             token_sell_status: TokenSellStatus::None,
             bundle_tx_counter: 0,
+            token_is_blacklisted: TokenBlacklistInfo::None
         };
         let _ = TOKEN_DB.upsert(buy_event.mint.clone(), token_data.clone());
         token_data
@@ -438,6 +441,14 @@ pub enum TokenCopyTradeStatus {
     TargetBought,
     TargetSold,
     CopyTradeSubmitted
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
+
+pub enum TokenBlacklistInfo{
+    None,
+    NotBlacklistedToken,
+    BlacklistedToken
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]

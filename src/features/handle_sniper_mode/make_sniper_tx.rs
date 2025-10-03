@@ -38,6 +38,7 @@ pub fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema
             && sniper_buy_filter_check(token_data.clone())
         {
             let buy_tx_remaining_counter = get_buy_tx_remain_counter();
+            println!("Buy remain counter: {}", buy_tx_remaining_counter);
 
             if !*DEV_MODE || buy_tx_remaining_counter != 0 {
                 decrese_buy_tx_remain_counter();

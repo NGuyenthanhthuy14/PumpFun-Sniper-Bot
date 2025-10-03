@@ -34,31 +34,39 @@ pub fn half_copy_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
     market_cap_valid
 }
 
-pub fn black_list_filter(token_data: TokenDatabaseSchema) -> bool {
+pub fn black_list_filter(mut token_data: TokenDatabaseSchema) -> bool {
     let mut blacklist_valid = true;
     if *BLACK_LIST_FILTER {
-        if WALLET_BLACKLIST.contains(&token_data.token_creator.to_string()) {
-            warning!(
-                "Token creator is blacklisted wallet: {}",
-                &token_data
-                    .pump_fun_swap_accounts
-                    .creator_vault
-                    .to_string()
-                    .red()
-            );
-            blacklist_valid = false;
-        }
+        if token_data.token_is_blacklisted == TokenBlacklistInfo::None {
+            if WALLET_BLACKLIST.contains(&token_data.token_creator.to_string()) {
+                warning!(
+                    "Token creator is blacklisted wallet: {}",
+                    &token_data
+                        .pump_fun_swap_accounts
+                        .creator_vault
+                        .to_string()
+                        .red()
+                );
+                blacklist_valid = false;
+                token_data.token_is_blacklisted = TokenBlacklistInfo::BlacklistedToken;
+            }
 
-        if TOKEN_BLACKLIST.contains(&token_data.token_mint.to_string()) {
-            warning!(
-                "Token is blacklisted token: {}",
-                &token_data.token_mint.to_string().red()
-            );
-            blacklist_valid = false;
-        }
+            if TOKEN_BLACKLIST.contains(&token_data.token_mint.to_string()) {
+                warning!(
+                    "Token is blacklisted token: {}",
+                    &token_data.token_mint.to_string().red()
+                );
+                blacklist_valid = false;
+                token_data.token_is_blacklisted = TokenBlacklistInfo::BlacklistedToken;
+            }
 
-        if !blacklist_valid {
-            let _ = TOKEN_DB.delete(token_data.token_mint);
+            if !blacklist_valid {
+                let _ = TOKEN_DB.delete(token_data.token_mint);
+            }else{
+                token_data.token_is_blacklisted = TokenBlacklistInfo::NotBlacklistedToken;
+                let _ = TOKEN_DB.upsert(token_data.token_mint, token_data);
+            }
+            println!("Blacklist info: {}", blacklist_valid);
         }
     }
     blacklist_valid
@@ -104,6 +112,13 @@ pub fn max_token_holder_check(token_data: TokenDatabaseSchema) -> bool {
                 }
             }
         }
+    }
+    if !max_token_holder_valid {
+        let _ = TOKEN_DB.delete(token_data.token_mint);
+    }
+
+    if max_token_holder_valid {
+        println!("Max token holder limit passed");
     }
     max_token_holder_valid
 }

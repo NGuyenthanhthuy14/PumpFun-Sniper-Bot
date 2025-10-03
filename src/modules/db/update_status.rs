@@ -9,7 +9,7 @@ pub fn update_status_from_buy_event(
     let updated_token_price = (buy_event.virtual_sol_reserves as f64 / 10f64.powi(9))
         / (buy_event.virtual_token_reserves as f64 / 10f64.powi(6));
 
-    token_data.token_peak_price = token_data.token_price.max(updated_token_price);
+    token_data.token_peak_price = token_data.token_peak_price.max(updated_token_price);
     token_data.token_price = updated_token_price;
     token_data.token_marketcap = updated_token_price * token_data.token_total_supply as f64;
 
@@ -89,7 +89,7 @@ pub fn update_status_from_sell_event(
     let updated_token_price = (sell_event.virtual_sol_reserves as f64 / 10f64.powi(9))
         / (sell_event.virtual_token_reserves as f64 / 10f64.powi(6));
 
-    token_data.token_peak_price = token_data.token_price.max(updated_token_price);
+    token_data.token_peak_price = token_data.token_peak_price.max(updated_token_price);
     token_data.token_price = updated_token_price;
     token_data.token_marketcap = updated_token_price * token_data.token_total_supply as f64;
 
