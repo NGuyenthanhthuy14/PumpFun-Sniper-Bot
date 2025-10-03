@@ -1,6 +1,6 @@
+use colored::*;
 use pumpfun_sniper::*;
 use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
-use colored::*;
 
 #[tokio::main]
 pub async fn main() {
@@ -15,6 +15,14 @@ pub async fn main() {
         async {
             loop {
                 recent_blockhash_handler().await;
+            }
+        }
+    });
+
+    tokio::spawn({
+        async {
+            loop {
+                check_no_activity_tokens().await;
             }
         }
     });
@@ -37,5 +45,5 @@ pub async fn main() {
         .await
         .unwrap();
 
-      let _ = process_sniper_mode(subscribe_rx).await;
+    let _ = process_sniper_mode(subscribe_rx).await;
 }

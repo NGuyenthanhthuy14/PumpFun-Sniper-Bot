@@ -13,7 +13,7 @@ pub struct WalletCredentialConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct TargetConfig {
-    pub target_wallets: Vec<String>
+    pub target_wallets: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -92,5 +92,10 @@ pub struct FilterSetting {
     pub market_cap_filter: bool,
     pub min_market_cap_limit_sol: i32,
     pub max_token_holder_filter: bool,
-    pub max_token_holder_limit: u64 
+    pub max_token_holder_limit: u64,
+}
+#[derive(Debug, Deserialize)]
+pub struct MonitorConfig {
+    pub stop_no_activity_token_monitoring: bool,
+    pub no_activity_time: i64,
 }

@@ -9,11 +9,11 @@ pub struct TokenDatabaseSchema {
     pub token_total_supply: u64,
     pub token_price: f64,
     pub token_peak_price: f64,
+    pub token_is_purchased: bool,
     pub token_balance: u64,
     pub token_buying_point_price: f64,
     pub token_marketcap: f64,
     pub token_volume: Option<f64>,
-    pub token_is_purchased: bool,
     pub tp_state: TPMode,
     pub tracked_tp_state: TPMode,
     pub ts_state: TSMode,
@@ -24,6 +24,7 @@ pub struct TokenDatabaseSchema {
     pub last_event: LastEvent,
     pub token_sniper_status: TokenSniperStatus,
     pub token_copy_trade_status: TokenCopyTradeStatus,
+    pub token_sell_status: TokenSellStatus,
     pub bundle_tx_counter: i32,
 }
 
@@ -34,7 +35,7 @@ impl TokenDatabaseSchema {
         tx_id: String,
     ) -> Self {
         info!(
-            "[{}]\t*Mint: {}\t*Tx: {:?}",
+            "[{}]\t\t*Mint: {}\n\t*Tx: {:?}",
             "Mint".blue(),
             mint_event.mint.to_string(),
             solscan!(tx_id)
@@ -51,10 +52,10 @@ impl TokenDatabaseSchema {
             token_balance: 0,
             token_price: initial_token_price,
             token_peak_price: initial_token_price,
+            token_is_purchased: false,
             token_marketcap: initial_token_marketcap,
             token_volume: Some(0.0),
             token_buying_point_price: 0.0,
-            token_is_purchased: false,
             tp_state: TPMode::None,
             tracked_tp_state: TPMode::None,
             ts_state: TSMode::None,
@@ -80,9 +81,11 @@ impl TokenDatabaseSchema {
             last_event: LastEvent {
                 tx_hash: tx_id,
                 last_tracked_event: TokenEvent::MintTokenEvent,
+                last_activity_timestamp: mint_event.timestamp
             },
             token_sniper_status: TokenSniperStatus::TokenMinted,
             token_copy_trade_status: TokenCopyTradeStatus::None,
+            token_sell_status: TokenSellStatus::None,
             bundle_tx_counter: 0,
         };
         let _ = TOKEN_DB.upsert(mint_event.mint.clone(), token_data.clone());
@@ -104,11 +107,11 @@ impl TokenDatabaseSchema {
             token_total_supply: PUMP_FUN_TOKEN_TOTAL_SUPPLY,
             token_price: token_price,
             token_peak_price: token_price,
+            token_is_purchased: false,
             token_balance: 0,
             token_buying_point_price: 0.0,
             token_marketcap: token_marketcap,
             token_volume: None,
-            token_is_purchased: false,
             tp_state: TPMode::None,
             tracked_tp_state: TPMode::None,
             ts_state: TSMode::None,
@@ -131,9 +134,11 @@ impl TokenDatabaseSchema {
             last_event: LastEvent {
                 tx_hash: tx_id,
                 last_tracked_event: TokenEvent::BuyTokenEvent,
+                last_activity_timestamp: buy_event.timestamp
             },
             token_sniper_status: TokenSniperStatus::None,
             token_copy_trade_status: TokenCopyTradeStatus::TargetBought,
+            token_sell_status: TokenSellStatus::None,
             bundle_tx_counter: 0,
         };
         let _ = TOKEN_DB.upsert(buy_event.mint.clone(), token_data.clone());
@@ -436,6 +441,12 @@ pub enum TokenCopyTradeStatus {
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
+pub enum TokenSellStatus {
+    None,
+    SellTradeSubmitted,
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd, Copy)]
 pub enum TokenEvent {
     MintTokenEvent,
     BuyTokenEvent,
@@ -464,6 +475,7 @@ pub struct TPSellingPlan {
 pub struct LastEvent {
     pub tx_hash: String,
     pub last_tracked_event: TokenEvent,
+    pub last_activity_timestamp: i64
 }
 
 #[derive(Debug, Clone)]

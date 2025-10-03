@@ -41,9 +41,9 @@ macro_rules! alert {
         let micros = format!("{:03}", now.timestamp_subsec_micros() % 1000);
         let timestamp = format!("{}.{} {}", formatted_time, millis, micros);
         let tab_prefix = std::iter::repeat("\t").take($crate::ALERT_LEVEL as usize).collect::<String>();
-        let level_display = $crate::ALERT_LEVEL_RAW.magenta();
+        let level_display = $crate::ALERT_LEVEL_RAW;
         let msg = format!($($arg)*);
-        let _log_msg = format!("{} {} {}{}", timestamp.cyan(), level_display, tab_prefix, msg);
+        let _log_msg = format!("{} {} {}{}", timestamp, level_display, tab_prefix, msg);
         let file_msg = format!("{} {} {}{}", timestamp, $crate::ALERT_LEVEL_STR, tab_prefix, msg);
         println!("{}", file_msg);
         $crate::log_to_file(&file_msg);

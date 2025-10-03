@@ -1,12 +1,14 @@
 use crate::*;
 use dashmap::DashMap;
+use once_cell::sync::Lazy;
 use solana_sdk::pubkey::Pubkey;
 use std::sync::Arc;
-use once_cell::sync::Lazy;
 
 type BoxError = Box<dyn std::error::Error + Send + Sync + 'static>;
 
-pub static TOKEN_DB: Lazy<TokenDatabase> = Lazy::new(||TokenDatabase { map: Arc::new(DashMap::new()) });
+pub static TOKEN_DB: Lazy<TokenDatabase> = Lazy::new(|| TokenDatabase {
+    map: Arc::new(DashMap::new()),
+});
 
 #[derive(Clone, Debug)]
 pub struct TokenDatabase {

@@ -7,8 +7,6 @@ use std::time::Instant;
 pub fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
     for trade_token_data in trade_token_data_map.iter() {
         let mut token_data = trade_token_data.value().clone();
-        // println!("{} {}", "Token buy is tracked".yellow(), token_data.token_buy_is_tracked);
-
         let instructions: (Vec<Instruction>, String) = if token_data.token_is_purchased
             && token_data.bundle_tx_counter >= *BUNDLE_TX_LIMIT
         {
@@ -20,14 +18,14 @@ pub fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema
             ix.push(sell_ix);
 
             let tag = format!(
-                "[ALL SELL]\t*RUG DETECTED\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[All Sell]\t*RUG DETECTED\t*Mint: {}\t*Price: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
                 token_data.token_price,
                 token_data.token_balance
             );
 
             warning!(
-                "[ALL SELL]\t*{}\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[All Sell]\t*{}\t*Mint: {}\t*Price: {}\t*Amount: {}",
                 "RUG DETECTED".yellow(),
                 token_data.pump_fun_swap_accounts.mint,
                 token_data.token_price,
@@ -35,7 +33,10 @@ pub fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema
             );
 
             (ix, tag)
-        } else if token_data.token_sniper_status == TokenSniperStatus::TokenMinted && sniper_buy_filter_check(token_data.clone()) {
+        } else if black_list_filter(token_data.clone())
+            && token_data.token_sniper_status == TokenSniperStatus::TokenMinted
+            && sniper_buy_filter_check(token_data.clone())
+        {
             let buy_tx_remaining_counter = get_buy_tx_remain_counter();
 
             if !*DEV_MODE || buy_tx_remaining_counter != 0 {

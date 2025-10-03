@@ -21,7 +21,8 @@ pub struct Config {
   pub sell_setting: SellSetting,
   pub slippage_config: SlippageConfig,
   pub fee_config: FeeConfig,
-  pub filter_setting: FilterSetting
+  pub filter_setting: FilterSetting,
+  pub monitor_setting: MonitorConfig,
 }
 
 pub static CONFIG: Lazy<Config> = Lazy::new(||{

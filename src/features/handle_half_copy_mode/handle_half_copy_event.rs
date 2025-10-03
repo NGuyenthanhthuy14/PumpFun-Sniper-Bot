@@ -20,7 +20,7 @@ pub async fn handle_half_copy_events(
         sell_events,
         _mint_ixs_accounts,
         buy_ixs_accounts,
-        _sell_ixs_accounts,
+        sell_ixs_accounts,
     ) = trade_data;
 
     let return_data: DashMap<Pubkey, (TokenDatabaseSchema, u64)> = DashMap::new();
@@ -38,7 +38,10 @@ pub async fn handle_half_copy_events(
                     buy_event.clone(),
                     tx_id.to_string(),
                 );
-                return_data.insert(updated_token_data.token_mint, (updated_token_data, buy_event.sol_amount));
+                return_data.insert(
+                    updated_token_data.token_mint,
+                    (updated_token_data, buy_event.sol_amount),
+                );
             } else {
                 let token_data: TokenDatabaseSchema = TokenDatabaseSchema::new_from_target_buy(
                     buy_event.clone(),
@@ -54,19 +57,37 @@ pub async fn handle_half_copy_events(
                     buy_event.clone(),
                     tx_id.to_string(),
                 );
-                return_data.insert(updated_token_data.token_mint, (updated_token_data, buy_event.sol_amount));
+                return_data.insert(
+                    updated_token_data.token_mint,
+                    (updated_token_data, buy_event.sol_amount),
+                );
             }
         }
     }
 
-    for (_i, sell_event) in sell_events.iter().enumerate() {
+    for (i, sell_event) in sell_events.iter().enumerate() {
         if let Some(token_data) = TOKEN_DB.get(sell_event.mint).unwrap() {
+            if TARGET_WALLETS.contains(&sell_event.user.to_string()) && !half_copy_buy_filter_check(token_data.clone()) {
+                let target_token_account_balance = RPC_CLIENT
+                    .get_token_account_balance(&sell_ixs_accounts[i].associated_user)
+                    .unwrap();
+                if let Some(amount) = target_token_account_balance.ui_amount {
+                    if amount <= 0.0 {
+                        let _ = TOKEN_DB.delete(sell_event.mint);
+                        continue;
+                    }
+                };
+            }
+            
             if let Some(updated_token_data) = update_status_from_sell_event(
                 token_data.clone(),
                 sell_event.clone(),
                 tx_id.to_string(),
             ) {
-                return_data.insert(updated_token_data.token_mint, (updated_token_data, sell_event.sol_amount));
+                return_data.insert(
+                    updated_token_data.token_mint,
+                    (updated_token_data, sell_event.sol_amount),
+                );
             }
         }
     }

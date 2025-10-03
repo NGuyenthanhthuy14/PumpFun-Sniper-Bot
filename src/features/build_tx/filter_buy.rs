@@ -2,31 +2,8 @@ use crate::*;
 use colored::*;
 
 pub fn sniper_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
-    let mut blacklist_valid = true;
     let mut market_cap_valid = true;
     let mut volume_valid = true;
-
-    if *BLACK_LIST_FILTER {
-        if WALLET_BLACKLIST.contains(&token_data.token_creator.to_string()) {
-            warning!(
-                "Token creator is blacklisted wallet: {}",
-                &token_data
-                    .pump_fun_swap_accounts
-                    .creator_vault
-                    .to_string()
-                    .red()
-            );
-            blacklist_valid = false;
-        }
-
-        if TOKEN_BLACKLIST.contains(&token_data.token_mint.to_string()) {
-            warning!(
-                "Token is blacklisted token: {}",
-                &token_data.token_mint.to_string().red()
-            );
-            blacklist_valid = false
-        }
-    }
 
     if *MARKET_CAP_FILTER {
         if token_data.token_marketcap < *MIN_MARKET_CAP_LIMIT_SOL as f64 {
@@ -42,13 +19,23 @@ pub fn sniper_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
         }
     }
 
-    blacklist_valid && market_cap_valid && volume_valid
+    market_cap_valid && volume_valid
 }
 
 pub fn half_copy_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
-    let mut blacklist_valid = true;
     let mut market_cap_valid = true;
 
+    if *MARKET_CAP_FILTER {
+        if token_data.token_marketcap < *MIN_MARKET_CAP_LIMIT_SOL as f64 {
+            market_cap_valid = false;
+        }
+    }
+
+    market_cap_valid
+}
+
+pub fn black_list_filter(token_data: TokenDatabaseSchema) -> bool {
+    let mut blacklist_valid = true;
     if *BLACK_LIST_FILTER {
         if WALLET_BLACKLIST.contains(&token_data.token_creator.to_string()) {
             warning!(
@@ -67,17 +54,14 @@ pub fn half_copy_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
                 "Token is blacklisted token: {}",
                 &token_data.token_mint.to_string().red()
             );
-            blacklist_valid = false
+            blacklist_valid = false;
+        }
+
+        if !blacklist_valid {
+            let _ = TOKEN_DB.delete(token_data.token_mint);
         }
     }
-
-    if *MARKET_CAP_FILTER {
-        if token_data.token_marketcap < *MIN_MARKET_CAP_LIMIT_SOL as f64 {
-            market_cap_valid = false;
-        }
-    }
-
-    blacklist_valid && market_cap_valid
+    blacklist_valid
 }
 
 pub fn max_token_holder_check(token_data: TokenDatabaseSchema) -> bool {

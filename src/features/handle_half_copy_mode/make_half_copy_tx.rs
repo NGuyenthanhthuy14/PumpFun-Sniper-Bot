@@ -34,7 +34,8 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenDatabaseSc
             );
 
             (ix, tag)
-        } else if token_data.token_copy_trade_status == TokenCopyTradeStatus::TargetBought
+        } else if black_list_filter(token_data.clone())
+            && token_data.token_copy_trade_status == TokenCopyTradeStatus::TargetBought
             && half_copy_buy_filter_check(token_data.clone())
         {
             let buy_tx_remaining_counter = get_buy_tx_remain_counter();
@@ -48,7 +49,7 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenDatabaseSc
 
                 let half_copy_trade_amount = if *HALF_COPY_PCNT_MODE {
                     target_trade_amount as f64 * (*BUY_AMOUNT_PERCENT as f64 / 100.0)
-                }else{
+                } else {
                     *BUY_AMOUNT_SOL * 10f64.powi(9)
                 };
 
@@ -60,7 +61,9 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenDatabaseSc
                 let create_ata_ix = token_data
                     .pump_fun_swap_accounts
                     .get_create_ata_idempotent_ix();
-                let transfer_sol_ix = token_data.pump_fun_swap_accounts.get_half_copy_sol_ix(half_copy_trade_amount);
+                let transfer_sol_ix = token_data
+                    .pump_fun_swap_accounts
+                    .get_half_copy_sol_ix(half_copy_trade_amount);
                 let buy_ix = token_data
                     .pump_fun_swap_accounts
                     .get_half_copy_buy_ix(half_copy_trade_amount, token_data.token_price);

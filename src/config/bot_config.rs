@@ -113,6 +113,11 @@ pub static MAX_TOKEN_HOLDER_FILTER: Lazy<bool> =
 pub static MAX_TOKEN_HOLDER_LIMIT: Lazy<u64> =
     Lazy::new(|| CONFIG.filter_setting.max_token_holder_limit);
 
+//Stop monitor
+pub static STOP_NO_ACTIVITY_TOKEN_MONITORING: Lazy<bool> =
+    Lazy::new(|| CONFIG.monitor_setting.stop_no_activity_token_monitoring);
+pub static NO_ACTIVITY_TIME: Lazy<i64> = Lazy::new(|| CONFIG.monitor_setting.no_activity_time);
+
 pub fn show_bot_settings() {
     log!("Public key: {:?}", *SIGNER_PUBKEY);
     log!("Confirm service: {:?}", *CONFIRM_SERVICE);
@@ -128,6 +133,8 @@ pub fn show_bot_settings() {
     log!("Min volume limit: {:?} SOL", *MIN_VOLUME_LIMIT_SOL);
     log!("Marketcap filter: {:?}", *MARKET_CAP_FILTER);
     log!("Min marketcap limit: {:?} SOL", *MIN_MARKET_CAP_LIMIT_SOL);
+    log!("Stop no activity token monitoring: {:?}", *STOP_NO_ACTIVITY_TOKEN_MONITORING);
+    log!("No activity time: {:?} seconds", *NO_ACTIVITY_TIME);
 
     init_validator();
 

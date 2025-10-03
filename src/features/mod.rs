@@ -4,6 +4,7 @@ pub mod handle_half_copy_mode;
 pub mod parse;
 pub mod build_tx;
 pub mod confirm_tx;
+pub mod stop_monitoring;
 
 pub use get_slot::*;
 pub use handle_sniper_mode::*;
@@ -11,3 +12,4 @@ pub use parse::*;
 pub use build_tx::*;
 pub use confirm_tx::*;
 pub use handle_half_copy_mode::*;
+pub use stop_monitoring::*;
