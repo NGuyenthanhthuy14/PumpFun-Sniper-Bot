@@ -19,6 +19,14 @@ pub async fn main() {
         }
     });
 
+    tokio::spawn({
+        async {
+            loop {
+                check_no_activity_tokens().await;
+            }
+        }
+    });
+
     let mut grpc_client = setup_grpc_client(GRPC_ENDPOINT.to_string(), GRPC_TOKEN.to_string())
         .await
         .unwrap();
