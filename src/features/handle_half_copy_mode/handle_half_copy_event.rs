@@ -78,7 +78,7 @@ pub async fn handle_half_copy_events(
                         if let Some(amount) = balance.ui_amount {
                             if amount <= 0.0 {
                                 alert!(
-                                    "[Sell]\t*Stop monitoring\t*Mint: {}\t*Target {} sold token before our filter",
+                                    "*Stop monitoring\t*Mint: {}\t*Target {} sold token before our filter",
                                     sell_event.mint,
                                     sell_event.user
                                 );
@@ -89,7 +89,7 @@ pub async fn handle_half_copy_events(
                     }
                     Err(_) => {
                         alert!(
-                            "[Sell]\t*Stop monitoring\t*Mint: {}\t*Target {} sold token before our filter",
+                            "*Stop monitoring\t*Mint: {}\t*Target {} sold token before our filter",
                             sell_event.mint,
                             sell_event.user
                         );
