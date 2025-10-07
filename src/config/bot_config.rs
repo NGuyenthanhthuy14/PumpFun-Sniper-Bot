@@ -68,12 +68,13 @@ pub static ZERO_SLOT_API_KEY: Lazy<String> =
 
 //Buy setting
 pub static BUY_AMOUNT_SOL: Lazy<f64> = Lazy::new(|| CONFIG.buy_setting.buy_amount_sol);
+pub static HALF_COPY_PCNT_MODE: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.half_copy_pcnt_mode);
+pub static BUY_AMOUNT_PERCENT: Lazy<u32> = Lazy::new(|| CONFIG.buy_setting.buy_amount_percent);
+pub static ONE_TIME_COPY: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.one_time_copy);
 
 //Slippage
 pub static SLIPPAGE: Lazy<f64> =
     Lazy::new(|| 1.0 + CONFIG.slippage_config.slippage_percent as f64 / 100.0);
-pub static HALF_COPY_PCNT_MODE: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.half_copy_pcnt_mode);
-pub static BUY_AMOUNT_PERCENT: Lazy<u32> = Lazy::new(|| CONFIG.buy_setting.buy_amount_percent);
 
 //Fee
 pub static PRIORITY_FEE: Lazy<(u64, u64, f64)> = Lazy::new(|| {

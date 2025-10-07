@@ -4,9 +4,9 @@ use dashmap::DashMap;
 use solana_sdk::{instruction::Instruction, pubkey::Pubkey};
 use std::time::Instant;
 
-pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenDatabaseSchema, u64)>) {
+pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
     for trade_token_data in trade_token_data_map.iter() {
-        let (mut token_data, target_trade_amount) = trade_token_data.value().clone();
+        let mut token_data = trade_token_data.value().clone();
 
         let instructions: (Vec<Instruction>, String) = if token_data.token_is_purchased
             && token_data.bundle_tx_counter >= *BUNDLE_TX_LIMIT
@@ -47,10 +47,19 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenData
                     continue;
                 }
 
-                let half_copy_trade_amount = if *HALF_COPY_PCNT_MODE {
-                    target_trade_amount as f64 * (*BUY_AMOUNT_PERCENT as f64 / 100.0)
+                let half_copy_trade_amount;
+                if *HALF_COPY_PCNT_MODE {
+                    let target_amount = match token_data.target_buy_amount {
+                        Some(amount) => amount,
+                        None => {
+                            println!("Error fetching target buy amount, skipping..");
+                            continue;
+                        }
+                    };
+                    half_copy_trade_amount =
+                        target_amount as f64 * *BUY_AMOUNT_PERCENT as f64 / 100.0;
                 } else {
-                    *BUY_AMOUNT_SOL * 10f64.powi(9)
+                    half_copy_trade_amount = *BUY_AMOUNT_SOL * 10f64.powi(9)
                 };
 
                 token_data.token_copy_trade_status = TokenCopyTradeStatus::CopyTradeSubmitted;
@@ -79,13 +88,17 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenData
                 );
 
                 let tag = format!(
-                    "[Buy]\t*Mint: {}\t*Price: {}\t*Amount: {} SOL",
-                    token_data.pump_fun_swap_accounts.mint, token_data.token_price, *BUY_AMOUNT_SOL
+                    "[Buy]\t*Mint: {}\t*Price: {}\t*Amount: {:.5} SOL",
+                    token_data.pump_fun_swap_accounts.mint,
+                    token_data.token_price,
+                    half_copy_trade_amount as f64 / 10f64.powi(9)
                 );
 
                 info!(
                     "[Buy]\t*Mint: {}\t*Price: {}\t*Amount: {} SOL",
-                    token_data.pump_fun_swap_accounts.mint, token_data.token_price, *BUY_AMOUNT_SOL
+                    token_data.pump_fun_swap_accounts.mint,
+                    token_data.token_price,
+                    half_copy_trade_amount as f64 / 10f64.powi(9)
                 );
                 (ix, tag)
             } else {

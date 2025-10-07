@@ -13,7 +13,7 @@ pub async fn handle_half_copy_events(
         Vec<SellInstructionAccounts>,
     ),
     tx_id: String,
-) -> DashMap<Pubkey, (TokenDatabaseSchema, u64)> {
+) -> DashMap<Pubkey, TokenDatabaseSchema> {
     let (
         _mint_events,
         buy_events,
@@ -23,7 +23,7 @@ pub async fn handle_half_copy_events(
         sell_ixs_accounts,
     ) = trade_data;
 
-    let return_data: DashMap<Pubkey, (TokenDatabaseSchema, u64)> = DashMap::new();
+    let return_data: DashMap<Pubkey, TokenDatabaseSchema> = DashMap::new();
     for (i, buy_event) in buy_events.iter().enumerate() {
         if TARGET_WALLETS.contains(&buy_event.user.to_string()) {
             info!(
@@ -33,22 +33,30 @@ pub async fn handle_half_copy_events(
                 solscan!(tx_id.to_string().purple())
             );
             if let Some(token_data) = TOKEN_DB.get(buy_event.mint).unwrap() {
-                let updated_token_data = update_status_from_buy_event(
-                    token_data.clone(),
-                    buy_event.clone(),
-                    tx_id.to_string(),
-                );
-                return_data.insert(
-                    updated_token_data.token_mint,
-                    (updated_token_data, buy_event.sol_amount),
-                );
+                if *ONE_TIME_COPY {
+                    let updated_token_data = update_status_from_buy_event(
+                        token_data.clone(),
+                        buy_event.clone(),
+                        tx_id.to_string(),
+                    );
+                    return_data.insert(updated_token_data.token_mint, updated_token_data);
+                } else {
+                    let mut updated_token_data = update_status_from_buy_event(
+                        token_data.clone(),
+                        buy_event.clone(),
+                        tx_id.to_string(),
+                    );
+                    updated_token_data.token_copy_trade_status = TokenCopyTradeStatus::TargetBought;
+                    let _ = TOKEN_DB.upsert(buy_event.mint.clone(), updated_token_data.clone());
+                    return_data.insert(buy_event.mint, updated_token_data);
+                }
             } else {
                 let token_data: TokenDatabaseSchema = TokenDatabaseSchema::new_from_target_buy(
                     buy_event.clone(),
                     buy_ixs_accounts[i].clone(),
                     tx_id.to_string(),
                 );
-                return_data.insert(token_data.token_mint, (token_data, buy_event.sol_amount));
+                return_data.insert(token_data.token_mint, token_data);
             }
         } else {
             if let Some(token_data) = TOKEN_DB.get(buy_event.mint).unwrap() {
@@ -57,10 +65,7 @@ pub async fn handle_half_copy_events(
                     buy_event.clone(),
                     tx_id.to_string(),
                 );
-                return_data.insert(
-                    updated_token_data.token_mint,
-                    (updated_token_data, buy_event.sol_amount),
-                );
+                return_data.insert(updated_token_data.token_mint, updated_token_data);
             }
         }
     }
@@ -104,10 +109,7 @@ pub async fn handle_half_copy_events(
                 sell_event.clone(),
                 tx_id.to_string(),
             ) {
-                return_data.insert(
-                    updated_token_data.token_mint,
-                    (updated_token_data, sell_event.sol_amount),
-                );
+                return_data.insert(updated_token_data.token_mint, updated_token_data);
             }
         }
     }

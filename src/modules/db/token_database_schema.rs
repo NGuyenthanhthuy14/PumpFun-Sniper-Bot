@@ -24,6 +24,7 @@ pub struct TokenDatabaseSchema {
     pub last_event: LastEvent,
     pub token_sniper_status: TokenSniperStatus,
     pub token_copy_trade_status: TokenCopyTradeStatus,
+    pub target_buy_amount: Option<u64>,
     pub token_sell_status: TokenSellStatus,
     pub bundle_tx_counter: i32,
     pub token_is_blacklisted: TokenBlacklistInfo,
@@ -85,6 +86,7 @@ impl TokenDatabaseSchema {
             },
             token_sniper_status: TokenSniperStatus::TokenMinted,
             token_copy_trade_status: TokenCopyTradeStatus::None,
+            target_buy_amount: None,
             token_sell_status: TokenSellStatus::None,
             bundle_tx_counter: 0,
             token_is_blacklisted: TokenBlacklistInfo::None
@@ -101,6 +103,7 @@ impl TokenDatabaseSchema {
         let token_price = (buy_event.virtual_sol_reserves as f64 / 10f64.powi(9))
             / (buy_event.virtual_token_reserves as f64 / 10f64.powi(6));
         let token_marketcap = token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
+        let target_amount: u64 = buy_event.sol_amount;
 
         let token_data = Self {
             token_mint: buy_event.mint,
@@ -139,6 +142,7 @@ impl TokenDatabaseSchema {
             },
             token_sniper_status: TokenSniperStatus::None,
             token_copy_trade_status: TokenCopyTradeStatus::TargetBought,
+            target_buy_amount: Some(target_amount),
             token_sell_status: TokenSellStatus::None,
             bundle_tx_counter: 0,
             token_is_blacklisted: TokenBlacklistInfo::None
