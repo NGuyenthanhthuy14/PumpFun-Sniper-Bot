@@ -4,7 +4,7 @@ use dashmap::DashMap;
 use solana_sdk::{instruction::Instruction, pubkey::Pubkey};
 use std::time::Instant;
 
-pub fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
+pub async fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
     for trade_token_data in trade_token_data_map.iter() {
         let mut token_data = trade_token_data.value().clone();
         let instructions: (Vec<Instruction>, String) = if token_data.token_is_purchased
@@ -33,7 +33,7 @@ pub fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema
             );
 
             (ix, tag)
-        } else if black_list_filter(token_data.clone())
+        } else if black_list_filter(token_data.clone()).await
             && token_data.token_sniper_status == TokenSniperStatus::TokenMinted
             && sniper_buy_filter_check(token_data.clone())
         {

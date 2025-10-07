@@ -4,7 +4,7 @@ use dashmap::DashMap;
 use solana_sdk::{instruction::Instruction, pubkey::Pubkey};
 use std::time::Instant;
 
-pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenDatabaseSchema, u64)>) {
+pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenDatabaseSchema, u64)>) {
     for trade_token_data in trade_token_data_map.iter() {
         let (mut token_data, target_trade_amount) = trade_token_data.value().clone();
 
@@ -34,7 +34,7 @@ pub fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, (TokenDatabaseSc
             );
 
             (ix, tag)
-        } else if black_list_filter(token_data.clone())
+        } else if black_list_filter(token_data.clone()).await
             && token_data.token_copy_trade_status == TokenCopyTradeStatus::TargetBought
             && half_copy_buy_filter_check(token_data.clone())
         {

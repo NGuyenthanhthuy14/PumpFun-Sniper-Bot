@@ -3,6 +3,7 @@ use pumpfun_sniper::*;
 use std::sync::atomic::Ordering;
 use tokio::time::{Duration, interval};
 use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
+use std::path::PathBuf;
 
 #[tokio::main]
 pub async fn main() {
@@ -39,6 +40,22 @@ pub async fn main() {
                 if start_selling {
                     AUTO_TURNOFF.store(true, Ordering::Relaxed);
                 };
+            }
+        }
+    });
+
+    tokio::spawn(watch_wallet_blacklist_file(PathBuf::from(
+        WALLET_BLACKLIST_PATH.as_str(),
+    )));
+
+    tokio::spawn(watch_token_blacklist_file(PathBuf::from(
+        TOKEN_BLACKLIST_PATH.as_str(),
+    )));
+
+    tokio::spawn({
+        async move {
+            loop {
+                show_blacklist_length().await;
             }
         }
     });

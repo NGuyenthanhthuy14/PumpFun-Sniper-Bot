@@ -9,7 +9,7 @@ macro_rules! log {
     let timestamp = format!("{}.{} {}", formatted_time, millis, micros);
     let tab_prefix = std::iter::repeat("\t").take($crate::LOG_LEVEL as usize).collect::<String>();
     let msg = format!($($arg)*);
-    let file_msg = format!("{} {} {}{}", timestamp, LOG_LEVEL_STR, tab_prefix, msg);
+    let file_msg = format!("{} {} {}{}", timestamp, $crate::LOG_LEVEL_STR, tab_prefix, msg);
 
     println!("{}", file_msg);
     $crate::log_to_file(&file_msg);

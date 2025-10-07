@@ -1,8 +1,9 @@
 use colored::*;
 use pumpfun_sniper::*;
-use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
-use tokio::time::{Duration, interval};
+use std::path::PathBuf;
 use std::sync::atomic::Ordering;
+use tokio::time::{Duration, interval};
+use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
 
 #[tokio::main]
 pub async fn main() {
@@ -34,11 +35,27 @@ pub async fn main() {
             }
         }
     });
-
+    
     tokio::spawn({
         async {
             loop {
                 check_no_activity_tokens().await;
+            }
+        }
+    });
+
+    tokio::spawn(watch_wallet_blacklist_file(PathBuf::from(
+        WALLET_BLACKLIST_PATH.as_str(),
+    )));
+
+    tokio::spawn(watch_token_blacklist_file(PathBuf::from(
+        TOKEN_BLACKLIST_PATH.as_str(),
+    )));
+
+    tokio::spawn({
+        async move {
+            loop {
+                show_blacklist_length().await;
             }
         }
     });

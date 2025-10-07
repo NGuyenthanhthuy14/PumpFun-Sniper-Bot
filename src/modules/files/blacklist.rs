@@ -1,32 +1,113 @@
+use console::Emoji;
 use itertools::Itertools;
-use std::io::BufRead;
-use std::{fs, io};
+use std::io::Read;
+use std::{
+    fs::File,
+    io::{BufRead, BufReader, Seek, SeekFrom},
+    path::PathBuf,
+    time::Duration,
+};
+use tokio::time::sleep;
 
-#[derive(Clone, Debug)]
-pub struct BlackList {
-    addresses: Vec<String>,
-}
+use crate::{TOKEN_BLACKLIST, WALLET_BLACKLIST, log};
+pub async fn watch_wallet_blacklist_file(file_path: PathBuf) {
+    // Initial full load:
+    let mut file = File::open(&file_path).expect("Blacklist file open failed");
+    let mut reader = BufReader::new(&file);
+    let mut blacklist = Vec::new();
 
-impl BlackList {
-    pub fn get_blacklist(file_path: &str) -> Vec<String> {
-        let mut blacklist: Vec<String> = Vec::new();
+    for line in reader.by_ref().lines() {
+        let l = line.expect("Failed to read line");
+        blacklist.push(l);
+    }
 
-        let file = fs::File::open(file_path).unwrap();
-        let reader = io::BufReader::new(file);
+    {
+        let mut wl = WALLET_BLACKLIST.write().await;
+        *wl = blacklist.into_iter().unique().collect();
+    }
 
-        for line in reader.lines() {
-            let line_string = line.unwrap();
-            blacklist.push(line_string);
+    // Track where we read until
+    let mut position = file.seek(SeekFrom::Current(0)).unwrap();
+
+    loop {
+        sleep(Duration::from_secs(5)).await; // check interval
+
+        // Reopen and seek to last position
+        let mut file = File::open(&file_path).expect("Blacklist file open failed");
+        file.seek(SeekFrom::Start(position)).expect("Seek failed");
+        let mut reader = BufReader::new(&file);
+
+        let mut new_lines = Vec::new();
+        for line in reader.by_ref().lines() {
+            let l = line.expect("Failed to read line");
+            new_lines.push(l);
         }
 
-        blacklist.into_iter().unique().collect()
+        if !new_lines.is_empty() {
+            let mut wl = WALLET_BLACKLIST.write().await;
+            wl.extend(new_lines.into_iter());
+            wl.sort_unstable();
+            wl.dedup();
+        }
+
+        // Update position tracker
+        position = file.seek(SeekFrom::Current(0)).unwrap()
+    }
+}
+
+pub async fn watch_token_blacklist_file(file_path: PathBuf) {
+    // Initial full load:
+    let mut file = File::open(&file_path).expect("Blacklist file open failed");
+    let mut reader = BufReader::new(&file);
+    let mut blacklist = Vec::new();
+
+    for line in reader.by_ref().lines() {
+        let l = line.expect("Failed to read line");
+        blacklist.push(l);
     }
 
-    pub fn get_length(&mut self) -> usize {
-        self.addresses.iter().len()
+    {
+        let mut wl = TOKEN_BLACKLIST.write().await;
+        *wl = blacklist.into_iter().unique().collect();
     }
 
-    pub fn is_blacklisted(&self, address: &str) -> bool {
-        self.addresses.contains(&address.to_string())
+    // Track where we read until
+    let mut position = file.seek(SeekFrom::Current(0)).unwrap();
+
+    loop {
+        sleep(Duration::from_secs(5)).await; // check interval
+
+        // Reopen and seek to last position
+        let mut file = File::open(&file_path).expect("Blacklist file open failed");
+        file.seek(SeekFrom::Start(position)).expect("Seek failed");
+        let mut reader = BufReader::new(&file);
+
+        let mut new_lines = Vec::new();
+        for line in reader.by_ref().lines() {
+            let l = line.expect("Failed to read line");
+            new_lines.push(l);
+        }
+
+        if !new_lines.is_empty() {
+            let mut wl = TOKEN_BLACKLIST.write().await;
+            wl.extend(new_lines.into_iter());
+            wl.sort_unstable();
+            wl.dedup();
+        }
+
+        // Update position tracker
+        position = file.seek(SeekFrom::Current(0)).unwrap();
     }
+}
+
+pub async fn show_blacklist_length() {
+    let wallet_blacklist = WALLET_BLACKLIST.read().await;
+    let token_blacklist = TOKEN_BLACKLIST.read().await;
+    log!(
+        "\t[ {} Loaded ]\t\t{} blacked wallets\t\t{} blacked tokens.",
+        Emoji("💳", ""),
+        wallet_blacklist.len(),
+        token_blacklist.len()
+    );
+    sleep(Duration::from_millis(10000)).await;
 }

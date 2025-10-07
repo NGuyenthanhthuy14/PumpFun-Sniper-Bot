@@ -24,7 +24,7 @@ where
 
                 let trade_token_data_map = handle_half_copy_events(trade_data, tx_id).await;
 
-                make_half_copy_tx(&trade_token_data_map);
+                make_half_copy_tx(&trade_token_data_map).await;
             }
 
             Err(e) => {

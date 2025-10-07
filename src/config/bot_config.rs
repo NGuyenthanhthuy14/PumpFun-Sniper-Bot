@@ -11,9 +11,7 @@ use solana_sdk::{
     signer::{Signer, keypair::Keypair},
 };
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
-
-use colored::*;
-use console::Emoji;
+use tokio::sync::RwLock;
 
 use crate::CONFIG;
 
@@ -94,10 +92,8 @@ pub static WALLET_BLACKLIST_PATH: Lazy<String> =
 pub static TOKEN_BLACKLIST_PATH: Lazy<String> =
     Lazy::new(|| CONFIG.filter_setting.rug_token_blacklist_path.clone());
 
-pub static WALLET_BLACKLIST: Lazy<Vec<String>> =
-    Lazy::new(|| BlackList::get_blacklist(&*WALLET_BLACKLIST_PATH));
-pub static TOKEN_BLACKLIST: Lazy<Vec<String>> =
-    Lazy::new(|| BlackList::get_blacklist(&*TOKEN_BLACKLIST_PATH));
+pub static WALLET_BLACKLIST: Lazy<RwLock<Vec<String>>> = Lazy::new(|| RwLock::new(Vec::new()));
+pub static TOKEN_BLACKLIST: Lazy<RwLock<Vec<String>>> = Lazy::new(|| RwLock::new(Vec::new()));
 
 pub static RUG_DETECT: Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.rug_detect);
 pub static BUNDLE_TX_LIMIT: Lazy<i32> = Lazy::new(|| CONFIG.filter_setting.bundle_tx_limit);
@@ -193,26 +189,4 @@ pub fn show_bot_settings() {
         *TS_5 * (1.0 - *TS_5_STOP) * 100.0,
         *TS_5_SELL_PCNT * 100.0
     );
-
-    println!(
-        "{} {}",
-        Emoji("\n💳", ""),
-        "Loading wallet blacklist...".green()
-    );
-
-    for blacklisted_wallet in WALLET_BLACKLIST.iter() {
-        println!("- {}", blacklisted_wallet.red());
-    }
-    println!("Loaded {} blacked wallets.\n", WALLET_BLACKLIST.len());
-
-    println!(
-        "{} {}",
-        Emoji("💱", ""),
-        "Loading token blacklist...".yellow()
-    );
-
-    for blacklisted_wallet in TOKEN_BLACKLIST.iter() {
-        println!("- {}", blacklisted_wallet.red());
-    }
-    println!("Loaded {} blacked tokens.\n", TOKEN_BLACKLIST.len());
 }

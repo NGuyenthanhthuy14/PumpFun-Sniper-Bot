@@ -34,11 +34,13 @@ pub fn half_copy_buy_filter_check(token_data: TokenDatabaseSchema) -> bool {
     market_cap_valid
 }
 
-pub fn black_list_filter(mut token_data: TokenDatabaseSchema) -> bool {
+pub async fn black_list_filter(mut token_data: TokenDatabaseSchema) -> bool {
     let mut blacklist_valid = true;
     if *BLACK_LIST_FILTER {
         if token_data.token_is_blacklisted == TokenBlacklistInfo::None {
-            if WALLET_BLACKLIST.contains(&token_data.token_creator.to_string()) {
+            let wallet_blacklist = WALLET_BLACKLIST.read().await;
+            let token_blacklist = TOKEN_BLACKLIST.read().await;
+            if wallet_blacklist.contains(&token_data.token_creator.to_string()) {
                 warning!(
                     "Token creator is blacklisted wallet: {}",
                     &token_data
@@ -51,7 +53,7 @@ pub fn black_list_filter(mut token_data: TokenDatabaseSchema) -> bool {
                 token_data.token_is_blacklisted = TokenBlacklistInfo::BlacklistedToken;
             }
 
-            if TOKEN_BLACKLIST.contains(&token_data.token_mint.to_string()) {
+            if token_blacklist.contains(&token_data.token_mint.to_string()) {
                 warning!(
                     "Token is blacklisted token: {}",
                     &token_data.token_mint.to_string().red()
