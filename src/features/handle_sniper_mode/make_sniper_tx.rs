@@ -18,14 +18,14 @@ pub async fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabase
             ix.push(sell_ix);
 
             let tag = format!(
-                "[All Sell]\t*RUG DETECTED\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[Sell]\t*RUG DETECTED\t*Mint: {}\t*Price: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
                 token_data.token_price,
                 token_data.token_balance
             );
 
             warning!(
-                "[All Sell]\t*{}\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "Sell]\t*{}\t*Mint: {}\t*Price: {}\t*Amount: {}",
                 "RUG DETECTED".yellow(),
                 token_data.pump_fun_swap_accounts.mint,
                 token_data.token_price,

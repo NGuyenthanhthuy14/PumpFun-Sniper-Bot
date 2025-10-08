@@ -155,7 +155,7 @@ pub fn update_status_from_sell_event(
             None
         }
     } else {
-        if token_data.bundle_tx_counter >= *BUNDLE_TX_LIMIT {
+        if token_data.bundle_tx_counter >= *BUNDLE_TX_LIMIT && !token_data.token_is_purchased {
             warning!(
                 "[RUG]\t*Stop tracking\t*Mint: {}\t*Bundle_counter: {}",
                 token_data.token_mint,
