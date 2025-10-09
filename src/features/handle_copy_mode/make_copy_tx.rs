@@ -162,7 +162,7 @@ pub async fn make_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSc
         {
             let sell_ix: Instruction = token_data
                 .pump_fun_swap_accounts
-                .get_sell_ix(token_data.tp_selling_plan.tp_5);
+                .get_sell_ix(token_data.token_balance);
 
             let mut ix: Vec<Instruction> = Vec::new();
             ix.push(sell_ix);
