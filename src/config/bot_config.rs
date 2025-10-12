@@ -128,7 +128,7 @@ lazy_static! {
     pub static ref AUTO_TURNOFF: AtomicBool = AtomicBool::new(false);
 }
 
-pub fn show_bot_settings() {
+pub async fn show_bot_settings() {
     log!("Public key: {:?}", *SIGNER_PUBKEY);
     log!("Confirm service: {:?}", *CONFIRM_SERVICE);
     log!("Buy settings: {:?}", CONFIG.buy_setting);
@@ -150,6 +150,7 @@ pub fn show_bot_settings() {
     log!("No activity time: {:?} seconds", *NO_ACTIVITY_TIME);
 
     init_validator();
+    connect_timer_service().await;
 
     log!(
         "TAKE_PROFIT_1 : {:<5.3} % , TAKE_PROFIT_2 : {:<5.3} % , TAKE_PROFIT_3 : {:<5.3} % , TAKE_PROFIT_4 : {:<5.3} % , TAKE_PROFIT_5 : {:<5.3} % , SL : {:<5.3} %",

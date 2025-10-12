@@ -3098,6 +3098,7 @@ dependencies = [
  "lazy_static",
  "magic-crypt",
  "once_cell",
+ "reqwest",
  "serde",
  "serde_json",
  "solana-client",

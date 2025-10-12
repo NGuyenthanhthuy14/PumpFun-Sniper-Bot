@@ -8,7 +8,7 @@ use std::path::PathBuf;
 #[tokio::main]
 pub async fn main() {
     info!("{}", HALF_COPY_MODE_STR.green());
-    show_bot_settings();
+    show_bot_settings().await;
 
     init_jito().await;
     init_nozomi().await;
