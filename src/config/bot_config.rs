@@ -1,7 +1,6 @@
 use crate::*;
 use lazy_static::lazy_static;
 use std::sync::Arc;
-
 use once_cell::sync::Lazy;
 use solana_client::rpc_client::RpcClient;
 use solana_sdk::{

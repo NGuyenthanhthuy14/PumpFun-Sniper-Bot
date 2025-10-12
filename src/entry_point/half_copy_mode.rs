@@ -36,7 +36,7 @@ pub async fn main() {
         async move {
             loop {
                 interval.tick().await;
-                let start_selling = check_auto_turn_off_time("sniper_mode");
+                let start_selling = check_auto_turn_off_time("half_copy_mode");
                 if start_selling {
                     AUTO_TURNOFF.store(true, Ordering::Relaxed);
                 };
