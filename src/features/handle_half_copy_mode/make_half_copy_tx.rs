@@ -19,17 +19,17 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             ix.push(sell_ix);
 
             let tag = format!(
-                "[ALL SELL]\t*RUG DETECTED\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[ALL SELL]\t*RUG DETECTED\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.token_balance
             );
 
             warning!(
-                "[ALL SELL]\t*{}\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[ALL SELL]\t*{}\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 "RUG DETECTED".yellow(),
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.token_balance
             );
 
@@ -88,16 +88,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
                 );
 
                 let tag = format!(
-                    "[Buy]\t*Mint: {}\t*Price: {}\t*Amount: {:.5} SOL",
+                    "[Buy]\t*Mint: {}\t*MC: {}\t*Amount: {:.5} SOL",
                     token_data.pump_fun_swap_accounts.mint,
-                    token_data.token_price,
+                    token_data.token_marketcap,
                     half_copy_trade_amount as f64 / 10f64.powi(9)
                 );
 
                 info!(
-                    "[Buy]\t*Mint: {}\t*Price: {}\t*Amount: {:.5} SOL",
+                    "[Buy]\t*Mint: {}\t*MC: {}\t*Amount: {:.5} SOL",
                     token_data.pump_fun_swap_accounts.mint,
-                    token_data.token_price,
+                    token_data.token_marketcap,
                     half_copy_trade_amount as f64 / 10f64.powi(9)
                 );
                 (ix, tag)
@@ -118,16 +118,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TS_5_Stop triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TS_5_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_5_stop
             );
 
             info!(
-                "[SELL]\t*TS_5_Stop triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TS_5_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_5_stop
             );
 
@@ -146,17 +146,17 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TS_4_Stop\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TS_4_Stop\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_4_stop,
             );
 
             info!(
                 "[SELL]
-                    \t*TS_4_Stop triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                    \t*TS_4_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_4_stop,
             );
 
@@ -175,16 +175,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TS_3_Stop triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TS_3_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_3_stop,
             );
 
             info!(
-                "[SELL]\t*TS_3_Stop triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TS_3_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_3_stop,
             );
 
@@ -206,17 +206,17 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
                 "[SELL]
                     \t*TS_2_Stop
                     \t*Mint: {}
-                    \t*Price: {}
+                    \t*MC: {}
                     \t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_2_stop,
             );
 
             info!(
-                "[SELL]\t*TS_2_Stop\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TS_2_Stop\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_2_stop,
             );
 
@@ -235,16 +235,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TS_1_Stop truggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TS_1_Stop truggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_1_stop,
             );
 
             info!(
-                "[SELL]\t*TS_1_Stop triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TS_1_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.ts_stop_selling_plan.ts_1_stop,
             );
 
@@ -261,16 +261,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TP1 triggered\t*MINT: {}\t*PRICE: {}\t*AMOUNT: {}",
+                "[SELL]\t*TP1 triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_1,
             );
 
             info!(
-                "[SELL]\t*TP1 triggered\t*MINT: {}\t*PRICE: {}\t*AMOUNT: {}",
+                "[SELL]\t*TP1 triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_1,
             );
 
@@ -287,16 +287,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\tTP2 triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\tTP2 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_2,
             );
 
             info!(
-                "[SELL]\tTP2 triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\tTP2 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_2,
             );
 
@@ -313,16 +313,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TP3 triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TP3 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_3,
             );
 
             info!(
-                "[SELL]\t*TP3 triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TP3 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_3,
             );
 
@@ -339,16 +339,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TP4 triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TP4 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_4,
             );
 
             info!(
-                "[SELL]\t*TP4 triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TP4 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_4
             );
 
@@ -365,16 +365,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TP5 triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TP5 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_5,
             );
 
             info!(
-                "[SELL]\t*TP5 triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*TP5 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.tp_selling_plan.tp_5
             );
 
@@ -391,16 +391,16 @@ pub async fn make_half_copy_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatab
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*SL triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*SL triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.token_balance,
             );
 
             info!(
-                "[SELL]\t*SL triggered\t*Mint: {}\t*Price: {}\t*Amount: {}",
+                "[SELL]\t*SL triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
                 token_data.pump_fun_swap_accounts.mint,
-                token_data.token_price,
+                token_data.token_marketcap,
                 token_data.token_balance,
             );
             (ix, tag)
