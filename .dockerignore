@@ -1,0 +1,27 @@
+# Ignore target directory (build artifacts)
+target/
+
+# Ignore Git repository files
+.git
+.gitignore
+
+# Ignore Dockerfile itself if not needed in the context
+Dockerfile
+
+# Ignore temporary files and editor directories
+*.rs.bk
+*.swp
+*.swo
+*.tmp
+*.temp
+*.log
+.idea
+.vscode
+*.iml
+
+# Ignore OS generated files
+.DS_Store
+Thumbs.db
+
+# Ignore environment variables files if present
+.env
