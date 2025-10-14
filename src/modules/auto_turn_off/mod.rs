@@ -46,7 +46,7 @@ pub fn check_auto_turn_off_time(mode: &str) -> bool {
         let current_time = now.format("%H:%M:%S").to_string();
         let comparing_time = format!("{}", *SHUT_DOWN_TIME);
         if current_time == comparing_time {
-            info!("SELLING ALL TOKENS ... ");
+            info!("[AUTO TURN OFF]\t*SELLING ALL TOKENS ... ");
             return true;
         };
         format!("Shutdown Timer ENABLED : {}", *SHUT_DOWN_TIME)

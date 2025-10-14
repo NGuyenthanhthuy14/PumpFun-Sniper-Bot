@@ -100,9 +100,10 @@ pub fn confirm(
 
         info!(
             "[SUBMIT]
-                \t* Service: Jito
+                \t* Service: {}
                 \t* Hash: {:?}
                 \t* {}",
+            *CONFIRM_SERVICE,
             results,
             tag.clone()
         );
