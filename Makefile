@@ -47,3 +47,15 @@ stop_copy:
 stop_half_copy:
 	docker stop half_copy_mode_container || true
 	docker rm half_copy_mode_container || true
+
+#sniper log
+sniper_log:
+	docker logs -f sniper_mode_container
+
+#copy log
+copy_log:
+	docker logs -f copy_mode_container
+
+#half copy log
+half_copy_log:
+	docker logs -f half_copy_mode_container
