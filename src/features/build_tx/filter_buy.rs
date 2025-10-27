@@ -1,5 +1,6 @@
 use crate::*;
 use colored::*;
+use magic_crypt::generic_array::typenum::Pow;
 
 pub fn buy_filter_check(token_data: TokenDatabaseSchema, mode: String) -> bool {
     let mut market_cap_valid = true;
@@ -149,10 +150,10 @@ pub async fn max_token_holder_check(token_data: TokenDatabaseSchema, mode: Strin
             }
         } else {
             for holder in token_data.token_holders.iter() {
-                if *holder.1 >= *MAX_TOKEN_HOLDER_LIMIT {
+                if *holder.1 >= *MAX_TOKEN_HOLDER_LIMIT * 1000000 {
                     error!(
                         "[FILTER] => MINT : {}\t* MAX HOLDING {:?} LIMIT {}",
-                        token_data.token_mint, holder.1, *MAX_TOKEN_HOLDER_LIMIT
+                        token_data.token_mint, *holder.1 as f64/ 1000000.0, *MAX_TOKEN_HOLDER_LIMIT
                     );
                     max_token_holder_valid = false;
                     break;
