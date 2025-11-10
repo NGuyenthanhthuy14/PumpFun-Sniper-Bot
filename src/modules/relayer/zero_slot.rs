@@ -17,7 +17,7 @@ pub async fn send_zero_slot_transaction(
     tag: String,
 ) -> Option<String> {
     let start_time = Instant::now();
-    let (cu, priority_fee_micro_lamport, _third_party_fee) = *PRIORITY_FEE;
+    let (cu, priority_fee_micro_lamport, third_party_fee) = *PRIORITY_FEE;
 
     let mut total_instruction = Vec::new();
     //budget compute unit limit
@@ -31,9 +31,9 @@ pub async fn send_zero_slot_transaction(
     //tip ix
     let tip_receiver = Pubkey::from_str("TpdxgNJBWZRL8UXF5mrEsyWxDWx9HQexA9P1eTWQ42p").unwrap();
     let tip_transfer_instruction = system_instruction::transfer(
-        &SIGNER_PUBKEY, // Sender's public key
-        &tip_receiver,  // Tip receiver's public key
-        100000,         // Amount to transfer as a tip (0.001 SOL in this case)
+        &SIGNER_PUBKEY,                           // Sender's public key
+        &tip_receiver,                            // Tip receiver's public key
+        (third_party_fee * 10f64.powi(9)) as u64, // Amount to transfer as a tip (0.001 SOL in this case)
     );
     total_instruction.push(tip_transfer_instruction);
     let mut transaction = Transaction::new_with_payer(&total_instruction, Some(&SIGNER_PUBKEY));
@@ -85,7 +85,7 @@ pub async fn send_zero_slot_transaction(
                     tag.clone()
                 );
                 return Some(result.to_string());
-            } else{
+            } else {
                 return None;
             }
         }
