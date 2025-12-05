@@ -1,6 +1,5 @@
 use colored::*;
 use pumpfun_sniper::*;
-use std::process;
 use std::sync::atomic::Ordering;
 use tokio::time::{Duration, interval};
 use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
@@ -18,30 +17,22 @@ pub async fn main() {
         }
     });
 
-    // let mut interval = interval(Duration::from_millis(5000));
+    let mut interval = interval(Duration::from_millis(30000));
 
-    // tokio::spawn({
-    //     async move {
-    //         loop {
-    //             interval.tick().await;
-    //             let start_selling = check_auto_turn_off_time("sniper_mode");
-    //             if start_selling {
-    //                 AUTO_TURNOFF.store(true, Ordering::Relaxed);
-    //             };
-    //         }
-    //     }
-    // });
-
-    // tokio::spawn({
-    //     async {
-    //         loop {
-    //             check_no_activity_tokens().await;
-    //         }
-    //     }
-    // });
+    tokio::spawn({
+        async move {
+            loop {
+                interval.tick().await;
+                let start_selling = check_auto_turn_off_time("monitor_mode");
+                if start_selling {
+                    AUTO_TURNOFF.store(true, Ordering::Relaxed);
+                };
+            }
+        }
+    });
 
     let grpc_config = GrpcClientConfig::new(
-        "sniper_mode".to_string(),
+        "monitor_mode".to_string(),
         GRPC_ENDPOINT.to_string(),
         GRPC_TOKEN.to_string(),
     );
@@ -63,16 +54,5 @@ pub async fn main() {
             "Failed to maintain GRPC connection after all retries: {:?}",
             e
         );
-    }
-
-    match all_sell().await {
-        Ok(()) => {
-            info!("TOKEN SOLD");
-            process::exit(0);
-        }
-        Err(_) => {
-            error!("[ERROR] => Error occurred while SELLING");
-            process::exit(1);
-        }
     }
 }

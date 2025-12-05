@@ -1,7 +1,7 @@
 use crate::*;
 use lazy_static::lazy_static;
-use std::sync::Arc;
 use once_cell::sync::Lazy;
+use reqwest::Client;
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
@@ -9,9 +9,9 @@ use solana_sdk::{
     pubkey::Pubkey,
     signer::{Signer, keypair::Keypair},
 };
+use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 use tokio::sync::RwLock;
-use reqwest::Client;
 
 use crate::CONFIG;
 
@@ -43,9 +43,7 @@ pub static SIGNER_PUBKEY: Lazy<Pubkey> = Lazy::new(|| {
 pub static TARGET_WALLETS: Lazy<Vec<String>> =
     Lazy::new(|| CONFIG.target_config.target_wallets.clone());
 //HTTP endpoint
-pub static HTTP_CLIENT: Lazy<Arc<Client>> = Lazy::new(||{
-    Arc::new(Client::new())
-});
+pub static HTTP_CLIENT: Lazy<Arc<Client>> = Lazy::new(|| Arc::new(Client::new()));
 
 //RPC endpoint
 pub static RPC_ENDPOINT: Lazy<String> = Lazy::new(|| CONFIG.connection_config.rpc_endpoint.clone());
@@ -64,18 +62,18 @@ pub static GRPC_TOKEN: Lazy<String> = Lazy::new(|| CONFIG.connection_config.grpc
 //Confirm service
 pub static CONFIRM_SERVICE: Lazy<String> =
     Lazy::new(|| CONFIG.relayer_config.confirm_service.clone());
-pub static JITO_API_KEY: Lazy<String> = Lazy::new(|| CONFIG.relayer_config.jito_api_key.clone());
-pub static NOZOMI_API_KEY: Lazy<String> =
-    Lazy::new(|| CONFIG.relayer_config.nozomi_api_key.clone());
-pub static ZERO_SLOT_API_KEY: Lazy<String> =
-    Lazy::new(|| CONFIG.relayer_config.zero_slot_key.clone());
 
 //Buy setting
 pub static BUY_AMOUNT_SOL: Lazy<f64> = Lazy::new(|| CONFIG.buy_setting.buy_amount_sol);
-pub static HALF_COPY_PCNT_MODE: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.half_copy_mode_pcnt_buy);
+pub static HALF_COPY_PCNT_MODE: Lazy<bool> =
+    Lazy::new(|| CONFIG.buy_setting.half_copy_mode_pcnt_buy);
 pub static COPY_PCNT_MODE: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.copy_mode_pcnt_buy);
 pub static BUY_AMOUNT_PERCENT: Lazy<u32> = Lazy::new(|| CONFIG.buy_setting.buy_amount_percent);
 pub static ONE_TIME_COPY: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.one_time_copy);
+
+//Buy Condition
+pub static BUY_CONDITION_PRICE_FALL_PCNT: Lazy<f64> =
+    Lazy::new(|| CONFIG.buy_condition_config.price_variant_width_percent / 100.0);
 
 //Slippage
 pub static SLIPPAGE: Lazy<f64> =
@@ -92,16 +90,6 @@ pub static PRIORITY_FEE: Lazy<(u64, u64, f64)> = Lazy::new(|| {
 });
 
 //Filter
-pub static TOKEN_BLACK_LIST_FILTER: Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.token_black_list_filter);
-pub static HOLDER_BLACK_LIST_FILTER: Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.holder_black_list_filter);
-pub static WALLET_BLACKLIST_PATH: Lazy<String> =
-    Lazy::new(|| CONFIG.filter_setting.wallet_blacklist_path.clone());
-pub static TOKEN_BLACKLIST_PATH: Lazy<String> =
-    Lazy::new(|| CONFIG.filter_setting.rug_token_blacklist_path.clone());
-
-pub static WALLET_BLACKLIST: Lazy<RwLock<Vec<String>>> = Lazy::new(|| RwLock::new(Vec::new()));
-pub static TOKEN_BLACKLIST: Lazy<RwLock<Vec<String>>> = Lazy::new(|| RwLock::new(Vec::new()));
-
 pub static RUG_DETECT: Lazy<bool> = Lazy::new(|| CONFIG.filter_setting.rug_detect);
 pub static BUNDLE_TX_LIMIT: Lazy<i32> = Lazy::new(|| CONFIG.filter_setting.bundle_tx_limit);
 
@@ -121,7 +109,7 @@ pub static MAX_TOKEN_HOLDER_LIMIT: Lazy<u64> =
 //Stop monitor
 pub static STOP_NO_ACTIVITY_TOKEN_MONITORING: Lazy<bool> =
     Lazy::new(|| CONFIG.monitor_setting.stop_no_activity_token_monitoring);
-pub static NO_ACTIVITY_TIME: Lazy<i64> = Lazy::new(|| CONFIG.monitor_setting.no_activity_time);
+pub static NO_ACTIVITY_TIME: Lazy<u64> = Lazy::new(|| CONFIG.monitor_setting.no_activity_time);
 
 // [shut_down_setting]
 pub static AUTO_SHUT_DOWN: Lazy<bool> = Lazy::new(|| CONFIG.shut_down_setting.auto_shut_down);
@@ -142,8 +130,6 @@ pub async fn show_bot_settings() {
     log!("Grpc endpoint: {:?}", *GRPC_ENDPOINT);
     log!("Grpc token: {:?}", *GRPC_TOKEN);
     log!("RPC endpoint: {:?}", *RPC_ENDPOINT);
-    log!("Token blacklist filter: {:?}", *TOKEN_BLACK_LIST_FILTER);
-    log!("Holder blacklist filter: {:?}", *HOLDER_BLACK_LIST_FILTER);
     log!("Rug detect: {:?}", *RUG_DETECT);
     log!("Bundle tx limit: {:?}", *BUNDLE_TX_LIMIT);
     log!("Volume filter: {:?}", *VOLUME_FILTER);
@@ -157,16 +143,18 @@ pub async fn show_bot_settings() {
     log!("No activity time: {:?} seconds", *NO_ACTIVITY_TIME);
 
     init_validator();
-    connect_timer_service().await;
+    // connect_timer_service().await;
 
     log!(
-        "TAKE_PROFIT_1 : {:<5.3} % , TAKE_PROFIT_2 : {:<5.3} % , TAKE_PROFIT_3 : {:<5.3} % , TAKE_PROFIT_4 : {:<5.3} % , TAKE_PROFIT_5 : {:<5.3} % , SL : {:<5.3} %",
+        "TAKE_PROFIT_1 : {:<5.3} % , TAKE_PROFIT_2 : {:<5.3} % , TAKE_PROFIT_3 : {:<5.3} % , TAKE_PROFIT_4 : {:<5.3} % , TAKE_PROFIT_5 : {:<5.3} % , SL_1 : {:<5.3} %, SL_2 : {:<5.3} %, SL_3 : {:<5.3} %",
         *TAKE_PROFIT_1 * 100.0,
         *TAKE_PROFIT_2 * 100.0,
         *TAKE_PROFIT_3 * 100.0,
         *TAKE_PROFIT_4 * 100.0,
         *TAKE_PROFIT_5 * 100.0,
-        *STOP_LOSS * 100.0
+        *STOP_LOSS_1 * 100.0,
+        *STOP_LOSS_2 * 100.0,
+        *STOP_LOSS_3 * 100.0
     );
     log!(
         "TS_1 : {:<5.3} %, TS_1_STOP : {:<5.3} %, TS_1_SELL_PCNT : {:<5.3} %",

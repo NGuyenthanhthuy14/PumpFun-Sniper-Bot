@@ -83,8 +83,8 @@ pub fn filter_by_program_id(
     let program_id_index = match account_keys.iter().position(|&pos| pos == program_id) {
         Some(index) => index,
         None => {
-            println!("Program not found");
-            return Err("program_id not found".into());
+            // println!("Program not found");
+            return Ok(vec![]);
         }
     };
 
@@ -152,7 +152,9 @@ pub fn get_trade_info(
                 event_authority: account_keys[info.accounts[14] as usize],
             };
             mint_instruction_accounts.push(mint_accounts);
-        } else if info.data.starts_with(&PUMP_FUN_BUY_DISCRIMINATOR) {
+        } else if info.data.starts_with(&PUMP_FUN_BUY_DISCRIMINATOR)
+            || info.data.starts_with(&PUMP_FUN_BUY_EXACT_IN_DISCRIMINATOR)
+        {
             let buy_accounts = BuyInstructionAccounts {
                 global: account_keys[info.accounts[0] as usize],
                 fee_recipient: account_keys[info.accounts[1] as usize],
@@ -259,4 +261,28 @@ pub fn get_trade_info(
         buy_instruction_accounts,
         sell_instruction_accounts,
     )
+}
+
+pub fn get_budget_compute_info(ix_infos: Vec<InstructionRawData>) -> (u32, u64) {
+    let mut unit = 0;
+    let mut micro_lamports = 0;
+    ix_infos.iter().for_each(|info| {
+        if info
+            .data
+            .starts_with(&SET_BUDGET_COMPUTE_UNIT_LIMIT_DISCRIMINATOR)
+        {
+            let mut data = &info.data[1..];
+            let budget_compute_unit_limit = BudgetComputeUnitLimit::deserialize(&mut data).unwrap();
+            unit = budget_compute_unit_limit.unit;
+        } else if info
+            .data
+            .starts_with(&SET_BUDGET_COMPUTE_UNIT_PRICE_DISCRIMINATOR)
+        {
+            let mut data = &info.data[1..];
+            let budget_compute_price = BudgetComputeUnitPrice::deserialize(&mut data).unwrap();
+            micro_lamports = budget_compute_price.micro_lamports;
+        }
+    });
+
+    (unit, micro_lamports)
 }

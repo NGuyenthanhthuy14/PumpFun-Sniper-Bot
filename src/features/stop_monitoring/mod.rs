@@ -12,8 +12,8 @@ pub async fn check_no_activity_tokens() {
             .collect();
         for token_key in keys {
             if let Some(mut token_data) = TOKEN_DB.get(token_key).unwrap() {
-                if Utc::now().timestamp() - token_data.last_event.last_activity_timestamp
-                    >= *NO_ACTIVITY_TIME
+                if token_data.token_last_activity_time.elapsed()
+                    >= Duration::from_secs(*NO_ACTIVITY_TIME)
                 {
                     let instruction = if token_data.token_is_purchased {
                         if token_data.token_sell_status == TokenSellStatus::None {
@@ -24,11 +24,11 @@ pub async fn check_no_activity_tokens() {
                                 "[Sell]\t*Stop monitoring\t\t*Mint: {}\t*No activity in last {} seconds",
                                 token_key, *NO_ACTIVITY_TIME
                             );
-                            alert!(
-                                "[Sell]\t*Stop monitoring\t\t*Mint: {}\t*No activity in last {} seconds",
-                                token_key,
-                                *NO_ACTIVITY_TIME
-                            );
+                            // alert!(
+                            //     "[Sell]\t*Stop monitoring\t\t*Mint: {}\t*No activity in last {} seconds",
+                            //     token_key,
+                            //     *NO_ACTIVITY_TIME
+                            // );
 
                             let sell_ix = token_data
                                 .clone()
@@ -42,11 +42,11 @@ pub async fn check_no_activity_tokens() {
                             (vec![], "".to_string())
                         }
                     } else {
-                        alert!(
-                            "[Stop-Tracking]\t\t*Mint: {}\t*No activity in last {} seconds",
-                            token_key,
-                            *NO_ACTIVITY_TIME
-                        );
+                        // alert!(
+                        //     "[Stop-Tracking]\t\t*Mint: {}\t*No activity in last {} seconds",
+                        //     token_key,
+                        //     *NO_ACTIVITY_TIME
+                        // );
                         let _ = TOKEN_DB.delete(token_key);
 
                         (vec![], "".to_string())

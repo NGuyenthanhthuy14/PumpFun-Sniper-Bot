@@ -3,7 +3,7 @@ use futures::StreamExt;
 use std::sync::atomic::Ordering;
 use yellowstone_grpc_proto::{geyser::SubscribeUpdate, tonic::Status};
 
-pub async fn process_sniper_mode<S>(mut stream: S) -> Result<(), Box<dyn std::error::Error>>
+pub async fn process_monitor_mode<S>(mut stream: S) -> Result<(), Box<dyn std::error::Error>>
 where
     S: StreamExt<Item = Result<SubscribeUpdate, Status>> + Unpin,
 {
@@ -28,9 +28,7 @@ where
                 let trade_data = get_trade_info(ix_info, account_keys.clone());
                 let budget_compute_data = get_budget_compute_info(budget_compute_ix_info);
 
-                let trade_token_data_map = handle_sniper_event(trade_data, budget_compute_data, tx_id).await;
-
-                make_sniper_tx(&trade_token_data_map).await;
+                let _ = handle_sniper_event(trade_data, budget_compute_data, tx_id).await;
             }
 
             Err(e) => {

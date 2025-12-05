@@ -13,3 +13,11 @@ pub const ALERT_LEVEL: u8 = 1; // Used for colorizing
 pub const DEV_LEVEL_STR: &str = "[ 🛠️  DEV ]";
 pub const DEV_LEVEL_RAW: &str = "[ DEV ]"; // Used for colorizing
 pub const DEV_LEVEL: u8 = 1; // Used for colorizing
+
+pub const PRO_TRADE_LEVEL_STR: &str = "[ 🚀  PRO ]";
+pub const PRO_TRADE_RAW: &str = "[ PRO ]"; // Used for colorizing
+pub const PRO_TRADE_LEVEL: u8 = 1; // Used for colorizing
+
+pub const DEV_TRADE_LEVEL_STR: &str = "[ 💎  DEV ]";
+pub const DEV_TRADE_RAW: &str = "[ DEV ]"; // Used for colorizing
+pub const DEV_TRADE_LEVEL: u8 = 1; // Used for colorizing

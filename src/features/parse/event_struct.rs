@@ -9,6 +9,16 @@ pub struct InstructionRawData {
 }
 
 #[derive(Debug, Clone, BorshDeserialize)]
+pub struct BudgetComputeUnitLimit{
+    pub unit: u32
+}
+
+#[derive(Debug, Clone, BorshDeserialize)]
+pub struct BudgetComputeUnitPrice{
+    pub micro_lamports: u64
+}
+
+#[derive(Debug, Clone, BorshDeserialize)]
 pub struct MintEvent {
     pub name: String,
     pub symbol: String,

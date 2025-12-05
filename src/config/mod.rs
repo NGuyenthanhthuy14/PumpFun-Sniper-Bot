@@ -1,7 +1,6 @@
 use std::fs;
 use once_cell::sync::Lazy;
 use serde::Deserialize;
-use std::env;
 
 pub mod toml_config;
 pub mod bot_config;
@@ -19,6 +18,7 @@ pub struct Config {
   pub connection_config: ConnectionConfig,
   pub relayer_config: RelayerConfig,
   pub buy_setting: BuySetting,
+  pub buy_condition_config: BuyConditionConfig,
   pub sell_setting: SellSetting,
   pub slippage_config: SlippageConfig,
   pub fee_config: FeeConfig,
@@ -28,13 +28,8 @@ pub struct Config {
 }
 
 pub static CONFIG: Lazy<Config> = Lazy::new(||{
-    let config_path =
-        env::var("CONFIG_PATH").unwrap_or_else(|_| "/app/Config.toml".to_string());
-    let content = fs::read_to_string(&config_path)
-        .expect("Failed to read config file");
-
     /////////None deploy, just test on local
-    // let content = fs::read_to_string("Config.toml").expect("Failed to read Config.toml file");
+    let content = fs::read_to_string("Config.toml").expect("Failed to read Config.toml file");
     
     toml::from_str(&content).expect("Failed to parse config file")
 });

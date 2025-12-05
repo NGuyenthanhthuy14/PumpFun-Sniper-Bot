@@ -67,3 +67,35 @@ macro_rules! dev_log {
         }
     }};
 }
+
+#[macro_export]
+macro_rules! dev_trade {
+    ($($arg:tt)*) => {{
+        let now = chrono::Local::now();
+        let formatted_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
+        let millis = format!("{:03}", now.timestamp_subsec_millis());
+        let micros = format!("{:03}", now.timestamp_subsec_micros() % 1000);
+        let timestamp = format!("{}.{} {}", formatted_time, millis, micros);
+        let tab_prefix = std::iter::repeat("\t").take($crate::DEV_TRADE_LEVEL as usize).collect::<String>();
+        let msg = format!($($arg)*);
+        let file_msg = format!("{} {} {}{}", timestamp, $crate::DEV_TRADE_LEVEL_STR, tab_prefix, msg);
+        println!("{}", file_msg);
+        $crate::log_to_file(&file_msg);
+    }};
+}
+
+#[macro_export]
+macro_rules! pro_trade {
+    ($($arg:tt)*) => {{
+        let now = chrono::Local::now();
+        let formatted_time = now.format("%Y-%m-%d %H:%M:%S").to_string();
+        let millis = format!("{:03}", now.timestamp_subsec_millis());
+        let micros = format!("{:03}", now.timestamp_subsec_micros() % 1000);
+        let timestamp = format!("{}.{} {}", formatted_time, millis, micros);
+        let tab_prefix = std::iter::repeat("\t").take($crate::PRO_TRADE_LEVEL as usize).collect::<String>();
+        let msg = format!($($arg)*);
+        let file_msg = format!("{} {} {}{}", timestamp, $crate::PRO_TRADE_LEVEL_STR, tab_prefix, msg);
+        println!("{}", file_msg);
+        $crate::log_to_file(&file_msg);
+    }};
+}

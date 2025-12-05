@@ -86,10 +86,13 @@ pub async fn send_zero_slot_transaction(
                 );
                 return Some(result.to_string());
             } else {
+                println!("No response from confirm service");
+                println!("{:?}", response_json);
                 return None;
             }
         }
-        Err(_) => {
+        Err(e) => {
+            println!("Response error: {}", e);
             return None;
         }
     }

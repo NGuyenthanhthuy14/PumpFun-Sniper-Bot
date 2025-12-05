@@ -2,7 +2,7 @@ use crate::*;
 use dashmap::DashMap;
 use solana_sdk::pubkey::Pubkey;
 
-pub async fn handle_sniper_event(
+pub async fn handle_pumpfun_monitor(
     trade_data: (
         Vec<MintEvent>,
         Vec<BuyEvent>,
@@ -26,16 +26,12 @@ pub async fn handle_sniper_event(
     let return_data: DashMap<Pubkey, TokenDatabaseSchema> = DashMap::new();
 
     for (i, mint_event) in mint_events.iter().enumerate() {
-        let mut token_data: TokenDatabaseSchema = TokenDatabaseSchema::new_from_mint(
+        let token_data: TokenDatabaseSchema = TokenDatabaseSchema::new_from_mint(
             mint_event.clone(),
             mint_ixs_accounts[i].clone(),
             budget_compute_data,
             tx_id.to_string(),
         );
-        if TARGET_WALLETS.contains(&mint_event.creator.to_string()) {
-            info!("Token is whitelisted, creator: {}", mint_event.creator);
-        }
-        token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
         let _ = TOKEN_DB
             .upsert(token_data.token_mint, token_data.clone())
             .unwrap();

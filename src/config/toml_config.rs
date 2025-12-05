@@ -26,9 +26,6 @@ pub struct ConnectionConfig {
 #[derive(Debug, Deserialize)]
 pub struct RelayerConfig {
     pub confirm_service: String,
-    pub jito_api_key: String,
-    pub nozomi_api_key: String,
-    pub zero_slot_key: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -39,11 +36,13 @@ pub struct BuySetting {
     pub buy_amount_percent: u32,
     pub one_time_copy: bool,
 }
+#[derive(Debug, Deserialize)]
+pub struct BuyConditionConfig {
+    pub price_variant_width_percent: f64,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct SellSetting {
-    pub copy_mode_sell_amount_percent: f64,
-    pub copy_mode_take_profit: f64,
     pub take_profit_1: f64,
     pub take_profit_1_sell_percentage: f64,
     pub take_profit_2: f64,
@@ -54,7 +53,12 @@ pub struct SellSetting {
     pub take_profit_4_sell_percentage: f64,
     pub take_profit_5: f64,
     pub take_profit_5_sell_percentage: f64,
-    pub stop_loss: f64,
+    pub stop_loss_1: f64,
+    pub stop_loss_1_sell_percentage: f64,
+    pub stop_loss_2: f64,
+    pub stop_loss_2_sell_percentage: f64,
+    pub stop_loss_3: f64,
+    pub stop_loss_3_sell_percentage: f64,
     pub trailing_1: f64,
     pub trailing_1_stop: f64,
     pub trailing_1_sell_percentage: f64,
@@ -86,10 +90,6 @@ pub struct FeeConfig {
 
 #[derive(Debug, Deserialize)]
 pub struct FilterSetting {
-    pub token_black_list_filter: bool,
-    pub holder_black_list_filter: bool,
-    pub wallet_blacklist_path: String,
-    pub rug_token_blacklist_path: String,
     pub rug_detect: bool,
     pub bundle_tx_limit: i32,
     pub volume_filter: bool,
@@ -102,7 +102,7 @@ pub struct FilterSetting {
 #[derive(Debug, Deserialize)]
 pub struct MonitorConfig {
     pub stop_no_activity_token_monitoring: bool,
-    pub no_activity_time: i64,
+    pub no_activity_time: u64,
 }
 
 #[derive(Debug, Deserialize)]
