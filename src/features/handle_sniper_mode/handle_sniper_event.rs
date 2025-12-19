@@ -1,9 +1,11 @@
 use crate::*;
+// use colored::*;
 use dashmap::DashMap;
 use solana_sdk::pubkey::Pubkey;
 
 pub async fn handle_sniper_event(
     trade_data: (
+        bool,
         Vec<MintEvent>,
         Vec<BuyEvent>,
         Vec<SellEvent>,
@@ -15,6 +17,7 @@ pub async fn handle_sniper_event(
     tx_id: String,
 ) -> DashMap<Pubkey, TokenDatabaseSchema> {
     let (
+        is_bundler_buy,
         mint_events,
         buy_events,
         sell_events,
@@ -23,23 +26,35 @@ pub async fn handle_sniper_event(
         _sell_ixs_accounts,
     ) = trade_data;
 
+    let (unit, price) = budget_compute_data;
+
     let return_data: DashMap<Pubkey, TokenDatabaseSchema> = DashMap::new();
 
     for (i, mint_event) in mint_events.iter().enumerate() {
-        let mut token_data: TokenDatabaseSchema = TokenDatabaseSchema::new_from_mint(
-            mint_event.clone(),
-            mint_ixs_accounts[i].clone(),
-            budget_compute_data,
-            tx_id.to_string(),
-        );
-        if TARGET_WALLETS.contains(&mint_event.creator.to_string()) {
-            info!("Token is whitelisted, creator: {}", mint_event.creator);
+        let mint_ix_accounts = &mint_ixs_accounts[i];
+        match (unit, price) {
+            (_, 6666666) => {
+                println!(
+                    "Launched filtered token,\t*unit: {}\t*price: {}",
+                    unit, price
+                );
+                let token_data: TokenDatabaseSchema = TokenDatabaseSchema::new_from_mint(
+                    mint_event.clone(),
+                    mint_ix_accounts.clone(),
+                    (unit, price),
+                    tx_id.clone(),
+                );
+
+                //Time based buying logic after bundle finished
+                let token_data_clone = token_data.clone();
+                tokio::spawn(async move {
+                    let _ = proceed_time_based_buying_logic(token_data_clone).await;
+                });
+
+                return_data.insert(token_data.token_mint, token_data);
+            }
+            _ => {}
         }
-        token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
-        let _ = TOKEN_DB
-            .upsert(token_data.token_mint, token_data.clone())
-            .unwrap();
-        return_data.insert(token_data.token_mint, token_data);
     }
 
     for (_i, buy_event) in buy_events.iter().enumerate() {
@@ -47,6 +62,7 @@ pub async fn handle_sniper_event(
             let updated_token_data: TokenDatabaseSchema = update_status_from_buy_event(
                 token_data.clone(),
                 buy_event.clone(),
+                is_bundler_buy,
                 tx_id.to_string(),
             );
             return_data.insert(updated_token_data.token_mint, updated_token_data);

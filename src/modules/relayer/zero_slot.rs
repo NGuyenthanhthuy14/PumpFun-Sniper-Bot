@@ -8,10 +8,6 @@ use solana_sdk::{
 use std::str::FromStr;
 use std::time::Instant;
 
-pub fn init_http_client() {
-    let _client = &HTTP_CLIENT;
-}
-
 pub async fn send_zero_slot_transaction(
     raw_instructions: Vec<Instruction>,
     tag: String,
@@ -63,7 +59,7 @@ pub async fn send_zero_slot_transaction(
     });
     info!("TX making: {:?}", start_time.elapsed());
     let tx_submission_start = Instant::now();
-    let response = HTTP_CLIENT
+    let response = ZERO_SLOT_HTTP_CLIENT
         .post("http://la1.0slot.trade?api-key=335e371309b6492584368e9dc553622d")
         .json(&request_body)
         .send()

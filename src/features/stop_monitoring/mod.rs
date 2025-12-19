@@ -1,5 +1,4 @@
 use crate::*;
-use chrono::Utc;
 use solana_sdk::pubkey::Pubkey;
 use tokio::time::{Duration, sleep};
 
@@ -16,37 +15,39 @@ pub async fn check_no_activity_tokens() {
                     >= Duration::from_secs(*NO_ACTIVITY_TIME)
                 {
                     let instruction = if token_data.token_is_purchased {
-                        if token_data.token_sell_status == TokenSellStatus::None {
-                            token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
+                        if token_data.token_trade_signal == TokenTradeSignal::None {
+                            token_data.token_trade_signal = TokenTradeSignal::EntrySubmitted; 
                             let _ = TOKEN_DB.upsert(token_key, token_data.clone());
 
                             let tag = format!(
                                 "[Sell]\t*Stop monitoring\t\t*Mint: {}\t*No activity in last {} seconds",
                                 token_key, *NO_ACTIVITY_TIME
                             );
-                            // alert!(
-                            //     "[Sell]\t*Stop monitoring\t\t*Mint: {}\t*No activity in last {} seconds",
-                            //     token_key,
-                            //     *NO_ACTIVITY_TIME
-                            // );
+                            alert!(
+                                "[Sell]\t*Stop monitoring\t\t*Mint: {}\t*No activity in last {} seconds",
+                                token_key,
+                                *NO_ACTIVITY_TIME
+                            );
 
                             let sell_ix = token_data
-                                .clone()
                                 .pump_fun_swap_accounts
                                 .get_sell_ix(token_data.token_balance);
+                            let close_ata_ix = token_data.pump_fun_swap_accounts.get_close_ata_ix();
+
                             let mut ix = Vec::new();
                             ix.push(sell_ix);
+                            ix.push(close_ata_ix);
 
                             (ix, tag)
                         } else {
                             (vec![], "".to_string())
                         }
                     } else {
-                        // alert!(
-                        //     "[Stop-Tracking]\t\t*Mint: {}\t*No activity in last {} seconds",
-                        //     token_key,
-                        //     *NO_ACTIVITY_TIME
-                        // );
+                        alert!(
+                            "[Stop-Tracking]\t\t*Mint: {}\t*No activity in last {} seconds",
+                            token_key,
+                            *NO_ACTIVITY_TIME
+                        );
                         let _ = TOKEN_DB.delete(token_key);
 
                         (vec![], "".to_string())
@@ -66,5 +67,5 @@ pub async fn check_no_activity_tokens() {
         }
     }
 
-    sleep(Duration::from_millis(500)).await;
+    sleep(Duration::from_millis(1000)).await;
 }

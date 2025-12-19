@@ -31,10 +31,6 @@ pub struct RelayerConfig {
 #[derive(Debug, Deserialize)]
 pub struct BuySetting {
     pub buy_amount_sol: f64,
-    pub half_copy_mode_pcnt_buy: bool,
-    pub copy_mode_pcnt_buy: bool,
-    pub buy_amount_percent: u32,
-    pub one_time_copy: bool,
 }
 #[derive(Debug, Deserialize)]
 pub struct BuyConditionConfig {
@@ -103,11 +99,4 @@ pub struct FilterSetting {
 pub struct MonitorConfig {
     pub stop_no_activity_token_monitoring: bool,
     pub no_activity_time: u64,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ShutDownConfig {
-    pub auto_shut_down: bool,
-    pub shut_down_time: String,
-    pub shut_down_sell_all: bool,
 }

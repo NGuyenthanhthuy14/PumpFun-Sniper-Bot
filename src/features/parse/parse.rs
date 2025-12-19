@@ -113,6 +113,7 @@ pub fn get_trade_info(
     ix_infos: Vec<InstructionRawData>,
     account_keys: Vec<Pubkey>,
 ) -> (
+    bool,
     Vec<MintEvent>,
     Vec<BuyEvent>,
     Vec<SellEvent>,
@@ -120,6 +121,9 @@ pub fn get_trade_info(
     Vec<BuyInstructionAccounts>,
     Vec<SellInstructionAccounts>,
 ) {
+    let mut unit: u32 = 0;
+    let mut price: u64 = 0;
+    let mut is_bundler_buy = false;
     let mut mint_instruction_accounts: Vec<MintInstructionAccounts> = Vec::new();
     let mut buy_instruction_accounts: Vec<BuyInstructionAccounts> = Vec::new();
     let mut sell_instruction_accounts: Vec<SellInstructionAccounts> = Vec::new();
@@ -128,7 +132,21 @@ pub fn get_trade_info(
     let mut buy_events: Vec<BuyEvent> = Vec::new();
     let mut sell_events: Vec<SellEvent> = Vec::new();
     ix_infos.iter().for_each(|info| {
-        if info.data.starts_with(&PUMP_FUN_CREATE_V1_DISCRIMINATOR) {
+        if info
+            .data
+            .starts_with(&SET_BUDGET_COMPUTE_UNIT_LIMIT_DISCRIMINATOR)
+        {
+            let mut data = &info.data[1..];
+            let budget_compute_unit_limit = BudgetComputeUnitLimit::deserialize(&mut data).unwrap();
+            unit = budget_compute_unit_limit.unit;
+        } else if info
+            .data
+            .starts_with(&SET_BUDGET_COMPUTE_UNIT_PRICE_DISCRIMINATOR)
+        {
+            let mut data = &info.data[1..];
+            let budget_compute_price = BudgetComputeUnitPrice::deserialize(&mut data).unwrap();
+            price = budget_compute_price.micro_lamports;
+        } else if info.data.starts_with(&PUMP_FUN_CREATE_V1_DISCRIMINATOR) {
             let mint_accounts = MintInstructionAccounts {
                 mint: account_keys[info.accounts[0] as usize],
                 bonding_curve: account_keys[info.accounts[2] as usize],
@@ -250,10 +268,16 @@ pub fn get_trade_info(
                 };
                 sell_events.push(sell_event);
             }
+        } else if info
+            .data
+            .starts_with(&PUMPFUN_CLOSE_USER_VOLUME_ACCMULATOR_DISCRIMINATOR)
+        {
+            is_bundler_buy = true;
         }
     });
 
     (
+        is_bundler_buy,
         mint_events,
         buy_events,
         sell_events,

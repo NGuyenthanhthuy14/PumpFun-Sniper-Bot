@@ -2,6 +2,22 @@
 // use magic_crypt::{MagicCryptTrait, new_magic_crypt};
 // use std::collections::HashMap;
 use std::time::Duration;
+use std::time::{Instant, SystemTime};
+
+pub fn get_system_time_from_instant(instant: Instant) -> SystemTime {
+    // Get current system time
+    let now_system = SystemTime::now();
+    
+    // Get current instant
+    let now_instant = Instant::now();
+    
+    // Calculate the duration since the reference instant
+    let elapsed = now_instant.duration_since(instant);
+    
+    // Apply the elapsed duration to system time
+    let system_time = now_system - elapsed;
+    system_time
+}
 
 pub fn format_elapsed_time(elapsed: Duration) -> String {
     let secs = elapsed.as_secs();

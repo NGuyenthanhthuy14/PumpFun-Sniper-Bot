@@ -11,7 +11,7 @@ use solana_sdk::{
 };
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
-use tokio::sync::RwLock;
+use std::time::Duration;
 
 use crate::CONFIG;
 
@@ -43,7 +43,29 @@ pub static SIGNER_PUBKEY: Lazy<Pubkey> = Lazy::new(|| {
 pub static TARGET_WALLETS: Lazy<Vec<String>> =
     Lazy::new(|| CONFIG.target_config.target_wallets.clone());
 //HTTP endpoint
-pub static HTTP_CLIENT: Lazy<Arc<Client>> = Lazy::new(|| Arc::new(Client::new()));
+pub static ZERO_SLOT_HTTP_CLIENT: Lazy<Arc<Client>> = Lazy::new(|| {
+    println!("🔄 Initializing 0-slot HTTP client...");
+    
+    let client = Client::builder()
+        .pool_idle_timeout(Duration::from_secs(300))     // 5 minutes
+        .pool_max_idle_per_host(5)                       // Multiple connections
+        .tcp_keepalive(Duration::from_secs(10))          // Frequent keep-alive
+        .tcp_nodelay(true)                               // MUST for low latency
+        .connect_timeout(Duration::from_secs(3))         // Fast connection
+        .timeout(Duration::from_secs(10))                // Reasonable timeout
+        .http2_keep_alive_interval(Duration::from_secs(20))
+        .http2_keep_alive_timeout(Duration::from_secs(90))
+        .http2_keep_alive_while_idle(true)
+        .use_rustls_tls()                                // Faster TLS
+        .build()
+        .expect("Failed to build 0-slot HTTP client");
+    
+    // PRE-WARM THIS SPECIFIC ENDPOINT
+    let client_arc = Arc::new(client);
+    pre_warm_zero_slot_endpoint(client_arc.clone());
+    
+    client_arc
+});
 
 //RPC endpoint
 pub static RPC_ENDPOINT: Lazy<String> = Lazy::new(|| CONFIG.connection_config.rpc_endpoint.clone());
@@ -65,11 +87,6 @@ pub static CONFIRM_SERVICE: Lazy<String> =
 
 //Buy setting
 pub static BUY_AMOUNT_SOL: Lazy<f64> = Lazy::new(|| CONFIG.buy_setting.buy_amount_sol);
-pub static HALF_COPY_PCNT_MODE: Lazy<bool> =
-    Lazy::new(|| CONFIG.buy_setting.half_copy_mode_pcnt_buy);
-pub static COPY_PCNT_MODE: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.copy_mode_pcnt_buy);
-pub static BUY_AMOUNT_PERCENT: Lazy<u32> = Lazy::new(|| CONFIG.buy_setting.buy_amount_percent);
-pub static ONE_TIME_COPY: Lazy<bool> = Lazy::new(|| CONFIG.buy_setting.one_time_copy);
 
 //Buy Condition
 pub static BUY_CONDITION_PRICE_FALL_PCNT: Lazy<f64> =
@@ -110,13 +127,6 @@ pub static MAX_TOKEN_HOLDER_LIMIT: Lazy<u64> =
 pub static STOP_NO_ACTIVITY_TOKEN_MONITORING: Lazy<bool> =
     Lazy::new(|| CONFIG.monitor_setting.stop_no_activity_token_monitoring);
 pub static NO_ACTIVITY_TIME: Lazy<u64> = Lazy::new(|| CONFIG.monitor_setting.no_activity_time);
-
-// [shut_down_setting]
-pub static AUTO_SHUT_DOWN: Lazy<bool> = Lazy::new(|| CONFIG.shut_down_setting.auto_shut_down);
-pub static SHUT_DOWN_TIMER_SELL_ALL: Lazy<bool> =
-    Lazy::new(|| CONFIG.shut_down_setting.shut_down_sell_all);
-pub static SHUT_DOWN_TIME: Lazy<String> =
-    Lazy::new(|| CONFIG.shut_down_setting.shut_down_time.clone());
 
 lazy_static! {
     pub static ref AUTO_TURNOFF: AtomicBool = AtomicBool::new(false);
@@ -186,4 +196,40 @@ pub async fn show_bot_settings() {
         *TS_5 * (1.0 - *TS_5_STOP) * 100.0,
         *TS_5_SELL_PCNT * 100.0
     );
+}
+
+pub fn pre_warm_zero_slot_endpoint(client: Arc<Client>) {
+    tokio::spawn(async move {
+        println!("🔥 Pre-warming 0-slot endpoint...");
+        
+        // Try multiple times to establish connection
+        for attempt in 1..=3 {
+            let url = "http://la1.0slot.trade?api-key=335e371309b6492584368e9dc553622d".to_string();
+            
+            match client.get(&url).send().await {
+                Ok(response) => {
+                    println!("✅ 0-slot endpoint ready (attempt {}): HTTP {}", 
+                        attempt, response.status());
+                    
+                    // If it's a 404 or similar, that's OK - connection is established
+                    if response.status().is_success() {
+                        println!("🎯 Successfully connected to 0-slot service");
+                    }
+                    break;
+                }
+                Err(e) if attempt < 3 => {
+                    println!("⚠️ 0-slot warm-up attempt {} failed: {:?}", attempt, e);
+                    tokio::time::sleep(Duration::from_millis(100 * attempt as u64)).await;
+                }
+                Err(e) => {
+                    eprintln!("❌ Failed to pre-warm 0-slot endpoint: {:?}", e);
+                }
+            }
+        }
+    });
+}
+
+pub fn get_zero_slot_client() -> Arc<Client> {
+    // This forces initialization on first call
+    ZERO_SLOT_HTTP_CLIENT.clone()
 }

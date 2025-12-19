@@ -1,12 +1,12 @@
 use crate::*;
+use futures::SinkExt;
+use std::collections::HashMap;
 use std::time::Duration;
 use tokio::time::sleep;
 use yellowstone_grpc_client::{ClientTlsConfig, GeyserGrpcClient, Interceptor};
 use yellowstone_grpc_proto::geyser::{
     CommitmentLevel, SubscribeRequest, SubscribeRequestFilterTransactions,
 };
-use futures::SinkExt;
-use std::collections::HashMap;
 
 pub struct GrpcClientConfig {
     pub mode: String,
@@ -40,44 +40,41 @@ impl GrpcClientConfig {
     pub async fn subscribe_with_reconnect(
         &self,
         subscribe_args: SubscribeRequestFilterTransactions,
-    ) -> Result<(), Box<dyn std::error::Error>>
-    {
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let mut attempt = 0;
 
         loop {
             match self.mode.as_str() {
-                "sniper_mode" => {
-                    match self.process_sniper_mode_stream(&subscribe_args).await {
-                        Ok(()) => {
-                            info!("GRPC subscription completed successfully");
-                            return Ok(());
-                        }
-                        Err(e) => {
-                            attempt += 1;
-                            error!("GRPC error on attempt {}: {:?}", attempt, e);
-
-                            let delay = Duration::from_millis(self.reconnect_delay_ms);
-                            info!("Reconnecting in {}ms...", delay.as_millis());
-                            sleep(delay).await;
-                        }
+                "sniper_mode" => match self.process_sniper_mode_stream(&subscribe_args).await {
+                    Ok(()) => {
+                        info!("GRPC subscription completed successfully");
+                        return Ok(());
                     }
-                }
-                "monitor_mode" => {
-                    match self.process_monitor_mode_stream(&subscribe_args).await {
-                        Ok(()) => {
-                            info!("GRPC subscription completed successfully");
-                            return Ok(());
-                        }
-                        Err(e) => {
-                            attempt += 1;
-                            error!("GRPC error on attempt {}: {:?}", attempt, e);
+                    Err(e) => {
+                        attempt += 1;
+                        error!("GRPC error on attempt {}: {:?}", attempt, e);
 
-                            let delay = Duration::from_millis(self.reconnect_delay_ms);
-                            info!("Reconnecting in {}ms...", delay.as_millis());
-                            sleep(delay).await;
-                        }
+                        let delay = Duration::from_millis(self.reconnect_delay_ms);
+                        info!("Reconnecting in {}ms...", delay.as_millis());
+                        sleep(delay).await;
                     }
-                }
+                },
+                // "monitor_mode" => {
+                //     match self.process_monitor_mode_stream(&subscribe_args).await {
+                //         Ok(()) => {
+                //             info!("GRPC subscription completed successfully");
+                //             return Ok(());
+                //         }
+                //         Err(e) => {
+                //             attempt += 1;
+                //             error!("GRPC error on attempt {}: {:?}", attempt, e);
+
+                //             let delay = Duration::from_millis(self.reconnect_delay_ms);
+                //             info!("Reconnecting in {}ms...", delay.as_millis());
+                //             sleep(delay).await;
+                //         }
+                //     }
+                // }
                 _ => {
                     return Err("Unsupported mode".into());
                 }
@@ -88,26 +85,24 @@ impl GrpcClientConfig {
     async fn process_sniper_mode_stream(
         &self,
         subscribe_args: &SubscribeRequestFilterTransactions,
-    ) -> Result<(), Box<dyn std::error::Error>>
-    {
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let mut grpc_client = self.setup_grpc_client().await?;
         let (subscribe_tx, subscribe_rx) = grpc_client.subscribe().await.unwrap();
         send_subscription_request_grpc(subscribe_tx, subscribe_args.clone()).await?;
         Ok(process_sniper_mode(subscribe_rx).await?)
     }
 
-    async fn process_monitor_mode_stream(
-        &self,
-        subscribe_args: &SubscribeRequestFilterTransactions,
-    ) -> Result<(), Box<dyn std::error::Error>>
-    {
-        let mut grpc_client = self.setup_grpc_client().await?;
-        let (subscribe_tx, subscribe_rx) = grpc_client.subscribe().await.unwrap();
-        send_subscription_request_grpc(subscribe_tx, subscribe_args.clone()).await?;
-        Ok(process_monitor_mode(subscribe_rx).await?)
-    }
+    // async fn process_monitor_mode_stream(
+    //     &self,
+    //     subscribe_args: &SubscribeRequestFilterTransactions,
+    // ) -> Result<(), Box<dyn std::error::Error>>
+    // {
+    //     let mut grpc_client = self.setup_grpc_client().await?;
+    //     let (subscribe_tx, subscribe_rx) = grpc_client.subscribe().await.unwrap();
+    //     send_subscription_request_grpc(subscribe_tx, subscribe_args.clone()).await?;
+    //     Ok(process_monitor_mode(subscribe_rx).await?)
+    // }
 }
-
 
 pub async fn send_subscription_request_grpc<T>(
     mut tx: T,

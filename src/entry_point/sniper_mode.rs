@@ -1,14 +1,13 @@
 use colored::*;
 use pumpfun_sniper::*;
 use std::process;
-use std::sync::atomic::Ordering;
-use tokio::time::{Duration, interval};
 use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
 
 #[tokio::main]
 pub async fn main() {
     info!("{}", SNIPER_MODE_STR.green());
     show_bot_settings().await;
+    let _client = get_zero_slot_client();
 
     tokio::spawn({
         async {
@@ -17,28 +16,6 @@ pub async fn main() {
             }
         }
     });
-
-    // let mut interval = interval(Duration::from_millis(5000));
-
-    // tokio::spawn({
-    //     async move {
-    //         loop {
-    //             interval.tick().await;
-    //             let start_selling = check_auto_turn_off_time("sniper_mode");
-    //             if start_selling {
-    //                 AUTO_TURNOFF.store(true, Ordering::Relaxed);
-    //             };
-    //         }
-    //     }
-    // });
-
-    // tokio::spawn({
-    //     async {
-    //         loop {
-    //             check_no_activity_tokens().await;
-    //         }
-    //     }
-    // });
 
     let grpc_config = GrpcClientConfig::new(
         "sniper_mode".to_string(),

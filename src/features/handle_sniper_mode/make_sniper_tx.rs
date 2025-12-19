@@ -1,307 +1,64 @@
 use crate::*;
-use colored::*;
 use dashmap::DashMap;
 use solana_sdk::{instruction::Instruction, pubkey::Pubkey};
-use std::time::Instant;
 
 pub async fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabaseSchema>) {
     for trade_token_data in trade_token_data_map.iter() {
         let mut token_data = trade_token_data.value().clone();
-        let instructions: (Vec<Instruction>, String) = if !token_data.token_is_purchased
-            && token_data.token_trade_signal == TokenTradeSignal::IsEntryPoint
+        let instructions: (Vec<Instruction>, String) = if token_data.token_trade_signal
+            == TokenTradeSignal::IsEntryPoint
         {
             let buy_tx_remaining_counter = get_buy_tx_remain_counter();
 
             if !*DEV_MODE || buy_tx_remaining_counter != 0 {
                 decrese_buy_tx_remain_counter();
-                token_data.token_trade_signal = TokenTradeSignal::EntrySubmitted;
-                let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
-                let sniper_buy_amount = *BUY_AMOUNT_SOL as f64 * 10f64.powi(9);
-
-                let build_tx_start = Instant::now();
                 let mut ix: Vec<Instruction> = Vec::new();
                 let create_ata_ix = token_data
                     .pump_fun_swap_accounts
                     .get_create_ata_idempotent_ix();
                 let buy_ix = token_data
                     .pump_fun_swap_accounts
-                    .get_buy_ix(sniper_buy_amount, token_data.token_price);
+                    .get_buy_ix(*BUY_AMOUNT_SOL * 10f64.powi(9), token_data.token_price);
 
                 ix.push(create_ata_ix);
                 ix.push(buy_ix);
 
-                let building_tx_time = build_tx_start.elapsed();
-                println!(
-                    "{}",
-                    format!(
-                        "{}: {}",
-                        "Building tx took:".blue(),
-                        format_elapsed_time(building_tx_time).blue()
-                    )
-                );
+                token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
+                token_data.token_trade_signal = TokenTradeSignal::EntrySubmitted;
 
-                let tag = format!(
-                    "[Buy]\t*Mint: {}\t*MC: {}\t*Amount: {} SOL",
-                    token_data.pump_fun_swap_accounts.mint,
-                    token_data.token_marketcap,
-                    *BUY_AMOUNT_SOL
-                );
+                let tag = format!("Token price is lower than initial_bundle_price x0.8, buying...");
 
-                info!(
-                    "[Buy]\t*Mint: {}\t*MC: {}\t*Amount: {} SOL",
-                    token_data.pump_fun_swap_accounts.mint,
-                    token_data.token_marketcap,
-                    *BUY_AMOUNT_SOL
-                );
+                let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
+
                 (ix, tag)
             } else {
                 (vec![], "".to_string())
             }
-        } else if token_data.ts_state == TSMode::TS5Stop
-            && token_data.tracked_ts_state != TSMode::TS5Stop
-        {
-            let sell_amount =
-                if token_data.token_balance > token_data.ts_stop_selling_plan.ts_5_stop {
-                    token_data.ts_stop_selling_plan.ts_5_stop
-                } else {
-                    token_data.token_balance
-                };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_ts_state = TSMode::TS5Stop;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*TS_5_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount
-            );
-
-            info!(
-                "[SELL]\t*TS_5_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount
-            );
-
-            (ix, tag)
-        } else if token_data.ts_state == TSMode::TS4Stop
-            && token_data.tracked_ts_state != TSMode::TS4Stop
-        {
-            let sell_amount =
-                if token_data.token_balance > token_data.ts_stop_selling_plan.ts_4_stop {
-                    token_data.ts_stop_selling_plan.ts_4_stop
-                } else {
-                    token_data.token_balance
-                };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_ts_state = TSMode::TS4Stop;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*TS_4_Stop\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]
-                    \t*TS_4_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_price, sell_amount,
-            );
-
-            (ix, tag)
-        } else if token_data.ts_state == TSMode::TS3Stop
-            && token_data.tracked_ts_state != TSMode::TS3Stop
-        {
-            let sell_amount =
-                if token_data.token_balance > token_data.ts_stop_selling_plan.ts_3_stop {
-                    token_data.ts_stop_selling_plan.ts_3_stop
-                } else {
-                    token_data.token_balance
-                };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_ts_state = TSMode::TS3Stop;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*TS_3_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]\t*TS_3_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            (ix, tag)
-        } else if token_data.ts_state == TSMode::TS2Stop
-            && token_data.tracked_ts_state != TSMode::TS2Stop
-        {
-            let sell_amount =
-                if token_data.token_balance > token_data.ts_stop_selling_plan.ts_2_stop {
-                    token_data.ts_stop_selling_plan.ts_2_stop
-                } else {
-                    token_data.token_balance
-                };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_ts_state = TSMode::TS2Stop;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]
-                    \t*TS_2_Stop
-                    \t*Mint: {}
-                    \t*MC: {}
-                    \t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]\t*TS_2_Stop\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_price, sell_amount,
-            );
-
-            (ix, tag)
-        } else if token_data.ts_state == TSMode::TS1Stop
-            && token_data.tracked_ts_state != TSMode::TS1Stop
-        {
-            let sell_amount =
-                if token_data.token_balance > token_data.ts_stop_selling_plan.ts_1_stop {
-                    token_data.ts_stop_selling_plan.ts_1_stop
-                } else {
-                    token_data.token_balance
-                };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_ts_state = TSMode::TS1Stop;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*TS_1_Stop truggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]\t*TS_1_Stop triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            (ix, tag)
-        } else if token_data.tp_state == TPMode::TP1 && token_data.tracked_tp_state != TPMode::TP1 {
-            let sell_amount = if token_data.token_balance > token_data.tp_selling_plan.tp_1 {
-                token_data.tp_selling_plan.tp_1
-            } else {
-                token_data.token_balance
-            };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_tp_state = TPMode::TP1;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*TP1 triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]\t*TP1 triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            (ix, tag)
-        } else if token_data.tp_state == TPMode::TP2 && token_data.tracked_tp_state != TPMode::TP2 {
-            let sell_amount = if token_data.token_balance > token_data.tp_selling_plan.tp_2 {
-                token_data.tp_selling_plan.tp_2
-            } else {
-                token_data.token_balance
-            };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_tp_state = TPMode::TP2;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\tTP2 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]\tTP2 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_price, sell_amount,
-            );
-
-            (ix, tag)
-        } else if token_data.tp_state == TPMode::TP3 && token_data.tracked_tp_state != TPMode::TP3 {
-            let sell_amount = if token_data.token_balance > token_data.tp_selling_plan.tp_3 {
-                token_data.tp_selling_plan.tp_3
-            } else {
-                token_data.token_balance
-            };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_tp_state = TPMode::TP3;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*TP3 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]\t*TP3 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            (ix, tag)
         } else if token_data.tp_state == TPMode::TP4 && token_data.tracked_tp_state != TPMode::TP4 {
             let sell_amount = if token_data.token_balance > token_data.tp_selling_plan.tp_4 {
                 token_data.tp_selling_plan.tp_4
             } else {
                 token_data.token_balance
             };
-            let sell_ix: Instruction = token_data
-                .pump_fun_swap_accounts
-                .get_sell_ix(token_data.tp_selling_plan.tp_4);
+            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
+            // let close_ata = token_data.pump_fun_swap_accounts.get_close_ata_ix();
 
             let mut ix: Vec<Instruction> = Vec::new();
             ix.push(sell_ix);
+            // ix.push(close_ata);
 
             token_data.tracked_tp_state = TPMode::TP4;
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TP4 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
+                "[SELL]\t*TP4 triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
                 token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
             );
 
             info!(
-                "[SELL]\t*TP4 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount
+                "[SELL]\t*TP4 triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
+                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
             );
 
             (ix, tag)
@@ -312,95 +69,25 @@ pub async fn make_sniper_tx(trade_token_data_map: &DashMap<Pubkey, TokenDatabase
                 token_data.token_balance
             };
             let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
+            let close_ata = token_data.pump_fun_swap_accounts.get_close_ata_ix();
 
             let mut ix: Vec<Instruction> = Vec::new();
             ix.push(sell_ix);
+            ix.push(close_ata);
 
             token_data.tracked_tp_state = TPMode::TP5;
             let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
             let tag = format!(
-                "[SELL]\t*TP5 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
+                "[SELL]\t*TP5 triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
                 token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
             );
 
             info!(
-                "[SELL]\t*TP5 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount
-            );
-
-            (ix, tag)
-        } else if token_data.sl_state == SLMode::SL1 && token_data.tracked_sl_state != SLMode::SL1 {
-            let sell_amount = if token_data.token_balance > token_data.sl_selling_plan.sl_1 {
-                token_data.sl_selling_plan.sl_1
-            } else {
-                token_data.token_balance
-            };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_sl_state = SLMode::SL1;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*SL1 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
+                "[SELL]\t*TP5 triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
                 token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
             );
 
-            info!(
-                "[SELL]\t*SL1 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-            (ix, tag)
-        } else if token_data.sl_state == SLMode::SL2 && token_data.tracked_sl_state != SLMode::SL2 {
-            let sell_amount = if token_data.token_balance > token_data.sl_selling_plan.sl_2 {
-                token_data.sl_selling_plan.sl_2
-            } else {
-                token_data.token_balance
-            };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_sl_state = SLMode::SL2;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*SL2 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]\t*SL2 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-            (ix, tag)
-        } else if token_data.sl_state == SLMode::SL3 && token_data.tracked_sl_state != SLMode::SL3 {
-            let sell_amount = if token_data.token_balance > token_data.sl_selling_plan.sl_3 {
-                token_data.sl_selling_plan.sl_3
-            } else {
-                token_data.token_balance
-            };
-            let sell_ix: Instruction = token_data.pump_fun_swap_accounts.get_sell_ix(sell_amount);
-
-            let mut ix: Vec<Instruction> = Vec::new();
-            ix.push(sell_ix);
-
-            token_data.tracked_sl_state = SLMode::SL3;
-            let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-
-            let tag = format!(
-                "[SELL]\t*SL3 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
-
-            info!(
-                "[SELL]\t*SL3 triggered\t*Mint: {}\t*MC: {}\t*Amount: {}",
-                token_data.pump_fun_swap_accounts.mint, token_data.token_marketcap, sell_amount,
-            );
             (ix, tag)
         } else {
             (vec![], "".to_string())

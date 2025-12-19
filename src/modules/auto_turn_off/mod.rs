@@ -1,13 +1,13 @@
 use crate::*;
-use chrono::Local;
+use chrono::{DateTime, Local, Utc};
 use std::fs::{File, create_dir_all};
 use std::io::{BufWriter, Write};
 
 pub fn check_auto_turn_off_time(_mode: &str) -> bool {
-    create_dir_all("src/assets/panel").unwrap_or(());
+    create_dir_all("/app/src/assets/panel").unwrap_or(());
 
     let file_name = format!(
-        "src/assets/panel/token_monitor_{}.csv",
+        "/app/src/assets/panel/token_monitor_{}.csv",
         Local::now().format("%Y-%m-%d")
     );
     let file = File::create(file_name).expect("Failed to create token database file");
@@ -22,9 +22,20 @@ pub fn check_auto_turn_off_time(_mode: &str) -> bool {
         .expect("Failed to write CSV headers");
     writer.flush().expect("Failed to flush headers");
 
-    let lists = TOKEN_DB.get_list_all().unwrap();
+    let today_local = Local::now().date_naive();
 
-    let result_string = lists
+    let lists = TOKEN_DB.get_list_all().unwrap();
+    let daily_mint_token: Vec<&(solana_sdk::pubkey::Pubkey, TokenDatabaseSchema)> = lists
+        .iter()
+        .filter(|element| {
+            let mint_time = get_system_time_from_instant(element.1.token_mint_time);
+            let mint_datetime_utc: DateTime<Utc> = mint_time.into();
+            let mint_date_local = mint_datetime_utc.with_timezone(&Local).date_naive();
+            mint_date_local == today_local
+        })
+        .collect();
+
+    let result_string = daily_mint_token
         .iter()
         .enumerate()
         .map(|(idx, ele)| {
@@ -42,7 +53,9 @@ pub fn check_auto_turn_off_time(_mode: &str) -> bool {
         .collect::<Vec<_>>()
         .join("\n");
 
-    writer.write_all(result_string.as_bytes()).expect("Failed to write CSV file content");
+    writer
+        .write_all(result_string.as_bytes())
+        .expect("Failed to write CSV file content");
     writer.flush().expect("Failed to flush content");
 
     // let head_line = format!(

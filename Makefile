@@ -1,6 +1,6 @@
 # Variables
-CONFIG_PATH=/root/projects/yoshida/pump.fun-sniper-Rust/Config.toml
-BLACKLIST_DIR=/root/projects/yoshida/pump.fun-sniper-Rust/src/assets/blacklist
+CONFIG_PATH=/root/projects/my_bot/pump.fun-sniper-Rust/Config.toml
+ASSETS_DIR_PATH=/root/projects/my_bot/pump.fun-sniper-Rust/src/assets
 IMAGE=pumpfunbot
 
 # Run sniper_mode container
@@ -8,30 +8,17 @@ sniper_mode:
 	docker run -d \
 		--name sniper_mode_container \
 		-v $(CONFIG_PATH):/app/Config.toml \
-		-v $(BLACKLIST_DIR)/rugs.mint:/app/src/assets/blacklist/rugs.mint \
-		-v $(BLACKLIST_DIR)/rugs.wallet:/app/src/assets/blacklist/rugs.wallet \
 		-e CONFIG_PATH=/app/Config.toml \
 		$(IMAGE) sniper_mode
 
-# Run copy_mode container
-copy_mode:
+# Run monitor_mode container
+monitor_mode:
 	docker run -d \
-		--name copy_mode_container \
+		--name monitor_mode_container \
 		-v $(CONFIG_PATH):/app/Config.toml \
-		-v $(BLACKLIST_DIR)/rugs.mint:/app/src/assets/blacklist/rugs.mint \
-		-v $(BLACKLIST_DIR)/rugs.wallet:/app/src/assets/blacklist/rugs.wallet \
+		-v $(ASSETS_DIR_PATH):/app/src/assets \
 		-e CONFIG_PATH=/app/Config.toml \
-		$(IMAGE) copy_mode
-
-# Run half_copy_mode container
-half_copy_mode:
-	docker run -d \
-		--name half_copy_mode_container \
-		-v $(CONFIG_PATH):/app/Config.toml \
-		-v $(BLACKLIST_DIR)/rugs.mint:/app/src/assets/blacklist/rugs.mint \
-		-v $(BLACKLIST_DIR)/rugs.wallet:/app/src/assets/blacklist/rugs.wallet \
-		-e CONFIG_PATH=/app/Config.toml \
-		$(IMAGE) half_copy_mode
+		$(IMAGE) monitor_mode
 
 # Stop sniper_mode container
 stop_sniper:
@@ -39,23 +26,14 @@ stop_sniper:
 	docker rm sniper_mode_container || true
 
 # Stop copy_mode container
-stop_copy:
-	docker stop copy_mode_container || true
-	docker rm copy_mode_container || true
-
-# Stop half_copy_mode container
-stop_half_copy:
-	docker stop half_copy_mode_container || true
-	docker rm half_copy_mode_container || true
+stop_monitor:
+	docker stop monitor_mode_container || true
+	docker rm monitor_mode_container || true
 
 #sniper log
 sniper_log:
 	docker logs -f sniper_mode_container
 
 #copy log
-copy_log:
-	docker logs -f copy_mode_container
-
-#half copy log
-half_copy_log:
-	docker logs -f half_copy_mode_container
+monitor_log:
+	docker logs -f monitor_mode_container

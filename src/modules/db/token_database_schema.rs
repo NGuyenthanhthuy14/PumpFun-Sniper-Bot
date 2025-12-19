@@ -1,8 +1,7 @@
 use crate::*;
 use colored::*;
 use solana_sdk::pubkey::Pubkey;
-use std::collections::HashMap;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 #[derive(Clone, Debug)]
 pub struct TokenDatabaseSchema {
@@ -12,30 +11,21 @@ pub struct TokenDatabaseSchema {
     pub token_total_supply: u64,
     pub token_price: f64,
     pub token_max_price: f64,
-    pub token_holders: HashMap<Pubkey, u64>,
     pub token_is_purchased: bool,
     pub token_balance: u64,
     pub token_average_buying_price: f64,
     pub token_marketcap: f64,
-    pub token_volume: Option<f64>,
     pub tp_state: TPMode,
     pub tracked_tp_state: TPMode,
-    pub ts_state: TSMode,
-    pub tracked_ts_state: TSMode,
-    pub sl_state: SLMode,
-    pub tracked_sl_state: SLMode,
-    pub sl_selling_plan: SLSellingPlan,
-    pub ts_stop_selling_plan: TSStopSellingPlan,
     pub tp_selling_plan: TPSellingPlan,
     pub pump_fun_swap_accounts: PumpFunSwapAccounts,
     pub token_sniper_status: TokenSniperStatus,
-    pub token_sell_status: TokenSellStatus,
     pub token_trade_signal: TokenTradeSignal,
-    pub sniper_buy_amount: u64,
+    pub token_sell_status: TokenSellStatus,
     pub mint_budget_compute_unit_limit: u32,
     pub mint_budget_compute_unit_price: u64,
-    pub dev_buy_amount_sol: f64,
-    pub token_last_activity_time: Instant,
+    pub dev_buy_sol_lamports: Option<u64>,
+    pub token_price_after_mint_bundler: f64,
 }
 
 impl TokenDatabaseSchema {
@@ -57,7 +47,6 @@ impl TokenDatabaseSchema {
         let initial_token_price = (mint_event.virtual_sol_reserves as f64 / 10f64.powi(9))
             / (mint_event.virtual_token_reserves as f64 / 10f64.powi(6));
         let initial_token_marketcap = initial_token_price * mint_event.token_total_supply as f64;
-        let initial_token_holders = HashMap::new();
 
         let token_data = Self {
             token_mint: mint_event.mint,
@@ -67,17 +56,11 @@ impl TokenDatabaseSchema {
             token_balance: 0,
             token_price: initial_token_price,
             token_max_price: initial_token_price,
-            token_holders: initial_token_holders,
             token_is_purchased: false,
             token_marketcap: initial_token_marketcap,
-            token_volume: Some(0.0),
             token_average_buying_price: 0.0,
-            sl_state: SLMode::None,
-            tracked_sl_state: SLMode::None,
             tp_state: TPMode::None,
             tracked_tp_state: TPMode::None,
-            ts_state: TSMode::None,
-            tracked_ts_state: TSMode::None,
             tp_selling_plan: TPSellingPlan {
                 tp_1: 0,
                 tp_2: 0,
@@ -85,37 +68,40 @@ impl TokenDatabaseSchema {
                 tp_4: 0,
                 tp_5: 0,
             },
-            ts_stop_selling_plan: TSStopSellingPlan {
-                ts_1_stop: 0,
-                ts_2_stop: 0,
-                ts_3_stop: 0,
-                ts_4_stop: 0,
-                ts_5_stop: 0,
-            },
-            sl_selling_plan: SLSellingPlan {
-                sl_1: 0,
-                sl_2: 0,
-                sl_3: 0,
-            },
             pump_fun_swap_accounts: PumpFunSwapAccounts::from_mint(
                 &mint_instruction_accounts,
                 &mint_event,
             ),
             token_sniper_status: TokenSniperStatus::TokenMinted,
-            token_sell_status: TokenSellStatus::None,
             token_trade_signal: TokenTradeSignal::None,
-            sniper_buy_amount: 0,
             mint_budget_compute_unit_limit: budget_compute_data.0,
             mint_budget_compute_unit_price: budget_compute_data.1,
-            dev_buy_amount_sol: 0.0,
-            token_last_activity_time: Instant::now(),
+            dev_buy_sol_lamports: None,
+            token_price_after_mint_bundler: 0.0,
+            token_sell_status: TokenSellStatus::None,
         };
 
         let _ = TOKEN_DB.upsert(mint_event.mint.clone(), token_data.clone());
         token_data
     }
 
+    pub fn update_buy_state_flag(&mut self) {
+        //Buy token when token price goes lower than 0.8 * mint bundle price
+        let dev_buy_amount_filtered = dev_buy_filter(self.dev_buy_sol_lamports);
+        if dev_buy_amount_filtered
+            && !self.token_is_purchased
+            && self.token_sell_status != TokenSellStatus::SellTradeSubmitted
+            && self.token_price_after_mint_bundler != 0.0
+            && self.token_price <= self.token_price_after_mint_bundler * 0.8
+            && self.token_mint_time.elapsed() < Duration::from_secs(300)
+        {
+            info!("Token price is lower than initial bundle price * 0.8, buying...");
+            self.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+        }
+    }
+
     pub fn update_sell_state_flag(&mut self, tx_id: String) {
+        //Works for TP4, TP5
         if self.token_balance > 0 {
             self.tp_state = if self.token_price > self.token_average_buying_price * *TAKE_PROFIT_5
                 && self.tp_state < TPMode::TP5
@@ -145,240 +131,8 @@ impl TokenDatabaseSchema {
                     self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
                 );
                 TPMode::TP4
-            } else if self.token_price > self.token_average_buying_price * *TAKE_PROFIT_3
-                && self.tp_state < TPMode::TP3
-            {
-                update!(
-                    "[TP_UPDATED]\t*MINT: {}
-                    \t*TP STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.tp_state,
-                    TPMode::TP4,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                );
-                TPMode::TP3
-            } else if self.token_price > self.token_average_buying_price * *TAKE_PROFIT_2
-                && self.tp_state < TPMode::TP2
-            {
-                update!(
-                    "[TP_UPDATED]\t*MINT: {}
-                    \t*TP STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.tp_state,
-                    TPMode::TP2,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                );
-                TPMode::TP2
-            } else if self.token_price > self.token_average_buying_price * *TAKE_PROFIT_1
-                && self.tp_state < TPMode::TP1
-            {
-                update!(
-                    "[TP_UPDATED]\t*MINT: {}
-                    \t*TP STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.tp_state,
-                    TPMode::TP1,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                );
-                TPMode::TP1
             } else {
                 self.tp_state.clone()
-            };
-
-            self.sl_state = if self.token_price < self.token_average_buying_price * *STOP_LOSS_3
-                && self.sl_state < SLMode::SL3
-            {
-                update!(
-                    "[SL_UPDATED]\t*MINT: {}
-                    \t*SL STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.sl_state,
-                    SLMode::SL3,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                );
-                SLMode::SL3
-            } else if self.token_price < self.token_average_buying_price * *STOP_LOSS_2
-                && self.sl_state < SLMode::SL2
-            {
-                update!(
-                    "[SL_UPDATED]\t*MINT: {}
-                    \t*SL STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.sl_state,
-                    SLMode::SL2,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                );
-                SLMode::SL2
-            } else if self.token_price < self.token_average_buying_price * *STOP_LOSS_1
-                && self.sl_state < SLMode::SL1
-            {
-                update!(
-                    "[SL_UPDATED]\t*MINT: {}
-                    \t*SL STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.sl_state,
-                    SLMode::SL1,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                );
-                SLMode::SL1
-            } else {
-                self.sl_state.clone()
-            };
-
-            self.ts_state = if self.ts_state == TSMode::TS5Triggered
-                && self.token_price < self.token_max_price * (1.0 - *TS_5_STOP)
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS5Stop,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS5Stop
-            } else if self.ts_state == TSMode::TS4Triggered
-                && self.token_price < self.token_max_price * (1.0 - *TS_4_STOP)
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS4Stop,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS4Stop
-            } else if self.ts_state == TSMode::TS3Triggered
-                && self.token_price < self.token_max_price * (1.0 - *TS_3_STOP)
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS3Stop,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS3Stop
-            } else if self.ts_state == TSMode::TS2Triggered
-                && self.token_price < self.token_max_price * (1.0 - *TS_2_STOP)
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS2Stop,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS2Stop
-            } else if self.ts_state == TSMode::TS1Triggered
-                && self.token_price < self.token_max_price * (1.0 - *TS_1_STOP)
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS1Stop,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS1Stop
-            } else if self.token_price > self.token_average_buying_price * *TS_5
-                && self.ts_state < TSMode::TS5Triggered
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS5Triggered,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS5Triggered
-            } else if self.token_price > self.token_average_buying_price * *TS_4
-                && self.ts_state < TSMode::TS4Triggered
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS4Triggered,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS4Triggered
-            } else if self.token_price > self.token_average_buying_price * *TS_3
-                && self.ts_state < TSMode::TS3Triggered
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS3Triggered,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS3Triggered
-            } else if self.token_price > self.token_average_buying_price * *TS_2
-                && self.ts_state < TSMode::TS2Triggered
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS2Triggered,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS2Triggered
-            } else if self.token_price > self.token_average_buying_price * *TS_1
-                && self.ts_state < TSMode::TS1Triggered
-            {
-                update!(
-                    "[TS_UPDATED]\t*MINT: {}
-                    \t*TS STATE: {:?} -> {:?},
-                    \t*MC VARIANT: {} SOL (BUY) -> {} SOL (NOW)",
-                    self.pump_fun_swap_accounts.mint,
-                    self.ts_state,
-                    TSMode::TS1Triggered,
-                    self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-                    self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64
-                );
-                TSMode::TS1Triggered
-            } else {
-                self.ts_state.clone()
             };
 
             dev_log!(
@@ -386,7 +140,8 @@ impl TokenDatabaseSchema {
                 \t*TX HASH: {}
                 \t*CURRENT MC: {:.5} SOL , PEAK MC: {:.5} SOL, BUYING POINT MC: {:.5} SOL
                 \t*PRICE VARIANT PCNT: {:3.5} % , FALL PCNT: {:3.5} %
-                \t*ts_state: {:?} , tp_state: {:?}",
+                \t*tp_state: {:?}
+                \t*amount: {}",
                 &self.pump_fun_swap_accounts.mint.to_string(),
                 solscan!(tx_id),
                 &self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
@@ -394,8 +149,8 @@ impl TokenDatabaseSchema {
                 &self.token_average_buying_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
                 &self.token_price * 100.0 / &self.token_average_buying_price,
                 100.0 * (&self.token_max_price - &self.token_price) / &self.token_max_price,
-                self.ts_state,
                 self.tp_state,
+                self.token_balance
             );
         }
     }

@@ -18,16 +18,6 @@ pub fn confirm(
     async move {
         let results = send_zero_slot_transaction(raw_instructions, tag.clone()).await;
 
-        info!(
-            "[SUBMIT]
-                \t* Service: {}
-                \t* Hash: {:?}
-                \t* {}",
-            *CONFIRM_SERVICE,
-            results,
-            tag.clone()
-        );
-
         if let Some(signature_str) = results {
             if let Some(confirmed_sig) = wait_for_confirmation(&signature_str, tag.clone()).await {
                 return Some(confirmed_sig);

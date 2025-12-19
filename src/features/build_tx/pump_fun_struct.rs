@@ -1,12 +1,11 @@
 use borsh::BorshDeserialize;
-use solana_sdk::system_instruction;
 use solana_sdk::{
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
 };
 use solana_sdk_ids::system_program;
 use spl_associated_token_account::get_associated_token_address_with_program_id;
-use spl_associated_token_account::instruction::create_associated_token_account_idempotent;
+use spl_associated_token_account::instruction::{create_associated_token_account_idempotent};
 
 use crate::*;
 
@@ -148,6 +147,21 @@ impl PumpFunSwapAccounts {
             &self.token_program,
         );
         create_token_ata
+    }
+
+    pub fn get_close_ata_ix(&self) -> Instruction {
+        let accounts = vec![
+            AccountMeta::new(self.associated_user, false),
+            AccountMeta::new(self.user, true),
+            AccountMeta::new(self.user, true)
+        ];
+        let data = vec![9];
+        
+        Instruction {
+            program_id: self.token_program,
+            accounts,
+            data
+        }
     }
 
     pub fn get_buy_ix(&mut self, sol_amount: f64, token_price: f64) -> Instruction {
