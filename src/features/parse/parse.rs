@@ -458,7 +458,6 @@ pub fn filter_by_program_id(
     let program_id_index = match account_keys.iter().position(|&pos| pos == program_id) {
         Some(index) => index,
         None => {
-            // println!("Program not found");
             return Ok(vec![]);
         }
     };
@@ -482,4 +481,50 @@ pub fn filter_by_program_id(
         });
 
     Ok(filtered_ixs.chain(filtered_inner_ixs).collect())
+}
+
+/// Single-pass grouping of instructions by multiple program IDs.
+/// Returns results in the same order as `program_ids`.
+pub fn group_by_program_ids(
+    ixs: Vec<CompiledInstruction>,
+    inner_ixs: Vec<InnerInstruction>,
+    program_ids: &[Pubkey],
+    account_keys: &[Pubkey],
+) -> Vec<Vec<InstructionRawData>> {
+    // Map each program_id to its index in account_keys (if present)
+    let index_map: Vec<Option<u32>> = program_ids
+        .iter()
+        .map(|pid| {
+            account_keys
+                .iter()
+                .position(|k| k == pid)
+                .map(|i| i as u32)
+        })
+        .collect();
+
+    let mut results: Vec<Vec<InstructionRawData>> = vec![Vec::new(); program_ids.len()];
+
+    // Build a reverse lookup: account_keys index -> which slot(s) in results
+    // (cheap: program_ids is tiny, typically 2-3)
+    let mut dispatch = |prog_idx: u32, accounts: Vec<u8>, data: Vec<u8>| {
+        for (slot, opt_idx) in index_map.iter().enumerate() {
+            if *opt_idx == Some(prog_idx) {
+                results[slot].push(InstructionRawData {
+                    accounts,
+                    data,
+                    program_id_index: prog_idx,
+                });
+                return;
+            }
+        }
+    };
+
+    for ix in ixs {
+        dispatch(ix.program_id_index, ix.accounts, ix.data);
+    }
+    for ix in inner_ixs {
+        dispatch(ix.program_id_index, ix.accounts, ix.data);
+    }
+
+    results
 }

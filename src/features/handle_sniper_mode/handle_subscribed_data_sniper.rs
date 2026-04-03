@@ -16,35 +16,18 @@ where
                         continue;
                     };
 
-                let budget_compute_ix_info = filter_by_program_id(
-                    ixs.clone(),
-                    inner_ixs.clone(),
-                    BUDGET_COMPUTE_PROGRAM,
-                    account_keys.clone(),
-                )
-                .unwrap();
+                let mut grouped = group_by_program_ids(
+                    ixs,
+                    inner_ixs,
+                    &[BUDGET_COMPUTE_PROGRAM, PUMPFUN_PROGRAM_ID, PUMPSWAP_PROGRAM_ID],
+                    &account_keys,
+                );
+                // Order matches the program_ids slice above
+                let ix_info_pumpswap = grouped.pop().unwrap();
+                let ix_info_pumpfun = grouped.pop().unwrap();
+                let budget_compute_ix_info = grouped.pop().unwrap();
 
-                let ix_info_pumpfun = filter_by_program_id(
-                    ixs.clone(),
-                    inner_ixs.clone(),
-                    PUMPFUN_PROGRAM_ID,
-                    account_keys.clone(),
-                )
-                .unwrap();
-
-                let ix_info_pumpswap = match filter_by_program_id(
-                    ixs.clone(),
-                    inner_ixs.clone(),
-                    PUMPSWAP_PROGRAM_ID,
-                    account_keys.clone(),
-                ) {
-                    Ok(data) => data,
-                    Err(_) => {
-                        vec![]
-                    }
-                };
-
-                let mut all_pump_ix = vec![];
+                let mut all_pump_ix = Vec::with_capacity(ix_info_pumpfun.len() + ix_info_pumpswap.len());
                 all_pump_ix.extend(ix_info_pumpfun.clone());
                 all_pump_ix.extend(ix_info_pumpswap.clone());
 
