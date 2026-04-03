@@ -192,7 +192,7 @@ impl PumpSwapStruct {
         let max_quote_in: f64 = *BUY_AMOUNT_SOL * 10f64.powi(9) * *SLIPPAGE;
         let turncated_max_quote_in: u64 = max_quote_in.trunc() as u64;
 
-        data.extend_from_slice(&BUY_DISCRIMINATOR);
+        data.extend_from_slice(&PUMPSWAP_BUY_DISCRIMINATOR);
         data.extend_from_slice(&truncated_base_out.to_le_bytes());
         data.extend_from_slice(&turncated_max_quote_in.to_le_bytes());
 
@@ -289,7 +289,7 @@ impl PumpSwapStruct {
 
         let min_sol_out: u64 = 1;
 
-        data.extend_from_slice(&SELL_DISCRIMINATOR);
+        data.extend_from_slice(&PUMPSWAP_SELL_DISCRIMINATOR);
         data.extend_from_slice(&sell_amount.to_le_bytes());
         data.extend_from_slice(&min_sol_out.to_le_bytes());
 

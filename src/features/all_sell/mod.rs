@@ -87,7 +87,7 @@ pub async fn all_sell() -> Result<(), Box<dyn std::error::Error>> {
                         ixs.push(create_ix);
                         ixs.push(swap_ix);
 
-                        let _ = confirm(
+                        let _ = confirm_sell(
                             ixs,
                             format!("[AUTO_TURN_OFF]\t*Sell\t*Mint: {}", curve_accounts.mint),
                         )

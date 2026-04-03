@@ -2,6 +2,12 @@ use crate::*;
 use borsh::BorshDeserialize;
 use solana_sdk::pubkey::Pubkey;
 
+#[derive(PartialEq)]
+pub enum TradeType {
+    Buy,
+    Sell,
+}
+
 #[derive(Debug, Clone)]
 pub struct InstructionRawData {
     pub accounts: Vec<u8>,

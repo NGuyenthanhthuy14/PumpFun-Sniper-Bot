@@ -207,7 +207,7 @@ pub fn get_pumpfun_trade_info(
                 token_total_supply: mint_event.token_total_supply,
                 token_program: mint_event.token_program,
                 is_mayhem_mode: mint_event.is_mayhem_mode,
-                is_cashback_enabled: mint_event.is_cashback_enabled
+                is_cashback_enabled: mint_event.is_cashback_enabled,
             };
             mint_events.push(mint_info);
         } else if info.data.starts_with(
@@ -371,7 +371,7 @@ pub fn get_pumpswap_trade_info(
     let mut buy_accounts: Vec<PumpswapBuyInstructionAccounts> = vec![];
     let mut sell_accounts: Vec<PumpswapSellInstructionAccounts> = vec![];
     infos.iter().for_each(|info| {
-        if info.data.starts_with(&BUY_DISCRIMINATOR)
+        if info.data.starts_with(&PUMPSWAP_BUY_DISCRIMINATOR)
             || info.data.starts_with(&BUY_EXACT_QUOTE_IN_DISCRIMINATOR)
         {
             let buy_account = PumpswapBuyInstructionAccounts {
@@ -401,7 +401,7 @@ pub fn get_pumpswap_trade_info(
             };
 
             buy_accounts.push(buy_account);
-        } else if info.data.starts_with(&SELL_DISCRIMINATOR) {
+        } else if info.data.starts_with(&PUMPSWAP_SELL_DISCRIMINATOR) {
             let sell_account = PumpswapSellInstructionAccounts {
                 pool: account_keys[info.accounts[0] as usize],
                 user: account_keys[info.accounts[1] as usize],

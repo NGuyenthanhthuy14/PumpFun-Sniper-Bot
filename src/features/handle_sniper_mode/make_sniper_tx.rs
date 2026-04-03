@@ -5,9 +5,8 @@ use std::collections::HashMap;
 pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabaseSchema>) {
     for token_data_ref in trade_token_data_map.values() {
         let mut token_data = token_data_ref.clone();
-        let mut sell_retry_context: Option<(Pubkey, u64)> = None;
 
-        let instructions: (Vec<Instruction>, String) = if token_data.token_trade_signal
+        let instructions: (ConfirmType, Vec<Instruction>, String) = if token_data.token_trade_signal
             == TokenTradeSignal::IsEntryPoint
         {
             let buy_tx_remaining_counter = get_buy_tx_remain_counter();
@@ -19,7 +18,7 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                 let create_ata_ix = token_data.pumpfun_struct.get_create_ata_idempotent_ix();
                 let buy_ix = token_data
                     .pumpfun_struct
-                    .get_buy_ix(token_data.token_creator, token_data.token_price);
+                    .get_buy_ix(token_data.token_creator);
 
                 ix.push(create_ata_ix);
                 ix.push(buy_ix);
@@ -30,9 +29,9 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
 
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
 
-                (ix, tag)
+                (ConfirmType::Buy, ix, tag)
             } else {
-                (vec![], "".to_string())
+                (ConfirmType::Buy, vec![], "".to_string())
             }
         } else if token_data.sl_state == SLMode::Triggered
             && token_data.tracked_sl_state != SLMode::Triggered
@@ -57,7 +56,6 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                 token_data.tracked_sl_state = SLMode::Triggered;
                 token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-                sell_retry_context = Some((token_data.token_mint, token_data.token_balance));
 
                 let tag = format!(
                     "[SELL]\t*SL triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
@@ -73,7 +71,7 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                     token_data.token_balance,
                 );
 
-                (ix, tag)
+                (ConfirmType::Sell(token_data.token_balance), ix, tag)
             } else {
                 let sell_ix: Instruction = token_data.pumpfun_struct.get_sell_ix(
                     token_data.token_creator,
@@ -88,7 +86,6 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                 token_data.tracked_sl_state = SLMode::Triggered;
                 token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-                sell_retry_context = Some((token_data.token_mint, token_data.token_balance));
 
                 let tag = format!(
                     "[SELL]\t*SL triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
@@ -104,14 +101,16 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                     token_data.token_balance,
                 );
 
-                (ix, tag)
+                (ConfirmType::Sell(token_data.token_balance), ix, tag)
             }
         } else if token_data.pending_tp_sell_index.is_some()
             && token_data.pending_tp_sell_amount > 0
             && token_data.token_sell_status != TokenSellStatus::SellTradeSubmitted
         {
             let tp_idx = token_data.pending_tp_sell_index.unwrap();
-            let sell_amount = token_data.pending_tp_sell_amount.min(token_data.token_balance);
+            let sell_amount = token_data
+                .pending_tp_sell_amount
+                .min(token_data.token_balance);
 
             if token_data.token_is_migrated
                 && let Some(mut pumpswap_struct) = token_data.pumpswap_struct
@@ -131,7 +130,6 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
 
                 token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-                sell_retry_context = Some((token_data.token_mint, sell_amount));
 
                 let tag = format!(
                     "[SELL]\t*TP{} triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
@@ -149,7 +147,7 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                     sell_amount,
                 );
 
-                (ix, tag)
+                (ConfirmType::Sell(sell_amount), ix, tag)
             } else {
                 let sell_ix: Instruction = token_data.pumpfun_struct.get_sell_ix(
                     token_data.token_creator,
@@ -165,7 +163,6 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
 
                 token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-                sell_retry_context = Some((token_data.token_mint, sell_amount));
 
                 let tag = format!(
                     "[SELL]\t*TP{} triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
@@ -183,21 +180,24 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                     sell_amount,
                 );
 
-                (ix, tag)
+                (ConfirmType::Sell(sell_amount), ix, tag)
             }
         } else {
-            (vec![], "".to_string())
+            (ConfirmType::Buy, vec![], "".to_string())
         };
 
-        let (ix, tag) = instructions;
+        let (trade_type, ix, tag) = instructions;
 
         if !ix.is_empty() {
-            let retry_context = sell_retry_context;
+            let mint = token_data.token_mint;
             tokio::spawn(async move {
-                if let Some((mint, sell_amount)) = retry_context {
-                    let _ = confirm_sell_with_retry(mint, sell_amount, ix, tag).await;
-                } else {
-                    let _ = confirm(ix, tag).await;
+                match trade_type {
+                    ConfirmType::Sell(sell_amount) => {
+                        let _ = confirm_sell_with_retry(mint, sell_amount, ix, tag).await;
+                    }
+                    ConfirmType::Buy => {
+                        let _ = confirm(ix, tag).await;
+                    }
                 }
             });
         }

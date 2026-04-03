@@ -1,5 +1,5 @@
+use crate::*;
 use once_cell::sync::Lazy;
-use reqwest::Client;
 use solana_client::nonblocking::rpc_client::RpcClient;
 use solana_sdk::{
     commitment_config::CommitmentConfig,
@@ -9,9 +9,6 @@ use solana_sdk::{
 };
 use std::sync::Arc;
 use std::sync::atomic::{AtomicI32, Ordering};
-use std::time::Duration;
-
-use crate::CONFIG;
 
 //Bot mode
 pub static DEV_MODE: Lazy<bool> = Lazy::new(|| CONFIG.mode.is_dev_mode);
@@ -37,27 +34,6 @@ pub static SIGNER_PUBKEY: Lazy<Pubkey> = Lazy::new(|| {
     wallet.pubkey()
 });
 
-//HTTP endpoint
-pub static ZERO_SLOT_HTTP_CLIENT: Lazy<Arc<Client>> = Lazy::new(|| {
-    println!("🔄 Initializing 0-slot HTTP client...");
-
-    let client = Client::builder()
-        .pool_idle_timeout(Duration::from_secs(300))
-        .pool_max_idle_per_host(5)
-        .tcp_keepalive(Duration::from_secs(10))
-        .tcp_nodelay(true)
-        .connect_timeout(Duration::from_secs(3))
-        .timeout(Duration::from_secs(10))
-        .http2_keep_alive_interval(Duration::from_secs(20))
-        .http2_keep_alive_timeout(Duration::from_secs(90))
-        .http2_keep_alive_while_idle(true)
-        .use_rustls_tls()
-        .build()
-        .expect("Failed to build 0-slot HTTP client");
-
-    Arc::new(client)
-});
-
 //RPC endpoint
 pub static RPC_ENDPOINT: Lazy<String> = Lazy::new(|| CONFIG.connection_config.rpc_endpoint.clone());
 pub static RPC_CLIENT: Lazy<Arc<RpcClient>> = Lazy::new(|| {
@@ -79,46 +55,19 @@ pub static BUY_AMOUNT_SOL: Lazy<f64> = Lazy::new(|| CONFIG.buy_setting.buy_amoun
 pub static SLIPPAGE: Lazy<f64> =
     Lazy::new(|| 1.0 + CONFIG.slippage_config.slippage_percent as f64 / 100.0);
 
+//Landing service config
+pub static LANDING_SERVICE: Lazy<String> =
+    Lazy::new(|| CONFIG.landing_service_config.landing_service.clone());
+pub static ZERO_SLOT_API_KEY: Lazy<String> = Lazy::new(|| CONFIG.landing_service_config.zero_slot_api_key.clone());
+pub static HELIUS_API_KEY: Lazy<String> = Lazy::new(|| CONFIG.landing_service_config.helius_api_key.clone());
+
+pub static ZERO_SLOT_ENDPOINT: Lazy<String> = Lazy::new(|| format!("http://de1.0slot.trade?api-key={}", *ZERO_SLOT_API_KEY));
+pub static HELIUS_ENDPOINT: Lazy<String> = Lazy::new(|| "http://fra-sender.helius-rpc.com/fast".to_string());
+
 //Fee
-pub static PRIORITY_FEE: Lazy<(u64, u64, f64)> = Lazy::new(|| {
-    let cu: u64 = CONFIG.fee_config.cu;
-    let priority_fee_micro_lamport = CONFIG.fee_config.priority_fee_micro_lamport;
-
-    let third_party_fee = CONFIG.fee_config.third_party_fee;
-
-    (cu, priority_fee_micro_lamport, third_party_fee)
-});
-
-pub async fn pre_warm_zero_slot_endpoint(client: Arc<Client>) {
-    println!("🔥 Pre-warming 0-slot endpoint...");
-
-    for attempt in 1..=3 {
-        let url = "http://la1.0slot.trade?api-key=335e371309b6492584368e9dc553622d".to_string();
-
-        match client.get(&url).send().await {
-            Ok(response) => {
-                println!(
-                    "✅ 0-slot endpoint ready (attempt {}): HTTP {}",
-                    attempt,
-                    response.status()
-                );
-
-                if response.status().is_success() {
-                    println!("🎯 Successfully connected to 0-slot service");
-                }
-                break;
-            }
-            Err(e) if attempt < 3 => {
-                println!("⚠️ 0-slot warm-up attempt {} failed: {:?}", attempt, e);
-                tokio::time::sleep(Duration::from_millis(100 * attempt as u64)).await;
-            }
-            Err(e) => {
-                eprintln!("❌ Failed to pre-warm 0-slot endpoint: {:?}", e);
-            }
-        }
-    }
-}
-
-pub fn get_zero_slot_client() -> Arc<Client> {
-    ZERO_SLOT_HTTP_CLIENT.clone()
-}
+pub static BUY_COMPUTE_UNIT_LIMIT: Lazy<u64> =
+    Lazy::new(|| CONFIG.fee_config.buy_compute_unit_limit);
+pub static BUY_MICRO_LAMPORTS: Lazy<u64> = Lazy::new(|| CONFIG.fee_config.buy_micro_lamports);
+pub static SELL_MICRO_LAMPORTS: Lazy<f64> = Lazy::new(|| CONFIG.fee_config.sell_micro_lamports);
+pub static ZERO_SLOT_FEE: Lazy<f64> = Lazy::new(|| CONFIG.fee_config.zero_slot_fee);
+pub static HELIUS_FEE: Lazy<f64> = Lazy::new(|| CONFIG.fee_config.helius_fee);

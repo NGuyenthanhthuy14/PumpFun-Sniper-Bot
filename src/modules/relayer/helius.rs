@@ -9,14 +9,14 @@ use solana_sdk::{
 };
 use std::time::Instant;
 
-pub async fn send_zero_slot_transaction(
+pub async fn send_helius_transaction(
     raw_instructions: Vec<Instruction>,
     tag: String,
 ) -> Option<String> {
     let nonce = match acquire_nonce() {
         Some(n) => n,
         None => {
-            error!("[ZERO_SLOT] No nonce account available\n\t* {}", tag);
+            error!("[HELIUS] No nonce account available\n\t* {}", tag);
             return None;
         }
     };
@@ -34,15 +34,16 @@ pub async fn send_zero_slot_transaction(
     ));
     total_instruction.extend(raw_instructions);
 
-    let idx = rand::rng().random_range(0..ZERO_SLOT_TIP_ACCOUNTS.len());
-    let tip_receiver = ZERO_SLOT_TIP_ACCOUNTS[idx];
+    //tip ix
+    let idx = rand::rng().random_range(0..HELIUS_TIP_ACCOUNTS.len());
+    let tip_receiver = HELIUS_TIP_ACCOUNTS[idx];
     let tip_transfer_instruction = system_instruction::transfer(
         &SIGNER_PUBKEY,
         &tip_receiver,
-        (*ZERO_SLOT_FEE * 10f64.powi(9)) as u64,
+        (*HELIUS_FEE * 10f64.powi(9)) as u64,
     );
-
     total_instruction.push(tip_transfer_instruction);
+
     let mut transaction = Transaction::new_with_payer(&total_instruction, Some(&SIGNER_PUBKEY));
     transaction
         .try_sign(&[SIGNER_KEYPAIR.insecure_clone()], nonce.nonce_hash)
@@ -63,9 +64,10 @@ pub async fn send_zero_slot_transaction(
             }
         ]
     });
+
     let tx_submission_start = Instant::now();
     let response = HTTP_CLIENT
-        .post(&*ZERO_SLOT_ENDPOINT)
+        .post(&*HELIUS_ENDPOINT)
         .json(&request_body)
         .send()
         .await;
@@ -78,12 +80,12 @@ pub async fn send_zero_slot_transaction(
             let response_json: serde_json::Value = response_data.json().await.unwrap();
             if let Some(result) = response_json.get("result") {
                 println!(
-                    "Transaction(zero slot) submission took: {:?}",
+                    "Transaction(helius) submission took: {:?}",
                     tx_submission_start.elapsed()
                 );
                 info!(
                     "[SUBMIT]
-                        \t* Service: ZERO_SLOT
+                        \t* Service: HELIUS
                         \t* Hash: {:?}
                         \t* {}",
                     result,
@@ -91,7 +93,7 @@ pub async fn send_zero_slot_transaction(
                 );
                 return Some(result.to_string());
             } else {
-                println!("No response from confirm service");
+                println!("No response from helius service");
                 println!("{:?}", response_json);
                 return None;
             }

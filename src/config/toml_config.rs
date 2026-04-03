@@ -12,11 +12,6 @@ pub struct WalletCredentialConfig {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct TargetConfig {
-    pub target_wallets: Vec<String>,
-}
-
-#[derive(Debug, Deserialize)]
 pub struct ConnectionConfig {
     pub grpc_endpoint: String,
     pub grpc_token: String,
@@ -24,17 +19,8 @@ pub struct ConnectionConfig {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct RelayerConfig {
-    pub confirm_service: String,
-}
-
-#[derive(Debug, Deserialize)]
 pub struct BuySetting {
     pub buy_amount_sol: f64,
-}
-#[derive(Debug, Deserialize)]
-pub struct BuyConditionConfig {
-    pub price_variant_width_percent: f64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -64,10 +50,19 @@ pub struct SlippageConfig {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct LandingServiceConfig {
+    pub landing_service: String,
+    pub zero_slot_api_key: String,
+    pub helius_api_key: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct FeeConfig {
-    pub cu: u64,
-    pub priority_fee_micro_lamport: u64,
-    pub third_party_fee: f64,
+    pub buy_compute_unit_limit: u64,
+    pub buy_micro_lamports: u64,
+    pub sell_micro_lamports: f64,
+    pub zero_slot_fee: f64,
+    pub helius_fee: f64,
 }
 
 #[derive(Debug, Deserialize)]
@@ -80,9 +75,4 @@ pub struct FilterSetting {
     pub min_market_cap_limit_sol: i32,
     pub max_token_holder_filter: bool,
     pub max_token_holder_limit: u64,
-}
-#[derive(Debug, Deserialize)]
-pub struct MonitorConfig {
-    pub stop_no_activity_token_monitoring: bool,
-    pub no_activity_time: u64,
 }

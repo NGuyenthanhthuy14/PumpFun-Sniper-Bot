@@ -80,7 +80,9 @@ impl TokenDatabaseSchema {
             return;
         }
 
-        if self.token_price < self.token_buying_point_price * *STOP_LOSS && self.sl_state != SLMode::Triggered {
+        if self.token_price < self.token_buying_point_price * *STOP_LOSS
+            && self.sl_state != SLMode::Triggered
+        {
             update!(
                 "[SL_REACHED]\t*MINT: {}
                 \t*MC VARIANT: {:.3} SOL (BUY) -> {:.3} SOL (NOW)",
@@ -124,30 +126,6 @@ impl TokenDatabaseSchema {
                 }
             }
         }
-
-        dev_log!(
-            "[TOKEN STATE UPDATE]\t*MINT {:<12} ,
-                	*TX HASH: {}
-                	*CURRENT MC: {:.5} SOL , PEAK MC: {:.5} SOL, BUYING POINT MC: {:.5} SOL
-                	*PRICE VARIANT PCNT: {:3.5} % , FALL PCNT: {:3.5} %
-                	*SL STATE: {:?}
-                	*TP PLAN IDX: {}/{}
-                	*PENDING TP SELL: {:?} / {}
-                	*BALANCE: {}",
-            &self.pumpfun_struct.mint.to_string(),
-            solscan!(tx_id),
-            &self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-            &self.token_max_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-            &self.token_buying_point_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
-            &self.token_price * 100.0 / &self.token_buying_point_price,
-            100.0 * (&self.token_max_price - &self.token_price) / &self.token_max_price,
-            self.sl_state,
-            self.next_tp_index_to_sell,
-            self.token_tp_levels.len(),
-            self.pending_tp_sell_index,
-            self.pending_tp_sell_amount,
-            self.token_balance
-        );
     }
 
     pub fn set_tp_sell_strategy(&mut self, tp_levels: Vec<f64>, sell_amount_percents: Vec<f64>) {

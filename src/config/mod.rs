@@ -17,6 +17,7 @@ pub struct Config {
     pub connection_config: ConnectionConfig,
     pub buy_setting: BuySetting,
     pub sell_setting: SellSetting,
+    pub landing_service_config: LandingServiceConfig,
     pub slippage_config: SlippageConfig,
     pub fee_config: FeeConfig,
 }

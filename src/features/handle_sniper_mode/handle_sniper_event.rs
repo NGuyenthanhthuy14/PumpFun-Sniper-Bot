@@ -61,17 +61,30 @@ pub async fn handle_trade_events(
         let mint_pattern_matched = patterns.iter().any(|p| p.mint_pattern == (unit, price))
             || MANUAL_MINT_PRICE_PATTERNS.contains(&price);
 
-        if mint_pattern_matched {
-            let token_data = TokenDatabaseSchema::new_from_mint(
-                mint_event.clone(),
-                mint_ix_accounts.clone(),
-                (unit, price),
-                tx_id.clone(),
-            );
+        // if mint_pattern_matched {
+        //     let token_data = TokenDatabaseSchema::new_from_mint(
+        //         mint_event.clone(),
+        //         mint_ix_accounts.clone(),
+        //         (unit, price),
+        //         tx_id.clone(),
+        //     );
 
-            minted_in_this_tx.insert(token_data.token_mint);
-            return_data.insert(token_data.token_mint, token_data);
-        }
+        //     minted_in_this_tx.insert(token_data.token_mint);
+        //     return_data.insert(token_data.token_mint, token_data);
+        // }
+
+        let mut token_data = TokenDatabaseSchema::new_from_mint(
+            mint_event.clone(),
+            mint_ix_accounts.clone(),
+            (unit, price),
+            tx_id.clone(),
+        );
+
+        token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+        minted_in_this_tx.insert(token_data.token_mint);
+        let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
+        return_data.insert(token_data.token_mint, token_data);
+
     }
 
     // ── Pumpfun Buy events: single pass for counting + state update ──
@@ -116,10 +129,25 @@ pub async fn handle_trade_events(
             );
             let history = &token_data.buy_tx_history;
 
-            if let Some(pattern) = patterns
-                .iter()
-                .find(|p| p.mint_pattern == mint_pat && p.buy_pattern == *history)
-            {
+            let mut matched_pattern: Option<&TokenFilter> = None;
+
+            for pattern in patterns.iter() {
+                if pattern.mint_pattern != mint_pat {
+                    continue;
+                }
+
+                if *history == pattern.buy_pattern {
+                    info!(
+                        "[BUNDLE_MATCH]\n\t*MINT: {}\n\t*type: exact\n\t*pattern_len: {}",
+                        mint,
+                        pattern.buy_pattern.len(),
+                    );
+                    matched_pattern = Some(pattern);
+                    break;
+                }
+            }
+
+            if let Some(pattern) = matched_pattern {
                 let primary_tp_threshold = pattern.primary_tp_threshold();
                 token_data.set_tp_sell_strategy(
                     pattern.tp_threshold.clone(),

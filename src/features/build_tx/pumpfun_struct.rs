@@ -98,25 +98,22 @@ impl PumpfunStruct {
         }
     }
 
-    pub fn get_buy_ix(&mut self, updated_token_creator: Pubkey, token_price: f64) -> Instruction {
+    pub fn get_buy_ix(&mut self, updated_token_creator: Pubkey) -> Instruction {
         //get custom accounts
         let (updated_creator_vault, _) = Pubkey::find_program_address(
             &[PUMPFUN_CREATOR_VAULT_SEED, &updated_token_creator.as_ref()],
             &PUMPFUN_PROGRAM_ID,
         );
 
-        //build instruction data
-
+        //build instruction data — buy_exact_sol_in
         let mut data = Vec::new();
 
-        let base_out: f64 = (*BUY_AMOUNT_SOL / token_price) * 10f64.powi(6);
-        let truncated_base_out: u64 = base_out.trunc() as u64;
-        let max_quote_in: f64 = *BUY_AMOUNT_SOL * 10f64.powi(9) * *SLIPPAGE;
-        let turncated_max_quote_in: u64 = max_quote_in.trunc() as u64;
+        let spendable_sol_in: u64 = (*BUY_AMOUNT_SOL * 10f64.powi(9)).trunc() as u64;
+        let min_tokens_out: u64 = 1;
 
-        data.extend_from_slice(&PUMP_FUN_BUY_DISCRIMINATOR);
-        data.extend_from_slice(&truncated_base_out.to_le_bytes());
-        data.extend_from_slice(&turncated_max_quote_in.to_le_bytes());
+        data.extend_from_slice(&PUMP_FUN_BUY_EXACT_SOL_IN_DISCRIMINATOR);
+        data.extend_from_slice(&spendable_sol_in.to_le_bytes());
+        data.extend_from_slice(&min_tokens_out.to_le_bytes());
 
         let accounts = vec![
             AccountMeta::new_readonly(self.global, false), // #1 - Global
