@@ -41,6 +41,10 @@ pub struct SimToken {
     pub creator: Pubkey,
     pub is_migrated: bool,
     pub exit_reason: String,
+
+    // Fees
+    pub total_fees_sol: f64,
+    pub sell_count: u32,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -76,20 +80,35 @@ pub struct SimEngine {
     pub confirmation_delay: Duration,
     pub match_count_per_pattern: Arc<Mutex<HashMap<String, u64>>>,
     pub total_tx_processed: Arc<Mutex<u64>>,
+    // Fees
+    pub buy_fee_sol: f64,  // landing_fee + buy_priority_fee
+    pub sell_fee_sol: f64, // sell_priority_fee only (no landing fee)
 }
 
 impl SimEngine {
     pub fn new() -> Self {
+        let sim = &CONFIG.simulation_setting;
+
+        let base_tx_fee = 0.000005; // 5000 lamports
+        let landing_fee = match sim.landing_service.as_str() {
+            "ZERO_SLOT" => sim.zero_slot_fee,
+            _ => sim.helius_fee,
+        };
+        let buy_priority = sim.buy_compute_unit_limit as f64 * sim.buy_micro_lamports as f64 / 1e15;
+        let sell_priority = sim.sell_compute_unit_limit as f64 * sim.sell_micro_lamports as f64 / 1e15;
+
         Self {
             tokens: Arc::new(Mutex::new(HashMap::new())),
             completed: Arc::new(Mutex::new(Vec::new())),
             start_time: Instant::now(),
-            buy_amount_sol: CONFIG.simulation_setting.buy_amount_sol,
-            stop_loss_pct: CONFIG.simulation_setting.stop_loss / 100.0,
-            real_tp_multiply: CONFIG.simulation_setting.real_tp_multiply / 100.0,
-            confirmation_delay: Duration::from_millis(CONFIG.simulation_setting.confirmation_delay_ms),
+            buy_amount_sol: sim.buy_amount_sol,
+            stop_loss_pct: sim.stop_loss / 100.0,
+            real_tp_multiply: sim.real_tp_multiply / 100.0,
+            confirmation_delay: Duration::from_millis(sim.confirmation_delay_ms),
             match_count_per_pattern: Arc::new(Mutex::new(HashMap::new())),
             total_tx_processed: Arc::new(Mutex::new(0)),
+            buy_fee_sol: landing_fee + buy_priority + base_tx_fee,
+            sell_fee_sol: sell_priority + base_tx_fee,
         }
     }
 
@@ -176,6 +195,8 @@ impl SimEngine {
                     creator: mint_event.creator,
                     is_migrated: false,
                     exit_reason: String::new(),
+                    total_fees_sol: 0.0,
+                    sell_count: 0,
                 };
 
                 let mut tokens = self.tokens.lock().expect("tokens lock");
@@ -199,6 +220,45 @@ impl SimEngine {
                     mc,
                     manual_pat.take_profit, manual_pat.sell_amounts,
                 );
+
+                // Spawn guaranteed buy confirmation after delay
+                let tokens_arc = self.tokens.clone();
+                let delay = self.confirmation_delay;
+                let buy_sol = self.buy_amount_sol;
+                let sl_pct = self.stop_loss_pct;
+                let buy_fee = self.buy_fee_sol;
+                tokio::spawn(async move {
+                    tokio::time::sleep(delay).await;
+                    let mut tokens = tokens_arc.lock().expect("tokens lock");
+                    if let Some(sim) = tokens.get_mut(&mint) {
+                        if !sim.buy_confirmed && !sim.tp_levels.is_empty() {
+                            sim.buy_confirmed = true;
+                            sim.buy_price = sim.current_price;
+                            sim.total_fees_sol += buy_fee;
+                            let mc = sim.current_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
+                            let mint_mc = sim.mint_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
+                            let price_change = ((sim.current_price / sim.mint_price) - 1.0) * 100.0;
+                            info!(
+                                "\n💰 [SIM] [BUY]\n\
+                                 │  Pattern:    {}\n\
+                                 │  Mint:       {}\n\
+                                 │  Buy MC:     {:.2} SOL\n\
+                                 │  Mint MC:    {:.2} SOL\n\
+                                 │  Δ MC:       {:+.2}%\n\
+                                 │  Amount:     {:.4} SOL\n\
+                                 │  Fee:        {:.6} SOL\n\
+                                 │  SL:         {:.0}%\n\
+                                 │  TP:         {:?}%\n\
+                                 └──────────────────────",
+                                sim.pattern_label, sim.mint,
+                                mc, mint_mc, price_change,
+                                buy_sol, buy_fee,
+                                sl_pct * 100.0,
+                                sim.tp_levels,
+                            );
+                        }
+                    }
+                });
             } else if server_matched {
                 // Server pattern — track but no immediate entry (needs bundle match)
                 let sim_token = SimToken {
@@ -225,6 +285,8 @@ impl SimEngine {
                     creator: mint_event.creator,
                     is_migrated: false,
                     exit_reason: String::new(),
+                    total_fees_sol: 0.0,
+                    sell_count: 0,
                 };
 
                 let mut tokens = self.tokens.lock().expect("tokens lock");
@@ -270,35 +332,6 @@ impl SimEngine {
                     {
                         buy_counts.insert(mint, 1);
                     }
-                }
-
-                // Simulate buy confirmation after delay
-                if !sim.buy_confirmed
-                    && !sim.tp_levels.is_empty()
-                    && sim.matched_at.elapsed() >= self.confirmation_delay
-                {
-                    sim.buy_confirmed = true;
-                    sim.buy_price = new_price;
-                    let mc = new_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
-                    let mint_mc = sim.mint_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
-                    let price_change = ((new_price / sim.mint_price) - 1.0) * 100.0;
-                    info!(
-                        "\n💰 [SIM] [BUY]\n\
-                         │  Pattern:    {}\n\
-                         │  Mint:       {}\n\
-                         │  Buy MC:     {:.2} SOL\n\
-                         │  Mint MC:    {:.2} SOL\n\
-                         │  Δ MC:       {:+.2}%\n\
-                         │  Amount:     {:.4} SOL\n\
-                         │  SL:         {:.0}%\n\
-                         │  TP:         {:?}%\n\
-                         └──────────────────────",
-                        sim.pattern_label, sim.mint,
-                        mc, mint_mc, price_change,
-                        self.buy_amount_sol,
-                        self.stop_loss_pct * 100.0,
-                        sim.tp_levels,
-                    );
                 }
 
                 // Check TP/SL only after buy confirmed
@@ -353,6 +386,46 @@ impl SimEngine {
                         mc,
                         sim.tp_levels, sim.sell_amounts,
                     );
+
+                    // Spawn guaranteed buy confirmation after delay
+                    let tokens_arc = self.tokens.clone();
+                    let delay = self.confirmation_delay;
+                    let buy_sol = self.buy_amount_sol;
+                    let sl_pct = self.stop_loss_pct;
+                    let buy_fee = self.buy_fee_sol;
+                    let mint_key = *mint;
+                    tokio::spawn(async move {
+                        tokio::time::sleep(delay).await;
+                        let mut tokens = tokens_arc.lock().expect("tokens lock");
+                        if let Some(sim) = tokens.get_mut(&mint_key) {
+                            if !sim.buy_confirmed && !sim.tp_levels.is_empty() {
+                                sim.buy_confirmed = true;
+                                sim.buy_price = sim.current_price;
+                                sim.total_fees_sol += buy_fee;
+                                let mc = sim.current_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
+                                let mint_mc = sim.mint_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
+                                let price_change = ((sim.current_price / sim.mint_price) - 1.0) * 100.0;
+                                info!(
+                                    "\n💰 [SIM] [BUY]\n\
+                                     │  Pattern:    {}\n\
+                                     │  Mint:       {}\n\
+                                     │  Buy MC:     {:.2} SOL\n\
+                                     │  Mint MC:    {:.2} SOL\n\
+                                     │  Δ MC:       {:+.2}%\n\
+                                     │  Amount:     {:.4} SOL\n\
+                                     │  Fee:        {:.6} SOL\n\
+                                     │  SL:         {:.0}%\n\
+                                     │  TP:         {:?}%\n\
+                                     └──────────────────────",
+                                    sim.pattern_label, sim.mint,
+                                    mc, mint_mc, price_change,
+                                    buy_sol, buy_fee,
+                                    sl_pct * 100.0,
+                                    sim.tp_levels,
+                                );
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -400,28 +473,6 @@ impl SimEngine {
                 sim.max_price = sim.max_price.max(new_price);
                 sim.tx_count += 1;
 
-                if !sim.buy_confirmed
-                    && !sim.tp_levels.is_empty()
-                    && sim.matched_at.elapsed() >= self.confirmation_delay
-                {
-                    sim.buy_confirmed = true;
-                    sim.buy_price = new_price;
-                    let mc = new_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
-                    let price_change = ((new_price / sim.mint_price) - 1.0) * 100.0;
-                    info!(
-                        "\n💰 [SIM] [BUY] (Pumpswap)\n\
-                         │  Pattern:    {}\n\
-                         │  Mint:       {}\n\
-                         │  Buy MC:     {:.2} SOL\n\
-                         │  Δ MC:       {:+.2}%\n\
-                         │  Amount:     {:.4} SOL\n\
-                         └──────────────────────",
-                        sim.pattern_label, sim.mint,
-                        mc, price_change,
-                        self.buy_amount_sol,
-                    );
-                }
-
                 if sim.buy_confirmed {
                     self.check_tp_sl(sim);
                 }
@@ -467,6 +518,8 @@ impl SimEngine {
         if sim.current_price < sim.buy_price * self.stop_loss_pct {
             sim.sl_triggered = true;
             sim.exit_price = sim.current_price;
+            sim.sell_count += 1;
+            sim.total_fees_sol += self.sell_fee_sol;
             let remaining_pct = 100.0 - sim.total_sold_pct;
             let pnl_from_remaining =
                 remaining_pct * (sim.current_price / sim.buy_price - 1.0);
@@ -479,7 +532,8 @@ impl SimEngine {
                 .map(|(tp_price, sell_pct)| sell_pct * (tp_price / sim.buy_price - 1.0))
                 .sum();
 
-            sim.pnl_pct = (pnl_from_sold + pnl_from_remaining) / 100.0 * 100.0;
+            let fee_pct = (sim.total_fees_sol / self.buy_amount_sol) * 100.0;
+            sim.pnl_pct = (pnl_from_sold + pnl_from_remaining) / 100.0 * 100.0 - fee_pct;
             sim.outcome = if sim.total_sold_pct > 0.0 {
                 SimOutcome::Partial
             } else {
@@ -522,6 +576,8 @@ impl SimEngine {
                 sim.tp_triggered_at.push(sim.current_price);
                 sim.total_sold_pct += sell_pct;
                 sim.next_tp_index += 1;
+                sim.sell_count += 1;
+                sim.total_fees_sol += self.sell_fee_sol;
 
                 let mc = sim.current_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
                 let buy_mc = sim.buy_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;
@@ -555,7 +611,8 @@ impl SimEngine {
                         .zip(sim.sell_amounts.iter())
                         .map(|(tp_price, sell_pct)| sell_pct * (tp_price / sim.buy_price - 1.0))
                         .sum();
-                    sim.pnl_pct = pnl / 100.0 * 100.0;
+                    let fee_pct = (sim.total_fees_sol / self.buy_amount_sol) * 100.0;
+                    sim.pnl_pct = pnl / 100.0 * 100.0 - fee_pct;
                     sim.outcome = SimOutcome::TpHit;
                     sim.exit_reason = format!(
                         "All TPs hit | final MC: {:.2} SOL | PnL: {:.2}%",
@@ -595,7 +652,8 @@ impl SimEngine {
                         .zip(sim.sell_amounts.iter())
                         .map(|(tp_price, sell_pct)| sell_pct * (tp_price / sim.buy_price - 1.0))
                         .sum();
-                    sim.pnl_pct = (pnl_from_sold + pnl_from_remaining) / 100.0 * 100.0;
+                    let fee_pct = (sim.total_fees_sol / self.buy_amount_sol) * 100.0;
+                    sim.pnl_pct = (pnl_from_sold + pnl_from_remaining) / 100.0 * 100.0 - fee_pct;
                     sim.outcome = SimOutcome::Timeout;
                     sim.exit_reason = format!(
                         "Holding | last MC: {:.2} SOL | PnL: {:.2}%",

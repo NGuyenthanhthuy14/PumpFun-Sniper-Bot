@@ -88,7 +88,9 @@ pub fn generate_report(engine: &SimEngine) -> String {
 
     report.push_str(&format!("  Runtime:              {} min {} sec\n", elapsed_min, elapsed_sec));
     report.push_str(&format!("  Transactions:         {}\n", total_tx));
-    report.push_str(&format!("  Buy Amount:           {} SOL\n\n", buy_sol));
+    report.push_str(&format!("  Buy Amount:           {} SOL\n", buy_sol));
+    report.push_str(&format!("  Buy Fee:              {:.6} SOL\n", engine.buy_fee_sol));
+    report.push_str(&format!("  Sell Fee:             {:.6} SOL\n\n", engine.sell_fee_sol));
 
     // ── Overall stats ──
     report.push_str(&format!("{}\n", thin));
@@ -112,7 +114,10 @@ pub fn generate_report(engine: &SimEngine) -> String {
     report.push_str(&format!("  Total Invested:       {:.6} SOL\n", total_invested));
     report.push_str(&format!("  Total Returned:       {:.6} SOL\n", total_returned));
     report.push_str(&format!("  Net Profit:           {:.6} SOL\n", net_profit_sol));
-    report.push_str(&format!("  ROI:                  {:.2}%\n\n", roi));
+    report.push_str(&format!("  ROI:                  {:.2}%\n", roi));
+
+    let total_fees: f64 = bought_tokens.iter().map(|t| t.total_fees_sol).sum();
+    report.push_str(&format!("  Total Fees:           {:.6} SOL\n\n", total_fees));
 
     report.push_str(&format!("  Avg P&L per trade:    {:.2}%\n", avg_pnl));
     report.push_str(&format!("  Avg Win:              {:.2}%\n", avg_win));
@@ -225,6 +230,7 @@ pub fn generate_report(engine: &SimEngine) -> String {
             report.push_str(&format!("    Max Gain:    {:.2}%\n", max_potential));
             report.push_str(&format!("    P&L:         {:.2}%\n", token.pnl_pct));
             report.push_str(&format!("    SOL P&L:     {:.6} SOL\n", buy_sol * token.pnl_pct / 100.0));
+            report.push_str(&format!("    Fees:        {:.6} SOL (buy:1 + sell:{})\n", token.total_fees_sol, token.sell_count));
 
             if !token.tp_triggered_at.is_empty() {
                 let supply = PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64;

@@ -6,6 +6,7 @@ pub mod db;
 pub mod timer;
 pub mod pattern_cache;
 pub mod idl;
+pub mod backtesting;
 
 pub use macros::*;
 pub use files::*;
@@ -15,3 +16,4 @@ pub use db::*;
 pub use timer::*;
 pub use pattern_cache::*;
 pub use idl::*;
+pub use backtesting::*;

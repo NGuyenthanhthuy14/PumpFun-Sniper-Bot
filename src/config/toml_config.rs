@@ -71,6 +71,13 @@ pub struct SimulationSetting {
     pub stop_loss: f64,
     pub real_tp_multiply: f64,
     pub confirmation_delay_ms: u64,
+    pub landing_service: String,
+    pub buy_compute_unit_limit: u64,
+    pub buy_micro_lamports: u64,
+    pub sell_compute_unit_limit: u64,
+    pub sell_micro_lamports: u64,
+    pub zero_slot_fee: f64,
+    pub helius_fee: f64,
 }
 
 #[derive(Debug, Deserialize)]
