@@ -1,5 +1,6 @@
 use crate::*;
 use colored::*;
+#[allow(deprecated)]
 use solana_sdk::{
     hash::Hash,
     instruction::Instruction,

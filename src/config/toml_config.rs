@@ -66,6 +66,14 @@ pub struct FeeConfig {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct SimulationSetting {
+    pub buy_amount_sol: f64,
+    pub stop_loss: f64,
+    pub real_tp_multiply: f64,
+    pub confirmation_delay_ms: u64,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct FilterSetting {
     pub rug_detect: bool,
     pub bundle_tx_limit: i32,

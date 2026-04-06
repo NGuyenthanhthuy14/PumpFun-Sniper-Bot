@@ -4,6 +4,7 @@ pub mod parse;
 pub mod build_tx;
 pub mod confirm_tx;
 pub mod advance_nonce;
+pub mod simulation;
 // pub mod all_sell;
 // pub mod stop_monitoring;
 
@@ -13,5 +14,6 @@ pub use parse::*;
 pub use build_tx::*;
 pub use confirm_tx::*;
 pub use advance_nonce::*;
+pub use simulation::*;
 // pub use all_sell::*;
 // pub use stop_monitoring::*;

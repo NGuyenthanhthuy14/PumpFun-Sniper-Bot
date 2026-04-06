@@ -111,7 +111,7 @@ impl PumpfunStruct {
         let spendable_sol_in: u64 = (*BUY_AMOUNT_SOL * 10f64.powi(9)).trunc() as u64;
         let min_tokens_out: u64 = 1;
 
-        data.extend_from_slice(&PUMP_FUN_BUY_EXACT_SOL_IN_DISCRIMINATOR);
+        data.extend_from_slice(&ix_discriminator::BUY_EXACT_SOL_IN);
         data.extend_from_slice(&spendable_sol_in.to_le_bytes());
         data.extend_from_slice(&min_tokens_out.to_le_bytes());
 
@@ -121,7 +121,7 @@ impl PumpfunStruct {
             AccountMeta::new_readonly(self.mint, false),   // #3 - Mint
             AccountMeta::new(self.bonding_curve, false),   // #4 - BondingCurve
             AccountMeta::new(self.associated_bonding_curve, false), // #5 - Quote Mint (TSFart)
-            AccountMeta::new(self.associated_user, false),      // #6 - Associated User
+            AccountMeta::new(self.associated_user, false), // #6 - Associated User
             AccountMeta::new(*SIGNER_PUBKEY, true),        // #7 - User
             AccountMeta::new_readonly(self.system_program, false), // #8 - System Program
             AccountMeta::new_readonly(self.token_program, false), // #9 - Token Program
@@ -130,8 +130,8 @@ impl PumpfunStruct {
             AccountMeta::new_readonly(self.program, false), // #12 - Pump.fun program
             AccountMeta::new(PUMPFUN_GLOBAL_VOLUME_ACCUMULATOR, false), // #13 - Global volume accumulator
             AccountMeta::new(self.user_volume_accumulator, false), // #14 - User volume accumulator
-            AccountMeta::new_readonly(self.fee_config, false), // #15 - Fee Config
-            AccountMeta::new_readonly(self.fee_program, false), //#16 - Fee Program
+            AccountMeta::new_readonly(self.fee_config, false),     // #15 - Fee Config
+            AccountMeta::new_readonly(self.fee_program, false),    //#16 - Fee Program
             AccountMeta::new_readonly(self.bonding_curve_v2_pda, false), //#17 - Bonding Curve V2 PDA
         ];
 
@@ -159,7 +159,7 @@ impl PumpfunStruct {
 
         let min_sol_out: u64 = 1;
 
-        data.extend_from_slice(&PUMP_FUN_SELL_DISCRIMINATOR);
+        data.extend_from_slice(&ix_discriminator::SELL);
         data.extend_from_slice(&sell_amount.to_le_bytes());
         data.extend_from_slice(&min_sol_out.to_le_bytes());
 
@@ -170,7 +170,7 @@ impl PumpfunStruct {
                 AccountMeta::new_readonly(self.mint, false),   // #3 - Mint
                 AccountMeta::new(self.bonding_curve, false),   // #4 - BondingCurve
                 AccountMeta::new(self.associated_bonding_curve, false), // #5 - Quote Mint (TSFart)
-                AccountMeta::new(self.associated_user, false),      // #6 - Associated User
+                AccountMeta::new(self.associated_user, false), // #6 - Associated User
                 AccountMeta::new(*SIGNER_PUBKEY, true),        // #7 - User
                 AccountMeta::new_readonly(self.system_program, false), // #8 - System Program
                 AccountMeta::new(updated_creator_vault, false), // #9 - Creator Vault
@@ -188,7 +188,7 @@ impl PumpfunStruct {
                 AccountMeta::new_readonly(self.mint, false),   // #3 - Mint
                 AccountMeta::new(self.bonding_curve, false),   // #4 - BondingCurve
                 AccountMeta::new(self.associated_bonding_curve, false), // #5 - Quote Mint (TSFart)
-                AccountMeta::new(self.associated_user, false),      // #6 - Associated User
+                AccountMeta::new(self.associated_user, false), // #6 - Associated User
                 AccountMeta::new(*SIGNER_PUBKEY, true),        // #7 - User
                 AccountMeta::new_readonly(self.system_program, false), // #8 - System Program
                 AccountMeta::new(updated_creator_vault, false), // #9 - Creator Vault

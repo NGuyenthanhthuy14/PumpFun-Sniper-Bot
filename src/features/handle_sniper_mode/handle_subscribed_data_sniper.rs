@@ -1,6 +1,9 @@
 use crate::*;
 use futures::StreamExt;
-use yellowstone_grpc_proto::{geyser::SubscribeUpdate, tonic::Status};
+use yellowstone_grpc_proto::{
+    geyser::{SubscribeUpdate, subscribe_update::UpdateOneof},
+    tonic::Status,
+};
 
 pub async fn process_sniper_mode<S>(mut stream: S) -> Result<(), Box<dyn std::error::Error>>
 where
@@ -31,9 +34,19 @@ where
                 all_pump_ix.extend(ix_info_pumpfun.clone());
                 all_pump_ix.extend(ix_info_pumpswap.clone());
 
+                let transaction_update = match &update.update_oneof {
+                    Some(UpdateOneof::Transaction(tx_update)) => {
+                        match tx_update.transaction.as_ref() {
+                            Some(tx) => tx,
+                            None => continue,
+                        }
+                    }
+                    _ => continue,
+                };
+
                 let budget_compute_data = get_budget_compute_info(budget_compute_ix_info);
                 let pumpfun_trade_data =
-                    get_pumpfun_trade_info(ix_info_pumpfun.clone(), account_keys.clone());
+                    get_pumpfun_trade_info(ix_info_pumpfun.clone(), account_keys.clone(), transaction_update);
 
                 let migration_data = migrate_info(all_pump_ix.clone(), account_keys.clone());
 

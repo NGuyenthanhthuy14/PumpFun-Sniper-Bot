@@ -2,12 +2,10 @@ use crate::*;
 use solana_sdk::pubkey::Pubkey;
 use std::collections::{HashMap, HashSet};
 
-const MAX_BUY_TX_HISTORY: usize = 4;
-
 pub async fn handle_trade_events(
     budget_compute_data: (u32, u64),
     pumpfun_trade_data: (
-        Vec<MintEvent>,
+        Vec<MintContext>,
         Vec<PumpfunBuyEvent>,
         Vec<PumpfunSellEvent>,
         Vec<MintInstructionAccounts>,
@@ -30,7 +28,7 @@ pub async fn handle_trade_events(
     let (unit, price) = budget_compute_data;
 
     let (
-        mint_events,
+        mint_contexts,
         pumpfun_buy_events,
         pumpfun_sell_events,
         mint_ixs_accounts,
@@ -55,36 +53,46 @@ pub async fn handle_trade_events(
 
     let mut minted_in_this_tx: HashSet<Pubkey> = HashSet::new();
 
-    for (i, mint_event) in mint_events.iter().enumerate() {
+    let manual_patterns = get_manual_patterns();
+
+    for (i, mint_ctx) in mint_contexts.iter().enumerate() {
+        let mint_event = &mint_ctx.mint_event;
+        let mint_tx_ctx = &mint_ctx.mint_transaction_context;
         let mint_ix_accounts = &mint_ixs_accounts[i];
 
-        let mint_pattern_matched = patterns.iter().any(|p| p.mint_pattern == (unit, price))
-            || MANUAL_MINT_PRICE_PATTERNS.contains(&price);
+        // Check server-pushed patterns (CU fingerprint match)
+        let server_pattern_matched = patterns.iter().any(|p| p.mint_pattern == (unit, price));
 
-        // if mint_pattern_matched {
-        //     let token_data = TokenDatabaseSchema::new_from_mint(
-        //         mint_event.clone(),
-        //         mint_ix_accounts.clone(),
-        //         (unit, price),
-        //         tx_id.clone(),
-        //     );
+        // Check manual patterns (instruction sequence + buy data match)
+        let matched_manual = manual_patterns
+            .iter()
+            .find(|p| p.matches(unit, price, mint_tx_ctx));
 
-        //     minted_in_this_tx.insert(token_data.token_mint);
-        //     return_data.insert(token_data.token_mint, token_data);
-        // }
+        if server_pattern_matched || matched_manual.is_some() {
+            let mut token_data = TokenDatabaseSchema::new_from_mint(
+                mint_event.clone(),
+                mint_ix_accounts.clone(),
+                (unit, price),
+                tx_id.clone(),
+            );
 
-        let mut token_data = TokenDatabaseSchema::new_from_mint(
-            mint_event.clone(),
-            mint_ix_accounts.clone(),
-            (unit, price),
-            tx_id.clone(),
-        );
+            // If manual pattern matched, apply TP/SL immediately
+            if let Some(manual_pat) = matched_manual {
+                info!(
+                    "[MANUAL_MATCH] {} | MINT: {} | TP: {:?}%",
+                    manual_pat.label, mint_event.mint, manual_pat.take_profit,
+                );
+                token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+                token_data.set_tp_sell_strategy(
+                    manual_pat.take_profit.clone(),
+                    manual_pat.sell_amounts.clone(),
+                );
+                let _ = TOKEN_DB.upsert(mint_event.mint, token_data.clone());
+            }
 
-        token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
-        minted_in_this_tx.insert(token_data.token_mint);
-        let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
-        return_data.insert(token_data.token_mint, token_data);
-
+            minted_in_this_tx.insert(token_data.token_mint);
+            return_data.insert(token_data.token_mint, token_data);
+        }
     }
 
     // ── Pumpfun Buy events: single pass for counting + state update ──
@@ -94,11 +102,11 @@ pub async fn handle_trade_events(
     for pumpfun_buy_event in pumpfun_buy_events.iter() {
         let mint = pumpfun_buy_event.mint;
 
-        if let Some(token_data) = TOKEN_DB.get(mint).unwrap() {
+        if let Some(token_data) = TOKEN_DB.get(mint).ok().flatten() {
             if !minted_in_this_tx.contains(&mint) {
                 if let Some(c) = buy_counts.get_mut(&mint) {
                     *c += 1;
-                } else if token_data.buy_tx_history.len() < MAX_BUY_TX_HISTORY
+                } else if token_data.buy_tx_history.len() < MAX_BUNDLE_BUY_LEN
                     && matches!(
                         token_data.token_trade_signal,
                         TokenTradeSignal::None | TokenTradeSignal::EntrySubmitted
@@ -120,7 +128,7 @@ pub async fn handle_trade_events(
     // ── Pattern match check for eligible mints ──
 
     for (mint, buy_count) in buy_counts {
-        if let Some(mut token_data) = TOKEN_DB.get(mint).unwrap() {
+        if let Some(mut token_data) = TOKEN_DB.get(mint).ok().flatten() {
             token_data.buy_tx_history.push(((unit, price), buy_count));
 
             let mint_pat = (
@@ -156,22 +164,6 @@ pub async fn handle_trade_events(
 
                 match token_data.token_trade_signal {
                     TokenTradeSignal::None => {
-                        info!(
-                            "🎯 [MATCH] MINT: {} | pattern: {:?} {:?} | TP: {:?}% (real: {:?}%) | sell: {:?}% | profit: {:.4} | n: {} | avg: {:.4} | WR_low: {} | W/L: {}/{} | WR: {:.2}%",
-                            mint,
-                            pattern.mint_pattern,
-                            pattern.buy_pattern,
-                            pattern.tp_threshold,
-                            primary_tp_threshold * *REAL_TP_MULTIPLY,
-                            pattern.sell_amounts,
-                            pattern.net_profit,
-                            pattern.token_count,
-                            pattern.avg_profit,
-                            pattern.win_rate_low,
-                            pattern.win_count,
-                            pattern.loss_count,
-                            pattern.win_rate,
-                        );
                         token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
                     }
                     TokenTradeSignal::EntrySubmitted => {
@@ -195,7 +187,7 @@ pub async fn handle_trade_events(
     // ── Pumpfun Sell events ──
 
     for pumpfun_sell_event in pumpfun_sell_events.iter() {
-        if let Some(token_data) = TOKEN_DB.get(pumpfun_sell_event.mint).unwrap() {
+        if let Some(token_data) = TOKEN_DB.get(pumpfun_sell_event.mint).ok().flatten() {
             if let Some(updated) = update_status_from_pumpfun_sell_event(
                 token_data,
                 pumpfun_sell_event.clone(),
@@ -211,7 +203,7 @@ pub async fn handle_trade_events(
         .iter()
         .zip(create_pool_event_data.iter())
     {
-        if let Some(token_data) = TOKEN_DB.get(pool_accounts.base_mint).unwrap() {
+        if let Some(token_data) = TOKEN_DB.get(pool_accounts.base_mint).ok().flatten() {
             let updated_token_data = update_status_from_migration_event(
                 token_data.clone(),
                 pool_accounts.clone(),
@@ -226,7 +218,8 @@ pub async fn handle_trade_events(
     for (i, pumpswap_buy_event) in pumpswap_buy_events.iter().enumerate() {
         if let Some(token_data) = TOKEN_DB
             .get(pumpswap_buy_ixs_accounts[i].base_mint)
-            .unwrap()
+            .ok()
+            .flatten()
         {
             let updated_token_data = update_status_from_pumpswap_buy_event(
                 token_data.clone(),
@@ -241,7 +234,8 @@ pub async fn handle_trade_events(
     for (i, pumpswap_sell_event) in pumpswap_sell_events.iter().enumerate() {
         if let Some(token_data) = TOKEN_DB
             .get(pumpswap_sell_ixs_accounts[i].base_mint)
-            .unwrap()
+            .ok()
+            .flatten()
         {
             let updated_token_data = update_status_from_pumpswap_sell_event(
                 token_data,

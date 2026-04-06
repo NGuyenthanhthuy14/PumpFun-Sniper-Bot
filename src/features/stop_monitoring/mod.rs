@@ -10,7 +10,7 @@ pub async fn check_no_activity_tokens() {
             .map(|entry| entry.key().clone())
             .collect();
         for token_key in keys {
-            if let Some(mut token_data) = TOKEN_DB.get(token_key).unwrap() {
+            if let Some(mut token_data) = TOKEN_DB.get(token_key).ok().flatten() {
                 if token_data.token_last_activity_time.elapsed()
                     >= Duration::from_secs(*NO_ACTIVITY_TIME)
                 {

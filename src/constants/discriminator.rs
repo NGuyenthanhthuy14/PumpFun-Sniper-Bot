@@ -1,19 +1,6 @@
-////Pumpfun discriminator
-///
-///
-///
-
-pub const PUMP_FUN_BUY_DISCRIMINATOR: [u8; 8] = [102, 6, 61, 18, 1, 218, 235, 234];
-pub const PUMP_FUN_BUY_EXACT_SOL_IN_DISCRIMINATOR: [u8; 8] = [56, 252, 116, 8, 158, 223, 205, 95];
-pub const PUMP_FUN_SELL_DISCRIMINATOR: [u8; 8] = [51, 230, 133, 164, 1, 127, 131, 173];
-pub const PUMP_FUN_CREATE_V1_DISCRIMINATOR: [u8; 8] = [24, 30, 200, 40, 5, 28, 7, 119];
-pub const PUMP_FUN_CREATE_V2_DISCRIMINATOR: [u8; 8] = [214, 144, 76, 236, 95, 139, 49, 180];
-pub const PUMP_FUN_MINT_EVENT_DISCRIMINATOR: [u8; 8] = [27, 114, 169, 77, 222, 235, 99, 118];
-pub const PUMP_FUN_TRADE_EVENT_DISCRIMINATOR: [u8; 8] = [189, 219, 127, 211, 78, 230, 97, 238];
-pub const PUMP_FUN_EVENT_LOG_DISCRIMINATOR: [u8; 8] = [228, 69, 165, 46, 81, 203, 154, 29]; //Pump.fun Anchor CLI Log discriminator
+////Compute budget program discriminator
 pub const SET_BUDGET_COMPUTE_UNIT_LIMIT_DISCRIMINATOR: [u8; 1] = [2];
 pub const SET_BUDGET_COMPUTE_UNIT_PRICE_DISCRIMINATOR: [u8; 1] = [3];
-pub const CLOSE_USER_VOLUME_ACCUMULATOR: [u8; 8] = [249, 69, 164, 218, 150, 103, 84, 138];
 
 //////Pumpswap discriminator
 ///

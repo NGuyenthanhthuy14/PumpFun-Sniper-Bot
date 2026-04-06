@@ -20,6 +20,7 @@ pub struct Config {
     pub landing_service_config: LandingServiceConfig,
     pub slippage_config: SlippageConfig,
     pub fee_config: FeeConfig,
+    pub simulation_setting: SimulationSetting,
 }
 
 pub static CONFIG: Lazy<Config> = Lazy::new(|| {

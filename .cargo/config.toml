@@ -1,2 +1,2 @@
 [alias]
-start = "run --release"
+start = "run --release --bin pumpfun-sniper"

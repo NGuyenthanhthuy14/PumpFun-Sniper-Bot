@@ -75,7 +75,7 @@ impl TokenDatabaseSchema {
         token_data
     }
 
-    pub fn update_sell_state_flag(&mut self, tx_id: String) {
+    pub fn update_sell_state_flag(&mut self, _tx_id: String) {
         if self.token_balance == 0 {
             return;
         }
@@ -135,8 +135,6 @@ impl TokenDatabaseSchema {
         self.next_tp_index_to_sell = 0;
         self.pending_tp_sell_index = None;
         self.pending_tp_sell_amount = 0;
-        // If already purchased with balance, recalculate plan immediately
-        // (covers the "longer pattern matched after buy" case)
         self.initialize_sell_plan_if_needed();
     }
 

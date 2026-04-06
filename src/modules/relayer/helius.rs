@@ -49,7 +49,13 @@ pub async fn send_helius_transaction(
         .try_sign(&[SIGNER_KEYPAIR.insecure_clone()], nonce.nonce_hash)
         .expect("Failed to sign transaction");
 
-    let serialized_transaction = bincode::serialize(&transaction).unwrap();
+    let serialized_transaction = match bincode::serialize(&transaction) {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            error!("[SUBMIT] HELIUS | bincode serialize failed: {:?}", e);
+            return None;
+        }
+    };
     let base64_encoded_transaction = base64::encode(serialized_transaction);
 
     let request_body = json!({
@@ -77,7 +83,13 @@ pub async fn send_helius_transaction(
             // TX bytes were sent to the endpoint — nonce may have been consumed
             spawn_nonce_refresh(nonce.index);
 
-            let response_json: serde_json::Value = response_data.json().await.unwrap();
+            let response_json: serde_json::Value = match response_data.json().await {
+                Ok(json) => json,
+                Err(e) => {
+                    error!("[SUBMIT] HELIUS | json parse failed: {:?}", e);
+                    return None;
+                }
+            };
             if let Some(result) = response_json.get("result").and_then(|v| v.as_str()) {
                 info!(
                     "[SUBMIT] HELIUS | {} | took {:?} | {}",

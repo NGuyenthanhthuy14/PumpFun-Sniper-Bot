@@ -147,7 +147,8 @@ impl PumpSwapStruct {
             &wsol_ata,
             turncated_slippage_calculated_buy_amount,
         );
-        let wrap_ix = sync_native(&spl_token::ID, &wsol_ata).unwrap();
+        let wrap_ix = sync_native(&spl_token::ID, &wsol_ata)
+            .expect("sync_native with valid pubkeys");
 
         vec![transfer_ix, wrap_ix]
     }
@@ -161,7 +162,7 @@ impl PumpSwapStruct {
             &*SIGNER_PUBKEY,
             &[&*SIGNER_PUBKEY],
         )
-        .unwrap();
+        .expect("close_account with valid pubkeys");
         ix
     }
 

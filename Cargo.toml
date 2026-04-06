@@ -44,3 +44,19 @@ rand = "0.10.0"
 [[bin]]
 name = "pumpfun-sniper"
 path = "src/entry_point/CLI.rs"
+
+[[bin]]
+name = "sniper-mode"
+path = "src/entry_point/sniper_mode.rs"
+
+[[bin]]
+name = "nonce-manager"
+path = "src/entry_point/nonce_manager.rs"
+
+[[bin]]
+name = "all-sell"
+path = "src/entry_point/all_sell.rs"
+
+[[bin]]
+name = "simulation"
+path = "src/entry_point/simulation.rs"

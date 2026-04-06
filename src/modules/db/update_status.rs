@@ -1,5 +1,4 @@
 use crate::*;
-use colored::*;
 
 pub fn update_status_from_pumpfun_buy_event(
     mut token_data: TokenDatabaseSchema,
@@ -28,12 +27,6 @@ pub fn update_status_from_pumpfun_buy_event(
     } else if buy_event.user == token_data.token_creator {
         if token_data.dev_buy_sol_lamports == None {
             token_data.dev_buy_sol_lamports = Some(buy_event.sol_amount);
-
-            //Manual pattern handler
-            if check_manul_entry_signal(token_data.clone()) {
-                token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
-                token_data.set_tp_sell_strategy(vec![400.0], vec![100.0]);
-            }
         };
     }
 

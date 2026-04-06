@@ -1,9 +1,6 @@
 use colored::*;
-use pumpfun_sniper::*;
 use std::io::{self, Write};
-use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
-
-const PATTERN_SERVER_PORT: u16 = 3355;
+use std::process::Command;
 
 fn print_banner() {
     println!();
@@ -60,6 +57,8 @@ fn print_menu() {
     println!();
     println!("{}", menu_row("[ 4. ]", "🔄", "Wallet Rotation", false));
     println!();
+    println!("{}", menu_row("[ 5. ]", "📊", "Simulation", false));
+    println!();
     println!("    {}", bar.cyan());
     println!();
     println!("{}", menu_row("[ 0. ]", "⚓", "Exit", true));
@@ -76,70 +75,30 @@ fn read_input() -> String {
     input.trim().to_string()
 }
 
-async fn run_sniper_bot() {
-    info!("{}", SNIPER_MODE_STR.green());
-    let client = get_http_client();
+fn bin_path(name: &str) -> String {
+    let exe = std::env::current_exe().unwrap();
+    let dir = exe.parent().unwrap();
+    dir.join(name).to_string_lossy().to_string()
+}
 
-    match LANDING_SERVICE.as_str() {
-        "ZERO_SLOT" => {
-            pre_warm_zero_slot_endpoint(client).await;
+fn run_binary(name: &str) {
+    let path = bin_path(name);
+    match Command::new(&path).status() {
+        Ok(status) => {
+            if !status.success() {
+                println!(
+                    "{}",
+                    format!("\n  ⚠️  {} exited with: {}", name, status).red()
+                );
+            }
         }
-        "HELIUS" => {
-            pre_warm_helius_endpoint(client).await;
-        }
-        _ => {
-            println!("Unsupported landing service, defaulting to 0-slot");
-            pre_warm_zero_slot_endpoint(client).await;
+        Err(e) => {
+            println!(
+                "{}",
+                format!("\n  ❌ Failed to launch {}: {}", name, e).red()
+            );
         }
     }
-
-    // Initialize nonce pool for durable transactions
-    init_nonce_pool().await;
-
-    tokio::spawn(async {
-        run_pattern_server(PATTERN_SERVER_PORT).await;
-    });
-
-    let grpc_config = GrpcClientConfig::new(
-        "sniper_mode".to_string(),
-        GRPC_ENDPOINT.to_string(),
-        GRPC_TOKEN.to_string(),
-    );
-
-    let subscribe_pumpfun_program_id = SubscribeRequestFilterTransactions {
-        account_include: vec![
-            PUMPFUN_PROGRAM_ID.to_string(),
-            PUMPSWAP_PROGRAM_ID.to_string(),
-        ],
-        account_exclude: vec![],
-        account_required: vec![],
-        vote: Some(false),
-        failed: Some(false),
-        signature: None,
-    };
-
-    if let Err(e) = grpc_config
-        .subscribe_with_reconnect(subscribe_pumpfun_program_id)
-        .await
-    {
-        error!(
-            "Failed to maintain GRPC connection after all retries: {:?}",
-            e
-        );
-    }
-}
-
-async fn run_all_sell() {
-    println!("{}", "\n  🔄 Executing All Sell...".yellow());
-    println!("{}", "  ⚠️  All Sell module has unresolved dependencies. Fix all_sell/mod.rs first.".red());
-}
-
-async fn run_advance_nonce() {
-    nonce_management_menu().await;
-}
-
-async fn run_wallet_rotation() {
-    println!("{}", "\n  🔄 Wallet Rotation - Coming soon".yellow());
 }
 
 #[tokio::main]
@@ -152,17 +111,20 @@ pub async fn main() {
 
         match input.as_str() {
             "1" => {
-                run_sniper_bot().await;
+                run_binary("sniper-mode");
                 break;
             }
             "2" => {
-                run_advance_nonce().await;
+                run_binary("nonce-manager");
             }
             "3" => {
-                run_all_sell().await;
+                run_binary("all-sell");
             }
             "4" => {
-                run_wallet_rotation().await;
+                println!("{}", "\n  🔄 Wallet Rotation - Coming soon".yellow());
+            }
+            "5" => {
+                run_binary("simulation");
             }
             "0" => {
                 println!("{}", "\n  👋 Exiting...".cyan());

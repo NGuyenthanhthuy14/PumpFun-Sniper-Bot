@@ -5,6 +5,7 @@ pub mod grpc_setup;
 pub mod db;
 pub mod timer;
 pub mod pattern_cache;
+pub mod idl;
 
 pub use macros::*;
 pub use files::*;
@@ -13,3 +14,4 @@ pub use grpc_setup::*;
 pub use db::*;
 pub use timer::*;
 pub use pattern_cache::*;
+pub use idl::*;

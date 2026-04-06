@@ -1,5 +1,6 @@
 use crate::*;
 use borsh::BorshDeserialize;
+use serde::Serialize;
 use solana_sdk::pubkey::Pubkey;
 
 #[derive(PartialEq)]
@@ -28,6 +29,13 @@ pub struct BudgetComputeUnitPrice {
 ////////Struct pumpfun
 ///
 ///
+
+#[derive(Debug, Clone)]
+pub struct MintContext {
+    pub mint_event: MintEvent,
+    pub mint_transaction_context: MintTransactionContext,
+}
+
 #[derive(Debug, Clone, BorshDeserialize)]
 pub struct MintEvent {
     pub name: String,
@@ -59,24 +67,11 @@ pub struct MintInstructionAccounts {
     pub event_authority: Pubkey,
 }
 
-#[derive(Debug, Clone, BorshDeserialize)]
-pub struct PumpfunTradeEvent {
-    pub mint: Pubkey,
-    pub sol_amount: u64,
-    pub token_amount: u64,
-    pub is_buy: bool,
-    pub user: Pubkey,
-    pub timestamp: i64,
-    pub virtual_sol_reserves: u64,
-    pub virtual_token_reserves: u64,
-    pub real_sol_reserves: u64,
-    pub real_token_reserves: u64,
-    pub fee_recipient: Pubkey,
-    pub fee_basis_points: u64,
-    pub fee: u64,
-    pub creator: Pubkey,
-    pub creator_fee_basis_points: u64,
-    pub creator_fee: u64,
+#[derive(Debug, Clone)]
+pub enum PumpfunBuyInstructionData {
+    Buy { amount: u64, max_sol_cost: u64, track_volume: bool },
+    BuyExactSolIn { spendable_sol_in: u64, min_tokens_out: u64, track_volume: bool },
+    None,
 }
 
 #[derive(Debug, Clone)]
@@ -96,6 +91,10 @@ pub struct PumpfunBuyEvent {
     pub creator: Pubkey,
     pub creator_fee_basis_points: u64,
     pub creator_fee: u64,
+    pub ix_name: String,
+    pub track_volume: bool,
+    pub cashback_fee_basis_points: u64,
+    pub cashback: u64,
 }
 
 #[derive(Debug, Clone)]
@@ -115,6 +114,10 @@ pub struct PumpfunSellEvent {
     pub creator: Pubkey,
     pub creator_fee_basis_points: u64,
     pub creator_fee: u64,
+    pub ix_name: String,
+    pub track_volume: bool,
+    pub cashback_fee_basis_points: u64,
+    pub cashback: u64,
 }
 
 #[derive(Debug, Clone)]
@@ -135,6 +138,7 @@ pub struct PumpfunBuyInstructionAccounts {
     pub user_volume_accumulator: Pubkey,
     pub fee_config: Pubkey,
     pub fee_program: Pubkey,
+    pub instruction_data: PumpfunBuyInstructionData,
 }
 
 #[derive(Debug, Clone)]
@@ -383,4 +387,56 @@ pub async fn fetch_and_decode_pool(pool: Pubkey) -> Option<PumpAMMPool> {
             None
         }
     }
+}
+
+// ── Mint Transaction Context ──
+
+#[derive(Debug, Clone, Default)]
+pub enum TxType {
+    #[default]
+    Legacy,
+    V0,
+}
+
+#[derive(Debug, Clone, Default)]
+pub enum TokenVersion {
+    #[default]
+    V1,
+    V2,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct BuyInstructionData {
+    pub ix_name: String,
+    pub amount: u64,
+    pub max_sol_cost: u64,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct BuyExactSolInInstructionData {
+    pub ix_name: String,
+    pub spendable_sol_in: u64,
+    pub min_tokens_out: u64,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct MintTransactionContext {
+    pub tx_type: TxType,
+    pub token_version: TokenVersion,
+    pub all_instruction_names: Vec<String>,
+    pub alt_addresses: Vec<Pubkey>,
+    pub buy_ix_name: Option<String>,
+    pub buy_ix_data: Option<String>,
+}
+
+pub fn to_pascal_case(s: &str) -> String {
+    s.split('_')
+        .map(|word| {
+            let mut chars = word.chars();
+            match chars.next() {
+                Some(c) => c.to_uppercase().to_string() + &chars.as_str().to_lowercase(),
+                None => String::new(),
+            }
+        })
+        .collect()
 }
