@@ -5,6 +5,7 @@ const PATTERN_SERVER_PORT: u16 = 3355;
 
 #[tokio::main]
 async fn main() {
+    let _ = rustls::crypto::ring::default_provider().install_default();
     info!("{}", SNIPER_MODE_STR.green());
     let client = get_http_client();
 

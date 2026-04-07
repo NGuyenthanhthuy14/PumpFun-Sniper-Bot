@@ -7,6 +7,8 @@ use once_cell::sync::Lazy;
 pub static HTTP_CLIENT: Lazy<Arc<Client>> = Lazy::new(|| {
     println!("🔄 Initializing HTTP client...");
 
+    let _ = rustls::crypto::ring::default_provider().install_default();
+
     let client = Client::builder()
         .pool_idle_timeout(Duration::from_secs(300))
         .pool_max_idle_per_host(5)

@@ -7,6 +7,7 @@ use yellowstone_grpc_proto::geyser::{
 
 #[tokio::main]
 async fn main() {
+    let _ = rustls::crypto::ring::default_provider().install_default();
     info!("{}", "[SIMULATION MODE]".cyan());
     info!("No real trades — pattern backtesting only\n");
 
