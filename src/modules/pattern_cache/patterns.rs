@@ -40,10 +40,10 @@ use super::pattern_translator::{BuyIxRaw, ManualPatternRaw};
 /// │      }),                                                            │
 /// │                                                                     │
 /// │      // ── Trade settings ──                                        │
-/// │      stop_loss: Some(70.0),              // or None for config default│
+/// │      stop_loss: Some(70.0),            // or None for config default│
 /// │      take_profit: vec![200.0, 400.0],                               │
 /// │      sell_amounts: Some(vec![50.0, 50.0]),                          │
-/// │      buy_amount_sol: Some(0.03),         // or None for config default│
+/// │      buy_amount_sol: Some(0.03),       // or None for config default│
 /// │                                                                     │
 /// │      // ── Tx metadata filters ──                                   │
 /// │      token_version: Some("V2".to_string()),  // "V1" or "V2"        │
@@ -115,7 +115,7 @@ pub fn get_raw_manual_patterns() -> Vec<ManualPatternRaw> {
             token_version: Some("V2".to_string()),
             alt_addresses: None,
             mint_tx_version: None,
-            buy_amount_sol: None,
+            buy_amount_sol: Some(0.03),
         },
 
         ManualPatternRaw {
