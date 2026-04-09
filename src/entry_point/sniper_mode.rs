@@ -1,7 +1,7 @@
 use pumpfun_sniper::*;
 use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
 
-const PATTERN_SERVER_PORT: u16 = 3355;
+// const PATTERN_SERVER_PORT: u16 = 3355;
 
 #[tokio::main]
 async fn main() {
@@ -38,9 +38,9 @@ async fn main() {
         );
     }
 
-    tokio::spawn(async {
-        run_pattern_server(PATTERN_SERVER_PORT).await;
-    });
+    // tokio::spawn(async {
+    //     run_pattern_server(PATTERN_SERVER_PORT).await;
+    // });
 
     let grpc_config = GrpcClientConfig::new(
         "sniper_mode".to_string(),
