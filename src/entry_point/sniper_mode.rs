@@ -24,6 +24,19 @@ async fn main() {
 
     init_nonce_pool().await;
 
+    // Spawn dead-token no-activity checker
+    if *STOP_NO_ACTIVITY_TOKEN_MONITORING {
+        info!(
+            "No-activity monitoring: ENABLED (threshold: {} seconds)",
+            *NO_ACTIVITY_TIME
+        );
+        tokio::spawn(async {
+            loop {
+                check_no_activity_tokens().await;
+            }
+        });
+    }
+
     // Load manual patterns at startup
     let manual_count = get_manual_patterns().len();
     info!("Loaded {} manual pattern(s)", manual_count);

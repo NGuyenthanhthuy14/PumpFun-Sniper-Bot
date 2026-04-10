@@ -36,6 +36,7 @@ pub struct SellSetting {
     pub stop_loss: f64,
     pub tp_trailing: f64,
     pub trailing_stop: f64,
+    pub no_activity_time: u64,
 }
 
 #[derive(Debug, Deserialize)]

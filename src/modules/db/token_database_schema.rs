@@ -6,6 +6,7 @@ use std::time::Instant;
 pub struct TokenDatabaseSchema {
     pub token_mint: Pubkey,
     pub token_mint_time: Instant,
+    pub token_last_activity_time: Instant,
     pub token_creator: Pubkey,
     pub token_price: f64,
     pub token_max_price: f64,
@@ -51,6 +52,7 @@ impl TokenDatabaseSchema {
         let token_data = Self {
             token_mint: mint_event.mint,
             token_mint_time: Instant::now(),
+            token_last_activity_time: Instant::now(),
             token_creator: mint_event.creator,
             token_balance: 0,
             token_price: initial_token_price,

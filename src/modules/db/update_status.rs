@@ -1,4 +1,5 @@
 use crate::*;
+use std::time::Instant;
 
 pub fn update_status_from_pumpfun_buy_event(
     mut token_data: TokenDatabaseSchema,
@@ -11,6 +12,7 @@ pub fn update_status_from_pumpfun_buy_event(
     token_data.token_max_price = token_data.token_max_price.max(updated_token_price);
     token_data.token_price = updated_token_price;
     token_data.token_creator = buy_event.creator;
+    token_data.token_last_activity_time = Instant::now();
 
     if buy_event.user == *SIGNER_PUBKEY {
         info!(
@@ -48,6 +50,7 @@ pub fn update_status_from_pumpfun_sell_event(
     token_data.token_max_price = token_data.token_max_price.max(updated_token_price);
     token_data.token_price = updated_token_price;
     token_data.token_creator = sell_event.creator;
+    token_data.token_last_activity_time = Instant::now();
 
     //update sell state flag
     token_data.update_sell_state_flag(tx_id.clone());
@@ -98,6 +101,7 @@ pub fn update_status_from_migration_event(
     token_data.token_max_price = token_data.token_max_price.max(updated_token_price);
     token_data.token_is_migrated = true;
     token_data.token_creator = create_pool_event_data.coin_creator;
+    token_data.token_last_activity_time = Instant::now();
 
     token_data.pumpswap_struct = Some(PumpSwapStruct::from_migrate(
         &create_pool_accounts,
@@ -124,6 +128,7 @@ pub fn update_status_from_pumpswap_buy_event(
 
     token_data.token_creator = buy_event.coin_creator;
     token_data.token_price = updated_token_price;
+    token_data.token_last_activity_time = Instant::now();
 
     token_data.update_sell_state_flag(tx_id.clone());
 
@@ -157,6 +162,7 @@ pub fn update_status_from_pumpswap_sell_event(
 
     token_data.token_creator = sell_event.coin_creator;
     token_data.token_price = updated_token_price;
+    token_data.token_last_activity_time = Instant::now();
 
     token_data.update_sell_state_flag(tx_id.clone());
 
