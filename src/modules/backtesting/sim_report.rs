@@ -250,6 +250,66 @@ pub fn generate_report(engine: &SimEngine) -> String {
         report.push_str("\n");
     }
 
+    // ── Phase 2: Filter Effectiveness Report ──
+    let filter_total = engine.get_filter_total_analyzed();
+    if filter_total > 0 {
+        report.push_str(&format!("{}\n", thin));
+        report.push_str("  FILTER EFFECTIVENESS (Phase 2)\n");
+        report.push_str(&format!("{}\n\n", thin));
+
+        let filter_passed = engine.get_filter_passed_count();
+        let filter_rejected = engine.get_filter_rejected_count();
+        let rejected_tokens = engine.get_filter_rejected_tokens();
+
+        let pass_rate = (filter_passed as f64 / filter_total as f64) * 100.0;
+
+        report.push_str(&format!("  Total Analyzed:       {}\n", filter_total));
+        report.push_str(&format!("  Passed Filter:        {} ({:.1}%)\n", filter_passed, pass_rate));
+        report.push_str(&format!("  Rejected by Filter:   {} ({:.1}%)\n\n", filter_rejected, 100.0 - pass_rate));
+
+        // Analyze passed tokens — how many were profitable?
+        let passed_profitable = bought_tokens.iter()
+            .filter(|t| t.filter_passed && t.pnl_pct > 0.0)
+            .count();
+        let passed_loss = bought_tokens.iter()
+            .filter(|t| t.filter_passed && t.pnl_pct <= 0.0 && t.buy_confirmed)
+            .count();
+        let passed_holding = bought_tokens.iter()
+            .filter(|t| t.filter_passed && t.outcome == SimOutcome::Timeout)
+            .count();
+
+        if filter_passed > 0 {
+            report.push_str("  Of PASSED tokens:\n");
+            report.push_str(&format!("    Profitable (TP):    {} ({:.1}%)\n",
+                passed_profitable,
+                if total_bought > 0 { passed_profitable as f64 / total_bought as f64 * 100.0 } else { 0.0 }));
+            report.push_str(&format!("    Loss (SL):          {} ({:.1}%)\n",
+                passed_loss,
+                if total_bought > 0 { passed_loss as f64 / total_bought as f64 * 100.0 } else { 0.0 }));
+            report.push_str(&format!("    Still Holding:      {}\n\n", passed_holding));
+        }
+
+        // Analyze rejected tokens — would they have been rugs?
+        if !rejected_tokens.is_empty() {
+            let true_positives = rejected_tokens.iter()
+                .filter(|r| r.would_have_been_rug)
+                .count();
+            let false_positives = rejected_tokens.len() - true_positives;
+            let accuracy = if !rejected_tokens.is_empty() {
+                true_positives as f64 / rejected_tokens.len() as f64 * 100.0
+            } else {
+                0.0
+            };
+
+            report.push_str("  Of REJECTED tokens:\n");
+            report.push_str(&format!("    True Positives:     {} ({:.1}%) ← correct rejections\n",
+                true_positives, accuracy));
+            report.push_str(&format!("    False Positives:    {} ({:.1}%) ← missed opportunities\n\n",
+                false_positives, 100.0 - accuracy));
+            report.push_str(&format!("  Filter Accuracy:      {:.1}%\n\n", accuracy));
+        }
+    }
+
     report.push_str(&format!("{}\n", bar));
     report.push_str("  END OF REPORT\n");
     report.push_str(&format!("{}\n", bar));

@@ -1,0 +1,103 @@
+/// Phase 2 — Filter Aggregator (Nâng cao)
+///
+/// Orchestrates all pre-buy filter modules and combines their results
+/// into a unified buy/skip decision with dynamic position sizing.
+///
+/// Aggregation logic:
+///   1. Any module returning `passed = false` → HARD REJECT
+///   2. Total risk_score > MAX_TOTAL_RISK_SCORE → SOFT REJECT
+///   3. Otherwise → ALLOW BUY, with buy_amount_multiplier based on risk
+///
+/// Dynamic Position Sizing:
+///   - Risk = 0 → multiplier = 1.0 (full position)
+///   - Risk > 0 → multiplier = max(min_buy_multiplier, 1.0 - risk/max_risk)
+///   - This means higher risk → smaller position size
+
+use crate::*;
+
+// ══════════════════════════════════════════════════════════════════════
+// Main aggregation function
+// ══════════════════════════════════════════════════════════════════════
+
+/// Run all enabled filter modules against a newly minted token.
+///
+/// This is the PRIMARY entry point called from handle_sniper_event.rs.
+/// It takes a FilterContext (built from mint event data) and returns
+/// an AggregatedFilterResult with the final buy/skip decision.
+pub async fn run_pre_buy_filters(ctx: &FilterContext) -> AggregatedFilterResult {
+    let mut results: Vec<FilterResult> = Vec::with_capacity(3);
+
+    // ── Module 1: Genesis Bundle Detection ──
+    // NOTE: genesis_check() is NOT called here. It is called SEPARATELY
+    // from handle_sniper_event AFTER all buy events in this TX have been
+    // recorded. This avoids the race condition where genesis data hasn't
+    // been populated yet at mint-time.
+    // See: handle_sniper_event.rs → deferred genesis check section.
+
+    // ── Module 2 + 3: Run CONCURRENTLY for lower latency ──
+    // Metadata (sync+async) and Wallet Profiler (async) are independent,
+    // so we overlap them using tokio::join! to save ~500ms per trade.
+    let (metadata_result, wallet_result) = tokio::join!(
+        check_metadata(ctx),
+        profile_dev_wallet(ctx.creator),
+    );
+    results.push(metadata_result);
+    results.push(wallet_result);
+
+    // ── Aggregate results ──
+    let any_hard_fail = results.iter().any(|r| !r.passed);
+    let total_risk: f64 = results.iter().map(|r| r.risk_score).sum::<f64>().max(0.0);
+
+    let should_buy = !any_hard_fail && total_risk < *MAX_TOTAL_RISK_SCORE;
+
+    // Dynamic position sizing based on risk
+    let buy_amount_multiplier = if should_buy && *ENABLE_DYNAMIC_SIZING && total_risk > 0.0 {
+        let raw_multiplier = 1.0 - (total_risk / *MAX_TOTAL_RISK_SCORE);
+        raw_multiplier.max(*MIN_BUY_MULTIPLIER).min(1.0)
+    } else if should_buy {
+        1.0
+    } else {
+        0.0 // rejected
+    };
+
+    let aggregated = AggregatedFilterResult {
+        should_buy,
+        total_risk_score: total_risk,
+        buy_amount_multiplier,
+        results,
+    };
+
+    // ── Log the decision ──
+    if should_buy {
+        if total_risk > 0.0 {
+            info!(
+                "🟡 [FILTER_PASS_WARN] MINT: {} | creator: {} | name: '{}' | risk: {:.1} | mul: {:.2}x | {}",
+                ctx.mint,
+                ctx.creator,
+                ctx.name,
+                total_risk,
+                buy_amount_multiplier,
+                aggregated.rejection_summary(),
+            );
+        } else {
+            info!(
+                "🟢 [FILTER_PASS] MINT: {} | creator: {} | name: '{}' | CLEAN",
+                ctx.mint, ctx.creator, ctx.name,
+            );
+        }
+    } else {
+        info!(
+            "🔴 [FILTER_REJECT] MINT: {} | creator: {} | name: '{}' | risk: {:.1} | {}",
+            ctx.mint,
+            ctx.creator,
+            ctx.name,
+            total_risk,
+            aggregated.rejection_summary(),
+        );
+    }
+
+    // ── Log to CSV audit trail ──
+    log_filter_result(ctx, &aggregated);
+
+    aggregated
+}

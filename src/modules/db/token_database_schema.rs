@@ -37,6 +37,8 @@ pub struct TokenDatabaseSchema {
     pub matched_pattern_label: String,
     pub tp_trailing_active: bool,
     pub tp_trailing_max_price: f64,
+    // Phase 2: Dynamic position sizing multiplier (0.0 - 1.0)
+    pub filter_buy_multiplier: f64,
 }
 
 impl TokenDatabaseSchema {
@@ -83,6 +85,7 @@ impl TokenDatabaseSchema {
             matched_pattern_label: String::new(),
             tp_trailing_active: false,
             tp_trailing_max_price: 0.0,
+            filter_buy_multiplier: 1.0,
         };
 
         let _ = TOKEN_DB.upsert(mint_event.mint.clone(), token_data.clone());

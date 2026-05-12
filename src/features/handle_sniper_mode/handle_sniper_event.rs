@@ -24,6 +24,7 @@ pub async fn handle_trade_events(
         Vec<PumpswapSellInstructionAccounts>,
     ),
     tx_id: String,
+    tx_slot: u64,  // Phase 2: slot number for genesis tracking
 ) -> HashMap<Pubkey, TokenDatabaseSchema> {
     let (unit, price) = budget_compute_data;
 
@@ -60,6 +61,18 @@ pub async fn handle_trade_events(
         let mint_tx_ctx = &mint_ctx.mint_transaction_context;
         let mint_ix_accounts = &mint_ixs_accounts[i];
 
+        // Phase 2: Register mint for genesis bundle tracking (slot-aware)
+        genesis_register_mint(
+            mint_event.mint,
+            mint_event.creator,
+            mint_event.token_total_supply,
+            tx_slot,
+        );
+
+        // Phase 2: Compute initial price for FilterContext
+        let initial_price = (mint_event.virtual_sol_reserves as f64 / 1e9)
+            / (mint_event.virtual_token_reserves as f64 / 1e6);
+
         // Check server-pushed patterns (CU fingerprint match)
         let server_pattern_matched = patterns.iter().any(|p| p.mint_pattern == (unit, price));
 
@@ -85,14 +98,37 @@ pub async fn handle_trade_events(
                     token_data.pending_manual_pattern = Some(manual_pat.clone());
                     let _ = TOKEN_DB.upsert(mint_event.mint, token_data.clone());
                 } else {
-                    // No bundle filter → entry signal now
+                    // No bundle filter → run Phase 2 pre-buy filters before entry
                     let log_buy = manual_pat.buy_amount_sol.unwrap_or(*BUY_AMOUNT_SOL);
                     let log_sl = manual_pat.stop_loss.unwrap_or(*STOP_LOSS * 100.0);
                     info!(
                         "[MANUAL_MATCH] {} | MINT: {} | Buy: {:.4} SOL | SL: {:.0}% | TP: {:?}%",
                         manual_pat.label, mint_event.mint, log_buy, log_sl, manual_pat.take_profit,
                     );
-                    token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+
+                    // ── Phase 2: Anti-Rug Pre-Buy Filter ──
+                    let filter_ctx = FilterContext::new(
+                        mint_event.mint,
+                        mint_event.creator,
+                        mint_event.name.clone(),
+                        mint_event.symbol.clone(),
+                        mint_event.uri.clone(),
+                        mint_event.token_total_supply,
+                        tx_slot,
+                        initial_price,
+                    );
+                    let filter_result = run_pre_buy_filters(&filter_ctx).await;
+
+                    if filter_result.should_buy {
+                        token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+                        token_data.filter_buy_multiplier = filter_result.buy_amount_multiplier;
+                    } else {
+                        info!(
+                            "🚫 [FILTER_SKIP] MINT: {} | Risk: {:.1} | Manual pattern matched but filters rejected",
+                            mint_event.mint, filter_result.total_risk_score
+                        );
+                    }
+
                     token_data.override_buy_amount_sol = manual_pat.buy_amount_sol;
                     token_data.override_stop_loss = manual_pat.stop_loss.map(|v| v / 100.0);
                     token_data.set_tp_sell_strategy(manual_pat.take_profit.clone(), manual_pat.sell_amounts.clone());
@@ -111,6 +147,15 @@ pub async fn handle_trade_events(
 
     for pumpfun_buy_event in pumpfun_buy_events.iter() {
         let mint = pumpfun_buy_event.mint;
+
+        // Phase 2: Record buy for genesis bundle analysis (slot-aware)
+        genesis_record_buy(
+            mint,
+            pumpfun_buy_event.user,
+            pumpfun_buy_event.token_amount,
+            pumpfun_buy_event.sol_amount,
+            tx_slot,
+        );
 
         if let Some(token_data) = TOKEN_DB.get(mint).ok().flatten() {
             if !minted_in_this_tx.contains(&mint) {
@@ -178,7 +223,28 @@ pub async fn handle_trade_events(
 
                 match token_data.token_trade_signal {
                     TokenTradeSignal::None => {
-                        token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+                        // ── Phase 2: Anti-Rug Pre-Buy Filter for server bundle match ──
+                        let filter_ctx = FilterContext::new(
+                            mint,
+                            token_data.token_creator,
+                            String::new(),  // name not available at bundle match time
+                            String::new(),  // symbol not available
+                            String::new(),  // uri not available
+                            PUMP_FUN_TOKEN_TOTAL_SUPPLY,
+                            tx_slot,
+                            0.0,
+                        );
+                        let filter_result = run_pre_buy_filters(&filter_ctx).await;
+
+                        if filter_result.should_buy {
+                            token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+                            token_data.filter_buy_multiplier = filter_result.buy_amount_multiplier;
+                        } else {
+                            info!(
+                                "🚫 [FILTER_SKIP] MINT: {} | Risk: {:.1} | Bundle matched but filters rejected",
+                                mint, filter_result.total_risk_score
+                            );
+                        }
                     }
                     TokenTradeSignal::EntrySubmitted => {
                         info!(
@@ -208,7 +274,28 @@ pub async fn handle_trade_events(
                         log_buy, log_sl,
                         manual_pat.take_profit,
                     );
-                    token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+                    // ── Phase 2: Anti-Rug Pre-Buy Filter for manual bundle match ──
+                    let filter_ctx = FilterContext::new(
+                        mint,
+                        token_data.token_creator,
+                        String::new(),
+                        String::new(),
+                        String::new(),
+                        PUMP_FUN_TOKEN_TOTAL_SUPPLY,
+                        tx_slot,
+                        0.0,
+                    );
+                    let filter_result = run_pre_buy_filters(&filter_ctx).await;
+
+                    if filter_result.should_buy {
+                        token_data.token_trade_signal = TokenTradeSignal::IsEntryPoint;
+                        token_data.filter_buy_multiplier = filter_result.buy_amount_multiplier;
+                    } else {
+                        info!(
+                            "🚫 [FILTER_SKIP] MINT: {} | Risk: {:.1} | Manual bundle matched but filters rejected",
+                            mint, filter_result.total_risk_score
+                        );
+                    }
                     token_data.override_buy_amount_sol = manual_pat.buy_amount_sol;
                     token_data.override_stop_loss = manual_pat.stop_loss.map(|v| v / 100.0);
                     token_data.set_tp_sell_strategy(manual_pat.take_profit.clone(), manual_pat.sell_amounts.clone());
@@ -288,6 +375,46 @@ pub async fn handle_trade_events(
                 );
 
                 return_data.insert(pumpswap_sell_ixs_accounts[i].base_mint, updated_data);
+            }
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // Phase 2: DEFERRED Genesis Check
+    // ══════════════════════════════════════════════════════════════════════
+    //
+    // Genesis check runs HERE — AFTER all buy events in this TX have been
+    // recorded via genesis_record_buy(). This solves the race condition where
+    // mint + bundled buys arrive in the SAME transaction.
+    //
+    // For tokens minted in this TX that already passed metadata + wallet
+    // filters (signal = IsEntryPoint), we now run genesis_check with the
+    // buy data that was collected from the same TX's buy events.
+    //
+    if !minted_in_this_tx.is_empty() {
+        for mint in &minted_in_this_tx {
+            if let Some(mut token_data) = return_data.get(mint).cloned() {
+                if token_data.token_trade_signal == TokenTradeSignal::IsEntryPoint {
+                    let genesis_result = genesis_check(*mint);
+                    if !genesis_result.passed {
+                        info!(
+                            "🚫 [GENESIS_REJECT] MINT: {} | {} | risk: {:.0} — reversing entry signal",
+                            mint, genesis_result.reason, genesis_result.risk_score,
+                        );
+                        token_data.token_trade_signal = TokenTradeSignal::None;
+                        token_data.filter_buy_multiplier = 0.0;
+                        let _ = TOKEN_DB.upsert(*mint, token_data.clone());
+                        return_data.insert(*mint, token_data);
+                    } else if genesis_result.risk_score > 0.0 {
+                        // Genesis passed but with warnings — adjust multiplier
+                        let genesis_penalty = genesis_result.risk_score / *MAX_TOTAL_RISK_SCORE;
+                        let adjusted = (token_data.filter_buy_multiplier * (1.0 - genesis_penalty))
+                            .max(*MIN_BUY_MULTIPLIER);
+                        token_data.filter_buy_multiplier = adjusted;
+                        let _ = TOKEN_DB.upsert(*mint, token_data.clone());
+                        return_data.insert(*mint, token_data);
+                    }
+                }
             }
         }
     }

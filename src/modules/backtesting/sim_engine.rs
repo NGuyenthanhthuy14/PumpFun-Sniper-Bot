@@ -54,6 +54,11 @@ pub struct SimToken {
     // Trailing stop state
     pub tp_trailing_active: bool,
     pub tp_trailing_max_price: f64,
+
+    // Phase 2: Filter tracking for paper-trading calibration
+    pub filter_passed: bool,           // Did this token pass the pre-buy filter?
+    pub filter_risk_score: f64,        // Total risk score from filter pipeline
+    pub filter_reason: String,         // Rejection/warning reason if any
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -77,6 +82,24 @@ impl std::fmt::Display for SimOutcome {
     }
 }
 
+// ── Phase 2: Filter tracking for paper-trading ──
+
+/// Records a token that was rejected by the filter during simulation.
+/// Used later to check if the rejection was correct (would have been a rug)
+/// by tracking its price trajectory even after rejection.
+#[derive(Debug, Clone)]
+pub struct SimFilterRecord {
+    pub mint: Pubkey,
+    pub creator: Pubkey,
+    pub pattern_label: String,
+    pub risk_score: f64,
+    pub reason: String,
+    pub mint_price: f64,
+    pub max_price_after: f64,   // Max price observed after rejection
+    pub final_price: f64,       // Price when token leaves tracking
+    pub would_have_been_rug: bool, // Did this token rug (price crashed)?
+}
+
 // ── Simulation engine ──
 
 pub struct SimEngine {
@@ -93,6 +116,11 @@ pub struct SimEngine {
     // Fees
     pub buy_fee_sol: f64,
     pub sell_fee_sol: f64,
+    // Phase 2: Filter tracking stats for paper-trading
+    pub filter_total_analyzed: Arc<Mutex<u64>>,
+    pub filter_passed_count: Arc<Mutex<u64>>,
+    pub filter_rejected_count: Arc<Mutex<u64>>,
+    pub filter_rejected_tokens: Arc<Mutex<Vec<SimFilterRecord>>>,
 }
 
 impl SimEngine {
@@ -120,6 +148,11 @@ impl SimEngine {
             total_tx_processed: Arc::new(Mutex::new(0)),
             buy_fee_sol: landing_fee + buy_priority + base_tx_fee,
             sell_fee_sol: sell_priority + base_tx_fee,
+            // Phase 2: Filter stats
+            filter_total_analyzed: Arc::new(Mutex::new(0)),
+            filter_passed_count: Arc::new(Mutex::new(0)),
+            filter_rejected_count: Arc::new(Mutex::new(0)),
+            filter_rejected_tokens: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
@@ -218,6 +251,10 @@ impl SimEngine {
                     stop_loss_pct: token_sl_pct,
                     tp_trailing_active: false,
                     tp_trailing_max_price: 0.0,
+                    // Phase 2: Filter tracking
+                    filter_passed: true,
+                    filter_risk_score: 0.0,
+                    filter_reason: String::new(),
                 };
 
                 let mut tokens = self.tokens.lock().expect("tokens lock");
@@ -319,6 +356,10 @@ impl SimEngine {
                     stop_loss_pct: self.stop_loss_pct,
                     tp_trailing_active: false,
                     tp_trailing_max_price: 0.0,
+                    // Phase 2: Filter tracking
+                    filter_passed: true,
+                    filter_risk_score: 0.0,
+                    filter_reason: String::new(),
                 };
 
                 let mut tokens = self.tokens.lock().expect("tokens lock");
@@ -820,5 +861,42 @@ impl SimEngine {
 
     pub fn get_elapsed(&self) -> Duration {
         self.start_time.elapsed()
+    }
+
+    // ── Phase 2: Filter stats helpers ──
+
+    pub fn get_filter_total_analyzed(&self) -> u64 {
+        *self.filter_total_analyzed.lock().expect("filter total lock")
+    }
+
+    pub fn get_filter_passed_count(&self) -> u64 {
+        *self.filter_passed_count.lock().expect("filter passed lock")
+    }
+
+    pub fn get_filter_rejected_count(&self) -> u64 {
+        *self.filter_rejected_count.lock().expect("filter rejected lock")
+    }
+
+    pub fn get_filter_rejected_tokens(&self) -> Vec<SimFilterRecord> {
+        self.filter_rejected_tokens.lock().expect("filter rejected tokens lock").clone()
+    }
+
+    /// Record a filter analysis result during simulation.
+    pub fn record_filter_result(&self, passed: bool, record: Option<SimFilterRecord>) {
+        {
+            let mut total = self.filter_total_analyzed.lock().expect("filter total lock");
+            *total += 1;
+        }
+        if passed {
+            let mut count = self.filter_passed_count.lock().expect("filter passed lock");
+            *count += 1;
+        } else {
+            let mut count = self.filter_rejected_count.lock().expect("filter rejected lock");
+            *count += 1;
+            if let Some(rec) = record {
+                let mut rejected = self.filter_rejected_tokens.lock().expect("filter rejected tokens lock");
+                rejected.push(rec);
+            }
+        }
     }
 }

@@ -87,3 +87,73 @@ pub struct FilterSetting {
     pub max_token_holder_filter: bool,
     pub max_token_holder_limit: u64,
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// Phase 2 — Anti-Rug Genesis Filter Configuration
+// ══════════════════════════════════════════════════════════════════════
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct GenesisFilterConfig {
+    /// Master toggle for genesis bundle detection
+    pub enabled: bool,
+    /// Max % of supply bought in creation block before aborting (default: 50.0)
+    pub max_genesis_buy_percent: f64,
+    /// Max number of clustered wallets in genesis block (default: 3)
+    pub max_clustered_wallets: u32,
+    /// Number of buy events to track per mint for genesis analysis
+    pub max_genesis_buy_tracking: usize,
+    /// Number of slots after creation to include in genesis window (default: 3)
+    pub genesis_slot_window: u64,
+    /// Max % a single wallet can buy before flagging (default: 20.0)
+    pub max_single_wallet_percent: f64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct WalletProfilerConfig {
+    /// Master toggle for dev wallet profiling
+    pub enabled: bool,
+    /// Minimum wallet age in hours (default: 24)
+    pub min_wallet_age_hours: u64,
+    /// Minimum historical TX count (default: 10)
+    pub min_historical_tx_count: u64,
+    /// Block tokens from CEX-funded fresh wallets
+    pub block_cex_funded: bool,
+    /// RPC call timeout in milliseconds (default: 500)
+    pub rpc_timeout_ms: u64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct MetadataCheckerConfig {
+    /// Master toggle for metadata verification
+    pub enabled: bool,
+    /// Require non-empty metadata URI
+    pub require_metadata_uri: bool,
+    /// Minimum token name length (default: 2)
+    pub min_name_length: usize,
+    /// Minimum token symbol length (default: 2)
+    pub min_symbol_length: usize,
+    /// Action when metadata is empty: "skip" | "warn" | "allow"
+    pub metadata_empty_action: String,
+    /// Whether to fetch URI content and parse Metaplex JSON (default: true)
+    pub fetch_uri_content: bool,
+    /// Timeout for URI HTTP fetch in milliseconds (default: 2000)
+    pub uri_timeout_ms: u64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct RiskScoringConfig {
+    /// Maximum total risk score before rejecting token (default: 70.0)
+    pub max_total_risk_score: f64,
+    /// Enable dynamic position sizing based on risk score (default: true)
+    pub enable_dynamic_sizing: bool,
+    /// Minimum buy multiplier when risk is high (default: 0.3)
+    pub min_buy_multiplier: f64,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct FilterLogConfig {
+    /// Enable CSV audit logging for filter decisions
+    pub enabled: bool,
+    /// Directory for filter audit logs (default: "filter_logs")
+    pub log_dir: String,
+}

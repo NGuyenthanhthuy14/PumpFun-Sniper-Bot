@@ -15,17 +15,22 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                 decrese_buy_tx_remain_counter();
 
                 let base_buy_sol = token_data.override_buy_amount_sol.unwrap_or(*BUY_AMOUNT_SOL);
-                let buy_sol = DYNAMIC_BUY.adjusted_buy_amount(&token_data.matched_pattern_label, base_buy_sol);
+                let dynamic_buy_sol = DYNAMIC_BUY.adjusted_buy_amount(&token_data.matched_pattern_label, base_buy_sol);
+                // Phase 2: Apply filter-based position sizing multiplier
+                let buy_sol = dynamic_buy_sol * token_data.filter_buy_multiplier;
                 if (buy_sol - base_buy_sol).abs() > 1e-9 {
                     info!(
                         "\n💰 [DYNAMIC_BUY] Buy amount adjusted\n\
                          │  Pattern:      {}\n\
                          │  Mint:         {}\n\
                          │  Base Buy:     {:.4} SOL\n\
-                         │  Adjusted Buy: {:.4} SOL  ({:.1}x)\n\
+                         │  Dynamic:      {:.4} SOL  ({:.1}x)\n\
+                         │  Filter Mul:   {:.2}x\n\
+                         │  Final Buy:    {:.4} SOL\n\
                          └──────────────────────",
                         token_data.matched_pattern_label, token_data.token_mint,
-                        base_buy_sol, buy_sol, buy_sol / base_buy_sol,
+                        base_buy_sol, dynamic_buy_sol, dynamic_buy_sol / base_buy_sol,
+                        token_data.filter_buy_multiplier, buy_sol,
                     );
                 }
                 let mut ix: Vec<Instruction> = Vec::new();

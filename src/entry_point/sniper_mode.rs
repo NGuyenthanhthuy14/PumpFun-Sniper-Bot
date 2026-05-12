@@ -55,6 +55,49 @@ async fn main() {
         run_pattern_server(PATTERN_SERVER_PORT).await;
     });
 
+    // ══════════════════════════════════════════════════════════════════
+    // Phase 2: Anti-Rug Intelligence Layer — Initialization
+    // ══════════════════════════════════════════════════════════════════
+    info!("══════════════════════════════════════════════════");
+    info!("  Phase 2 — Anti-Rug Intelligence Layer");
+    info!("  ────────────────────────────────────────────");
+    info!("  Genesis Detector:   {}", if *GENESIS_FILTER_ENABLED { "ENABLED" } else { "DISABLED" });
+    if *GENESIS_FILTER_ENABLED {
+        info!("    Max genesis buy:  {:.0}%", *MAX_GENESIS_BUY_PERCENT);
+        info!("    Max single whale: {:.0}%", *MAX_SINGLE_WALLET_PERCENT);
+        info!("    Slot window:      {} slots", *GENESIS_SLOT_WINDOW);
+        info!("    Max clusters:     {} wallets", *MAX_CLUSTERED_WALLETS);
+    }
+    info!("  Wallet Profiler:    {}", if *WALLET_PROFILER_ENABLED { "ENABLED" } else { "DISABLED" });
+    if *WALLET_PROFILER_ENABLED {
+        info!("    Min wallet age:   {}h", *MIN_WALLET_AGE_HOURS);
+        info!("    Min TX history:   {}", *MIN_HISTORICAL_TX_COUNT);
+        info!("    Block CEX funded: {}", *BLOCK_CEX_FUNDED);
+        info!("    RPC timeout:      {}ms", *WALLET_RPC_TIMEOUT_MS);
+        info!("    Known CEX addrs:  {}", total_known_cex_wallets());
+    }
+    info!("  Metadata Checker:   {}", if *METADATA_CHECKER_ENABLED { "ENABLED" } else { "DISABLED" });
+    if *METADATA_CHECKER_ENABLED {
+        info!("    Require URI:      {}", *REQUIRE_METADATA_URI);
+        info!("    Fetch URI JSON:   {}", *FETCH_URI_CONTENT);
+        info!("    Empty action:     {}", *METADATA_EMPTY_ACTION);
+    }
+    info!("  ────────────────────────────────────────────");
+    info!("  Max Risk Score:     {:.0}", *MAX_TOTAL_RISK_SCORE);
+    info!("  Dynamic Sizing:     {}", if *ENABLE_DYNAMIC_SIZING { "ENABLED" } else { "DISABLED" });
+    info!("  Filter CSV Log:     {}", if *FILTER_LOG_ENABLED { &*FILTER_LOG_DIR } else { "DISABLED" });
+    info!("══════════════════════════════════════════════════");
+
+    // Spawn Phase 2 cleanup tasks (every 30s)
+    tokio::spawn(async {
+        loop {
+            tokio::time::sleep(tokio::time::Duration::from_secs(30)).await;
+            genesis_cleanup();
+            wallet_profile_cache_cleanup();
+            metadata_name_tracker_cleanup();
+        }
+    });
+
     let grpc_config = GrpcClientConfig::new(
         "sniper_mode".to_string(),
         GRPC_ENDPOINT.to_string(),

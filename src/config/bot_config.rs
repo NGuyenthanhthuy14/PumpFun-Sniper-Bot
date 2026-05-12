@@ -80,3 +80,40 @@ pub static BUY_MICRO_LAMPORTS: Lazy<u64> = Lazy::new(|| CONFIG.fee_config.buy_mi
 pub static SELL_MICRO_LAMPORTS: Lazy<f64> = Lazy::new(|| CONFIG.fee_config.sell_micro_lamports);
 pub static ZERO_SLOT_FEE: Lazy<f64> = Lazy::new(|| CONFIG.fee_config.zero_slot_fee);
 pub static HELIUS_FEE: Lazy<f64> = Lazy::new(|| CONFIG.fee_config.helius_fee);
+
+// ══════════════════════════════════════════════════════════════════════
+// Phase 2 — Anti-Rug Genesis Filter static config
+// ══════════════════════════════════════════════════════════════════════
+
+// Genesis Bundle Detection
+pub static GENESIS_FILTER_ENABLED: Lazy<bool> = Lazy::new(|| CONFIG.genesis_filter.enabled);
+pub static MAX_GENESIS_BUY_PERCENT: Lazy<f64> = Lazy::new(|| CONFIG.genesis_filter.max_genesis_buy_percent);
+pub static MAX_CLUSTERED_WALLETS: Lazy<u32> = Lazy::new(|| CONFIG.genesis_filter.max_clustered_wallets);
+pub static MAX_GENESIS_BUY_TRACKING: Lazy<usize> = Lazy::new(|| CONFIG.genesis_filter.max_genesis_buy_tracking);
+pub static GENESIS_SLOT_WINDOW: Lazy<u64> = Lazy::new(|| CONFIG.genesis_filter.genesis_slot_window);
+pub static MAX_SINGLE_WALLET_PERCENT: Lazy<f64> = Lazy::new(|| CONFIG.genesis_filter.max_single_wallet_percent);
+
+// Wallet Profiler
+pub static WALLET_PROFILER_ENABLED: Lazy<bool> = Lazy::new(|| CONFIG.wallet_profiler.enabled);
+pub static MIN_WALLET_AGE_HOURS: Lazy<u64> = Lazy::new(|| CONFIG.wallet_profiler.min_wallet_age_hours);
+pub static MIN_HISTORICAL_TX_COUNT: Lazy<u64> = Lazy::new(|| CONFIG.wallet_profiler.min_historical_tx_count);
+pub static BLOCK_CEX_FUNDED: Lazy<bool> = Lazy::new(|| CONFIG.wallet_profiler.block_cex_funded);
+pub static WALLET_RPC_TIMEOUT_MS: Lazy<u64> = Lazy::new(|| CONFIG.wallet_profiler.rpc_timeout_ms);
+
+// Metadata Checker
+pub static METADATA_CHECKER_ENABLED: Lazy<bool> = Lazy::new(|| CONFIG.metadata_checker.enabled);
+pub static REQUIRE_METADATA_URI: Lazy<bool> = Lazy::new(|| CONFIG.metadata_checker.require_metadata_uri);
+pub static MIN_NAME_LENGTH: Lazy<usize> = Lazy::new(|| CONFIG.metadata_checker.min_name_length);
+pub static MIN_SYMBOL_LENGTH: Lazy<usize> = Lazy::new(|| CONFIG.metadata_checker.min_symbol_length);
+pub static METADATA_EMPTY_ACTION: Lazy<String> = Lazy::new(|| CONFIG.metadata_checker.metadata_empty_action.clone());
+pub static FETCH_URI_CONTENT: Lazy<bool> = Lazy::new(|| CONFIG.metadata_checker.fetch_uri_content);
+pub static URI_TIMEOUT_MS: Lazy<u64> = Lazy::new(|| CONFIG.metadata_checker.uri_timeout_ms);
+
+// Risk Scoring
+pub static MAX_TOTAL_RISK_SCORE: Lazy<f64> = Lazy::new(|| CONFIG.risk_scoring.max_total_risk_score);
+pub static ENABLE_DYNAMIC_SIZING: Lazy<bool> = Lazy::new(|| CONFIG.risk_scoring.enable_dynamic_sizing);
+pub static MIN_BUY_MULTIPLIER: Lazy<f64> = Lazy::new(|| CONFIG.risk_scoring.min_buy_multiplier);
+
+// Filter Logging
+pub static FILTER_LOG_ENABLED: Lazy<bool> = Lazy::new(|| CONFIG.filter_log.enabled);
+pub static FILTER_LOG_DIR: Lazy<String> = Lazy::new(|| CONFIG.filter_log.log_dir.clone());

@@ -44,6 +44,12 @@ where
                     _ => continue,
                 };
 
+                // Phase 2: Extract slot from gRPC update for genesis tracking
+                let tx_slot = match &update.update_oneof {
+                    Some(UpdateOneof::Transaction(tx_update)) => tx_update.slot,
+                    _ => 0,
+                };
+
                 let budget_compute_data = get_budget_compute_info(budget_compute_ix_info);
                 let pumpfun_trade_data =
                     get_pumpfun_trade_info(ix_info_pumpfun.clone(), account_keys.clone(), transaction_update);
@@ -59,6 +65,7 @@ where
                     migration_data,
                     pumpswap_trade_data,
                     tx_id.clone(),
+                    tx_slot,  // Phase 2: pass slot for genesis tracking
                 )
                 .await;
 
