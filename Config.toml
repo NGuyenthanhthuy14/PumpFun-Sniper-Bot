@@ -1,0 +1,90 @@
+[mode]
+is_dev_mode = true
+buy_tx_counter = 10
+
+[wallet_config]
+private_key = ""
+
+[connection_config]
+grpc_endpoint = "https://grpc.fra.shyft.to"
+grpc_token = "b3df13df-ed50-49ae-8c58-cf17d160f7f5"
+rpc_endpoint = "https://rpc.shyft.to?api_key=Bs3GIL0Q3NdkzFNc"
+bnb_rpc_endpoint = ""
+
+[buy_setting]
+buy_amount_sol = 0.001
+dynamic_buy_amount_mode = false
+loss_sequence = 3
+profit_sequence = 3
+loss_multiply = 0.5
+profit_multiply = 1.5
+max_buy_amount_multiply = 3.0
+min_buy_amount_multiply = 0.3
+
+[sell_setting]
+stop_loss = 0.5
+tp_trailing = 2.0
+trailing_stop = 0.85
+no_activity_time = 300
+
+[landing_service_config]
+landing_service = "jito_fra"
+zero_slot_api_key = ""
+helius_api_key = ""
+
+[slippage_config]
+slippage_percent = 25
+
+[fee_config]
+buy_compute_unit_limit = 100000
+buy_micro_lamports = 100000
+sell_micro_lamports = 100000.0
+zero_slot_fee = 0.0001
+helius_fee = 0.0001
+
+[simulation_setting]
+buy_amount_sol = 0.001
+stop_loss = 0.5
+tp_trailing = 2.0
+trailing_stop = 0.85
+confirmation_delay_ms = 500
+landing_service = "jito_fra"
+buy_compute_unit_limit = 100000
+buy_micro_lamports = 100000
+sell_compute_unit_limit = 100000
+sell_micro_lamports = 100000
+zero_slot_fee = 0.0001
+helius_fee = 0.0001
+
+[genesis_filter]
+enabled = true
+max_genesis_buy_percent = 50.0
+max_single_wallet_percent = 20.0
+max_clustered_wallets = 3
+max_genesis_buy_tracking = 10
+genesis_slot_window = 3
+
+[wallet_profiler]
+enabled = true
+min_wallet_age_hours = 24
+min_historical_tx_count = 10
+block_cex_funded = true
+rpc_timeout_ms = 500
+
+[metadata_checker]
+enabled = true
+require_metadata_uri = true
+min_name_length = 2
+min_symbol_length = 2
+metadata_empty_action = "warn"
+fetch_uri_content = true
+uri_timeout_ms = 2000
+
+[risk_scoring]
+max_total_risk_score = 70.0
+enable_dynamic_sizing = true
+min_buy_multiplier = 0.3
+
+[filter_log]
+enabled = true
+log_dir = "filter_logs"
