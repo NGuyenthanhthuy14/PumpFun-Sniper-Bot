@@ -99,5 +99,21 @@ pub async fn run_pre_buy_filters(ctx: &FilterContext) -> AggregatedFilterResult 
     // ── Log to CSV audit trail ──
     log_filter_result(ctx, &aggregated);
 
+    // ── Send Telegram notification ──
+    let reasons: Vec<String> = aggregated.results.iter()
+        .filter(|r| !r.passed || r.risk_score > 0.0)
+        .map(|r| format!("[{}] {}", r.module_name, r.reason))
+        .collect();
+
+    tg_send_filter_result(
+        &ctx.mint.to_string(),
+        &ctx.creator.to_string(),
+        &ctx.name,
+        should_buy,
+        total_risk,
+        buy_amount_multiplier,
+        &reasons,
+    );
+
     aggregated
 }

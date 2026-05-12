@@ -86,6 +86,7 @@ async fn main() {
     info!("  Max Risk Score:     {:.0}", *MAX_TOTAL_RISK_SCORE);
     info!("  Dynamic Sizing:     {}", if *ENABLE_DYNAMIC_SIZING { "ENABLED" } else { "DISABLED" });
     info!("  Filter CSV Log:     {}", if *FILTER_LOG_ENABLED { &*FILTER_LOG_DIR } else { "DISABLED" });
+    info!("  Telegram Notify:    {}", if tg_notify_enabled() { "ENABLED" } else { "DISABLED (set TG_BOT_TOKEN + TG_CHAT_ID)" });
     info!("══════════════════════════════════════════════════");
 
     // Spawn Phase 2 cleanup tasks (every 30s)
