@@ -6,6 +6,7 @@ pub mod wallet_profiler;
 pub mod metadata_checker;
 pub mod filter_aggregator;
 pub mod tg_notify;
+pub mod tg_control;
 
 pub use filter_types::*;
 pub use filter_logger::*;
@@ -15,3 +16,4 @@ pub use wallet_profiler::*;
 pub use metadata_checker::*;
 pub use filter_aggregator::*;
 pub use tg_notify::*;
+pub use tg_control::*;

@@ -99,6 +99,11 @@ async fn main() {
         }
     });
 
+    // Spawn Telegram Control Bot (if configured)
+    tokio::spawn(async {
+        crate::modules::pre_buy_filter::tg_control::start_telegram_control_bot().await;
+    });
+
     let grpc_config = GrpcClientConfig::new(
         "sniper_mode".to_string(),
         GRPC_ENDPOINT.to_string(),

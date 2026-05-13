@@ -411,24 +411,30 @@ pub async fn handle_trade_events(
         for mint in &minted_in_this_tx {
             if let Some(mut token_data) = return_data.get(mint).cloned() {
                 if token_data.token_trade_signal == TokenTradeSignal::IsEntryPoint {
-                    let genesis_result = genesis_check(*mint);
-                    if !genesis_result.passed {
-                        info!(
-                            "🚫 [GENESIS_REJECT] MINT: {} | {} | risk: {:.0} — reversing entry signal",
-                            mint, genesis_result.reason, genesis_result.risk_score,
-                        );
-                        token_data.token_trade_signal = TokenTradeSignal::None;
-                        token_data.filter_buy_multiplier = 0.0;
-                        let _ = TOKEN_DB.upsert(*mint, token_data.clone());
-                        return_data.insert(*mint, token_data);
-                    } else if genesis_result.risk_score > 0.0 {
-                        // Genesis passed but with warnings — adjust multiplier
-                        let genesis_penalty = genesis_result.risk_score / *MAX_TOTAL_RISK_SCORE;
-                        let adjusted = (token_data.filter_buy_multiplier * (1.0 - genesis_penalty))
-                            .max(*MIN_BUY_MULTIPLIER);
-                        token_data.filter_buy_multiplier = adjusted;
-                        let _ = TOKEN_DB.upsert(*mint, token_data.clone());
-                        return_data.insert(*mint, token_data);
+                    let enable_relax = std::sync::atomic::Ordering::Relaxed;
+                    let run_genesis = ENABLE_M4_GENESIS.load(enable_relax);
+                    let warn_only = WARN_ONLY_MODE.load(enable_relax);
+
+                    if run_genesis {
+                        let genesis_result = genesis_check(*mint);
+                        if !genesis_result.passed && !warn_only {
+                            info!(
+                                "🚫 [GENESIS_REJECT] MINT: {} | {} | risk: {:.0} — reversing entry signal",
+                                mint, genesis_result.reason, genesis_result.risk_score,
+                            );
+                            token_data.token_trade_signal = TokenTradeSignal::None;
+                            token_data.filter_buy_multiplier = 0.0;
+                            let _ = TOKEN_DB.upsert(*mint, token_data.clone());
+                            return_data.insert(*mint, token_data);
+                        } else if genesis_result.risk_score > 0.0 {
+                            // Genesis passed but with warnings — adjust multiplier
+                            let genesis_penalty = genesis_result.risk_score / *MAX_TOTAL_RISK_SCORE;
+                            let adjusted = (token_data.filter_buy_multiplier * (1.0 - genesis_penalty))
+                                .max(*MIN_BUY_MULTIPLIER);
+                            token_data.filter_buy_multiplier = adjusted;
+                            let _ = TOKEN_DB.upsert(*mint, token_data.clone());
+                            return_data.insert(*mint, token_data);
+                        }
                     }
                 }
             }

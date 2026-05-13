@@ -35,20 +35,29 @@ pub async fn run_pre_buy_filters(ctx: &FilterContext) -> AggregatedFilterResult 
     // See: handle_sniper_event.rs → deferred genesis check section.
 
     // ── Module 2 + 3: Run CONCURRENTLY for lower latency ──
-    // Metadata (sync+async) and Wallet Profiler (async) are independent,
-    // so we overlap them using tokio::join! to save ~500ms per trade.
-    let (metadata_result, wallet_result) = tokio::join!(
-        check_metadata(ctx),
-        profile_dev_wallet(ctx.creator),
+    // ── Check Telegram Toggles ──
+    let enable_metadata = std::sync::atomic::Ordering::Relaxed;
+    let run_metadata = ENABLE_M5_METADATA.load(enable_metadata);
+    let run_wallet = ENABLE_M3_DEV.load(enable_metadata);
+
+    // ── Module 2 + 3: Run CONCURRENTLY for lower latency ──
+    let (metadata_result_opt, wallet_result_opt) = tokio::join!(
+        async { if run_metadata { Some(check_metadata(ctx).await) } else { None } },
+        async { if run_wallet { Some(profile_dev_wallet(ctx.creator).await) } else { None } },
     );
-    results.push(metadata_result);
-    results.push(wallet_result);
+
+    if let Some(res) = metadata_result_opt { results.push(res); }
+    if let Some(res) = wallet_result_opt { results.push(res); }
 
     // ── Aggregate results ──
+    let warn_only = WARN_ONLY_MODE.load(enable_metadata);
     let any_hard_fail = results.iter().any(|r| !r.passed);
     let total_risk: f64 = results.iter().map(|r| r.risk_score).sum::<f64>().max(0.0);
 
-    let should_buy = !any_hard_fail && total_risk < *MAX_TOTAL_RISK_SCORE;
+    let mut should_buy = !any_hard_fail && total_risk < *MAX_TOTAL_RISK_SCORE;
+    if warn_only {
+        should_buy = true;
+    }
 
     // Dynamic position sizing based on risk
     let buy_amount_multiplier = if should_buy && *ENABLE_DYNAMIC_SIZING && total_risk > 0.0 {
