@@ -40,10 +40,16 @@ pub async fn start_telegram_control_bot() {
                         if let Some(message) = result.get("message") {
                             let text = message["text"].as_str().unwrap_or("");
                             let sender_chat_id = message["chat"]["id"].as_i64().unwrap_or(0).to_string();
+                            
+                            // Debug log to see incoming messages
+                            info!("📥 [TG_CONTROL] Received msg: '{}' from chat_id: {}", text, sender_chat_id);
+                            
                             if sender_chat_id == chat_id {
                                 if text.starts_with("/start") || text.starts_with("/settings") {
                                     send_settings_menu(&client, &token, &chat_id).await;
                                 }
+                            } else {
+                                info!("⚠️ [TG_CONTROL] Ignored msg from unauthorized chat_id: {} (expected: {})", sender_chat_id, chat_id);
                             }
                         }
 
@@ -62,8 +68,14 @@ pub async fn start_telegram_control_bot() {
                             }
                         }
                     }
+                } else if let Some(desc) = json.get("description") {
+                    error!("❌ [TG_CONTROL] API Error: {}", desc);
                 }
+            } else {
+                error!("❌ [TG_CONTROL] Failed to parse JSON response");
             }
+        } else {
+            error!("❌ [TG_CONTROL] HTTP request failed");
         }
         sleep(Duration::from_secs(1)).await;
     }
