@@ -61,7 +61,12 @@ pub async fn run_pre_buy_filters(ctx: &FilterContext) -> AggregatedFilterResult 
 
     if !crate::BOT_IS_RUNNING.load(std::sync::atomic::Ordering::Relaxed) {
         should_buy = false;
-        // Optionally add a dummy result indicating manual stop, but returning false is enough
+        results.push(FilterResult {
+            module_name: "BOT_CONTROL",
+            passed: false,
+            risk_score: 100.0,
+            reason: "Bot is manually STOPPED from Telegram",
+        });
     }
 
     // Dynamic position sizing based on risk

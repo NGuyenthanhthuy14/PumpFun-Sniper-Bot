@@ -88,28 +88,20 @@ pub async fn start_telegram_control_bot() {
 }
 
 async fn handle_text_message(client: &reqwest::Client, token: &str, chat_id: &str, text: &str) {
-    match text {
-        "/start" | "📊 Dashboard" => {
-            send_dashboard(client, token, chat_id, "Today").await;
-        }
-        "💰 Wallet management" => {
-            send_simple_msg(client, token, chat_id, "💰 Wallet management settings coming soon!").await;
-        }
-        "⚙️ Trading parameters" => {
-            send_simple_msg(client, token, chat_id, "⚙️ Trading parameters coming soon!").await;
-        }
-        "🛡️ Anti-Rug" => {
-            send_settings_menu(client, token, chat_id).await;
-        }
-        "▶️ Start" => {
-            BOT_IS_RUNNING.store(true, Ordering::Relaxed);
-            send_simple_msg_with_keyboard(client, token, chat_id, "✅ Bot is started").await;
-        }
-        "⏹️ Stop" => {
-            BOT_IS_RUNNING.store(false, Ordering::Relaxed);
-            send_simple_msg_with_keyboard(client, token, chat_id, "🛑 Bot is stopped").await;
-        }
-        _ => {}
+    if text.starts_with("/start") || text.contains("Dashboard") {
+        send_dashboard(client, token, chat_id, "Today").await;
+    } else if text.contains("Wallet management") {
+        send_simple_msg(client, token, chat_id, "💰 Wallet management settings coming soon!").await;
+    } else if text.contains("Trading parameters") {
+        send_simple_msg(client, token, chat_id, "⚙️ Trading parameters coming soon!").await;
+    } else if text.contains("Anti-Rug") {
+        send_settings_menu(client, token, chat_id).await;
+    } else if text.contains("Start") {
+        BOT_IS_RUNNING.store(true, Ordering::Relaxed);
+        send_simple_msg_with_keyboard(client, token, chat_id, "✅ Bot is STARTED. Ready to snipe!").await;
+    } else if text.contains("Stop") || text.starts_with("/stop") {
+        BOT_IS_RUNNING.store(false, Ordering::Relaxed);
+        send_simple_msg_with_keyboard(client, token, chat_id, "🛑 Bot is STOPPED. Will not buy any new tokens.").await;
     }
 }
 
