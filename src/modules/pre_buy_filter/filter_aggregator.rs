@@ -62,10 +62,10 @@ pub async fn run_pre_buy_filters(ctx: &FilterContext) -> AggregatedFilterResult 
     if !crate::BOT_IS_RUNNING.load(std::sync::atomic::Ordering::Relaxed) {
         should_buy = false;
         results.push(FilterResult {
-            module_name: "BOT_CONTROL",
+            module_name: "BOT_CONTROL".to_string(),
             passed: false,
             risk_score: 100.0,
-            reason: "Bot is manually STOPPED from Telegram",
+            reason: "Bot is manually STOPPED from Telegram".to_string(),
         });
     }
 
