@@ -102,7 +102,16 @@ async fn handle_text_message(client: &reqwest::Client, token: &str, chat_id: &st
             if *crate::ENABLE_DYNAMIC_SIZING { "✅ ON" } else { "❌ OFF" },
             *crate::MAX_TOTAL_RISK_SCORE
         );
-        send_simple_msg_with_parse_mode(client, token, chat_id, &msg, "HTML").await;
+        let keyboard = json!({
+            "inline_keyboard": [
+                [{"text": format!("💸 Buy amount ({} SOL)", *crate::BUY_AMOUNT_SOL), "callback_data": "menu_buy_amount"}],
+                [{"text": format!("🛑 Stop loss ({:.0}%)", *crate::STOP_LOSS * 100.0), "callback_data": "menu_stop_loss"}],
+                [{"text": "🔙 Close", "callback_data": "ignore"}]
+            ]
+        });
+        let url = format!("https://api.telegram.org/bot{}/sendMessage", token);
+        let payload = json!({ "chat_id": chat_id, "text": msg, "parse_mode": "HTML", "reply_markup": keyboard });
+        let _ = client.post(&url).json(&payload).send().await;
     } else if text.contains("Anti-Rug") {
         send_settings_menu(client, token, chat_id).await;
     } else if text.contains("Start") {
@@ -233,6 +242,27 @@ async fn handle_callback(client: &reqwest::Client, token: &str, chat_id: &str, m
         "time_7d" => update_dashboard(client, token, chat_id, message_id, "7 Days").await,
         "time_30d" => update_dashboard(client, token, chat_id, message_id, "30 Days").await,
         "time_all" => update_dashboard(client, token, chat_id, message_id, "All Time").await,
+        
+        "menu_buy_amount" => {
+            let keyboard = json!({
+                "inline_keyboard": [
+                    [{"text": "0.05 SOL", "callback_data": "ignore"}, {"text": "0.1 SOL", "callback_data": "ignore"}],
+                    [{"text": "0.5 SOL", "callback_data": "ignore"}, {"text": "1 SOL", "callback_data": "ignore"}],
+                    [{"text": "Custom", "callback_data": "ignore"}],
+                    [{"text": "🔙 Back", "callback_data": "ignore"}]
+                ]
+            });
+            let url = format!("https://api.telegram.org/bot{}/sendMessage", token);
+            let payload = json!({ "chat_id": chat_id, "text": "📝 **Set buy amount**\n_(Tính năng này yêu cầu sửa file Config.toml. Để tự động hoá nó cần đụng vào core. Bạn vui lòng sửa tay `buy_amount_sol` trong `Config.toml` và restart bot)_", "parse_mode": "Markdown", "reply_markup": keyboard });
+            let _ = client.post(&url).json(&payload).send().await;
+        }
+        
+        "menu_stop_loss" => {
+            let url = format!("https://api.telegram.org/bot{}/sendMessage", token);
+            let payload = json!({ "chat_id": chat_id, "text": "📝 **Set Stop Loss**\n_(Bạn vui lòng sửa tay `stop_loss` trong `Config.toml` và restart bot)_", "parse_mode": "Markdown" });
+            let _ = client.post(&url).json(&payload).send().await;
+        }
+
         "toggle_warn" => {
             let current = WARN_ONLY_MODE.load(Ordering::Relaxed);
             WARN_ONLY_MODE.store(!current, Ordering::Relaxed);
