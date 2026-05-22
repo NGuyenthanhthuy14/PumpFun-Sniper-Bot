@@ -11,6 +11,7 @@ pub mod check_endpoints;
 pub mod rotate_wallet;
 pub mod protection_logic;
 pub mod pre_buy_filter;
+pub mod wallet_manager;
 
 pub use macros::*;
 pub use files::*;

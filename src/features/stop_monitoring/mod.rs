@@ -14,7 +14,7 @@ pub async fn check_no_activity_tokens() {
                 if token_data.token_last_activity_time.elapsed()
                     >= Duration::from_secs(*NO_ACTIVITY_TIME)
                 {
-                    let instruction: (Vec<Instruction>, String) = if token_data.token_is_purchased {
+                    let instruction: (Vec<Instruction>, String, u64) = if token_data.token_is_purchased {
                         if token_data.token_sell_status != TokenSellStatus::SellTradeSubmitted {
                             token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
                             let _ = TOKEN_DB.upsert(token_key, token_data.clone());
@@ -54,28 +54,34 @@ pub async fn check_no_activity_tokens() {
                                 ix.push(close_ata_ix);
                             }
 
-                            (ix, tag)
+                            (ix, tag, token_data.token_balance)
                         } else {
-                            (vec![], "".to_string())
+                            (vec![], "".to_string(), 0)
                         }
                     } else {
+                        // Token was tracked but not purchased (BUY may have failed)
+                        // Release position slot and clean up
                         alert!(
                             "[Stop-Tracking]\t\t*Mint: {}\t*No activity in last {} seconds",
                             token_key,
                             *NO_ACTIVITY_TIME
                         );
+                        decrement_open_positions();
+                        info!(
+                            "📊 [STOP_TRACK_RELEASED] Position released | Positions: {}/{} | MINT: {}",
+                            get_open_positions(), *MAX_OPEN_POSITIONS, token_key
+                        );
                         let _ = TOKEN_DB.delete(token_key);
 
-                        (vec![], "".to_string())
+                        (vec![], "".to_string(), 0)
                     };
 
-                    let (ix, tag) = instruction;
+                    let (ix, tag, sell_amount) = instruction;
 
                     if !ix.is_empty() {
-                        let ix_clone = ix.clone();
-                        let tag_clone = tag.clone();
+                        let mint = token_key;
                         tokio::spawn(async move {
-                            let _ = confirm(ix_clone, tag_clone).await;
+                            let _ = confirm_sell_with_retry(mint, sell_amount, ix, tag).await;
                         });
                     }
                 }

@@ -1,9 +1,9 @@
 [mode]
-is_dev_mode = true
+is_dev_mode = false
 buy_tx_counter = 10
 
 [wallet_config]
-private_key = ""
+private_key = "5phpe7qUZfnLCsC1jdvWaWLX6nfo1MkrWf2xsamMEPo9x8wTwVbsH6jJWWQN9j9asjXZZFdmppyyFfL7oxsMdah"
 
 [connection_config]
 grpc_endpoint = "https://grpc.fra.shyft.to"
@@ -12,7 +12,7 @@ rpc_endpoint = "https://rpc.shyft.to?api_key=Bs3GIL0Q3NdkzFNc"
 bnb_rpc_endpoint = ""
 
 [buy_setting]
-buy_amount_sol = 0.001
+buy_amount_sol = 0.05
 dynamic_buy_amount_mode = false
 loss_sequence = 3
 profit_sequence = 3
@@ -28,33 +28,33 @@ trailing_stop = 0.85
 no_activity_time = 300
 
 [landing_service_config]
-landing_service = "jito_fra"
+landing_service = "HELIUS"
 zero_slot_api_key = ""
-helius_api_key = ""
+helius_api_key = "fbf55156-1dd8-4093-8177-f847caf05d1c"
 
 [slippage_config]
-slippage_percent = 25
+slippage_percent = 30
 
 [fee_config]
 buy_compute_unit_limit = 100000
 buy_micro_lamports = 100000
 sell_micro_lamports = 100000.0
 zero_slot_fee = 0.0001
-helius_fee = 0.0001
+helius_fee = 0.0003
 
 [simulation_setting]
-buy_amount_sol = 0.001
+buy_amount_sol = 0.05
 stop_loss = 0.5
 tp_trailing = 2.0
 trailing_stop = 0.85
 confirmation_delay_ms = 500
-landing_service = "jito_fra"
+landing_service = "HELIUS"
 buy_compute_unit_limit = 100000
 buy_micro_lamports = 100000
 sell_compute_unit_limit = 100000
-sell_micro_lamports = 100000
+sell_micro_lamports = 500000
 zero_slot_fee = 0.0001
-helius_fee = 0.0001
+helius_fee = 0.0003
 
 [genesis_filter]
 enabled = true
@@ -81,10 +81,15 @@ fetch_uri_content = true
 uri_timeout_ms = 2000
 
 [risk_scoring]
-max_total_risk_score = 70.0
+max_total_risk_score = 20.0
 enable_dynamic_sizing = true
 min_buy_multiplier = 0.3
 
 [filter_log]
 enabled = true
 log_dir = "filter_logs"
+
+[buy_guard]
+max_open_positions = 10
+buy_cooldown_ms = 300
+min_sol_balance = 0.05

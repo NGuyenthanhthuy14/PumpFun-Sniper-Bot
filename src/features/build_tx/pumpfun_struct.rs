@@ -73,6 +73,10 @@ impl PumpfunStruct {
         }
     }
 
+    pub fn pick_buyback_fee_recipient() -> Pubkey {
+        solana_sdk::pubkey!("GXPFM2caqTtQYC2cJ5yJRi9VDkpsYZXzYdwYpGnLmtDL")
+    }
+
     pub fn get_create_ata_idempotent_ix(&self) -> Instruction {
         let create_token_ata = create_associated_token_account_idempotent(
             &*SIGNER_PUBKEY,
@@ -133,6 +137,7 @@ impl PumpfunStruct {
             AccountMeta::new_readonly(self.fee_config, false),     // #15 - Fee Config
             AccountMeta::new_readonly(self.fee_program, false),    //#16 - Fee Program
             AccountMeta::new_readonly(self.bonding_curve_v2_pda, false), //#17 - Bonding Curve V2 PDA
+            AccountMeta::new(Self::pick_buyback_fee_recipient(), false), // #18 - Buyback Fee Recipient
         ];
 
         Instruction {
@@ -180,6 +185,7 @@ impl PumpfunStruct {
                 AccountMeta::new_readonly(self.fee_config, false), // #13 - Fee Config
                 AccountMeta::new_readonly(self.fee_program, false), //#14 - Fee Program
                 AccountMeta::new_readonly(self.bonding_curve_v2_pda, false), //#15 - Bonding Curve V2 PDA
+                AccountMeta::new(Self::pick_buyback_fee_recipient(), false), // #16 - Buyback Fee Recipient
             ]
         } else {
             vec![
@@ -199,6 +205,7 @@ impl PumpfunStruct {
                 AccountMeta::new_readonly(self.fee_program, false), //#14 - Fee Program
                 AccountMeta::new(self.user_volume_accumulator, false), //#15 - User Volume Accumulator
                 AccountMeta::new_readonly(self.bonding_curve_v2_pda, false), //#16 - Bonding Curve V2 PDA
+                AccountMeta::new(Self::pick_buyback_fee_recipient(), false), // #17 - Buyback Fee Recipient
             ]
         };
 

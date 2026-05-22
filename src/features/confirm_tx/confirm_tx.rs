@@ -1,4 +1,5 @@
 use crate::*;
+use crate::modules::pre_buy_filter::tg_notify::tg_send_trade_result;
 use futures::FutureExt;
 use futures::future::BoxFuture;
 use solana_sdk::signature::Signature;
@@ -66,6 +67,12 @@ pub fn confirm_sell_with_retry(
             if let Some(signature_str) = submitted
                 && let Some(confirmed_sig) = wait_for_confirmation(&signature_str, current_tag.clone()).await
             {
+                // Sell confirmed on-chain — decrement position count NOW
+                decrement_open_positions();
+                info!(
+                    "📊 [POSITION_RELEASED] Sell confirmed | Positions: {}/{} | MINT: {}",
+                    get_open_positions(), *MAX_OPEN_POSITIONS, mint
+                );
                 return Some(confirmed_sig);
             }
 
@@ -84,11 +91,27 @@ pub fn confirm_sell_with_retry(
                 }
             }
 
+            // All retries failed — force-release position to prevent stuck 3/3
+            decrement_open_positions();
+            alert!(
+                "⚠️ [POSITION_FORCE_RELEASED] Sell failed all {} retries | Positions: {}/{} | MINT: {}",
+                max_attempts, get_open_positions(), *MAX_OPEN_POSITIONS, mint
+            );
             reset_sell_submission_state(mint);
+
+            // Spawn background sweep: retry sell after 30s without blocking position slot
+            spawn_orphan_sell_sweep(mint, sell_amount);
             return None;
         }
 
+        // Fallback: force-release position
+        decrement_open_positions();
+        alert!(
+            "⚠️ [POSITION_FORCE_RELEASED] Sell exhausted | Positions: {}/{} | MINT: {}",
+            get_open_positions(), *MAX_OPEN_POSITIONS, mint
+        );
         reset_sell_submission_state(mint);
+        spawn_orphan_sell_sweep(mint, sell_amount);
         None
     }
     .boxed()
@@ -181,6 +204,8 @@ pub async fn wait_for_confirmation(signature_str: &str, tag: String) -> Option<S
                             "[CONFIRM] Failed on-chain | {} | {}",
                             solscan!(signature), tag
                         );
+                        let action = if tag.contains("[BUY]") { "BUY" } else { "SELL" };
+                        tg_send_trade_result(action, false, &signature.to_string(), &tag);
                         return None;
                     }
 
@@ -189,6 +214,8 @@ pub async fn wait_for_confirmation(signature_str: &str, tag: String) -> Option<S
                             "[CONFIRM] Confirmed | {} | {}",
                             solscan!(signature), tag
                         );
+                        let action = if tag.contains("[BUY]") { "BUY" } else { "SELL" };
+                        tg_send_trade_result(action, true, &signature.to_string(), &tag);
                         return Some(signature);
                     }
                 }
@@ -202,9 +229,57 @@ pub async fn wait_for_confirmation(signature_str: &str, tag: String) -> Option<S
                 "[CONFIRM] Timed out | {} | {}",
                 solscan!(signature), tag
             );
+            let action = if tag.contains("[BUY]") { "BUY" } else { "SELL" };
+            tg_send_trade_result(action, false, &signature.to_string(), &tag);
             return None;
         }
 
         sleep(Duration::from_secs(2)).await;
     }
+}
+
+/// Background sweep: retry selling orphaned tokens after a delay.
+/// Runs independently — does NOT occupy a position slot.
+fn spawn_orphan_sell_sweep(mint: Pubkey, sell_amount: u64) {
+    tokio::spawn(async move {
+        let sweep_delays = [30u64, 60, 120]; // seconds between retries
+        
+        for (i, delay_secs) in sweep_delays.iter().enumerate() {
+            sleep(Duration::from_secs(*delay_secs)).await;
+            
+            // Rebuild sell instructions from current token state
+            if let Some((ix, tag)) = build_retry_sell_instructions(mint, sell_amount) {
+                info!(
+                    "🧹 [ORPHAN_SWEEP] Attempt {}/{} | MINT: {} | retrying sell...",
+                    i + 1, sweep_delays.len(), mint
+                );
+                
+                // Reset state so sell can be submitted
+                reset_sell_submission_state(mint);
+                
+                let submitted = simulate_and_send_sell_tx(ix, tag.clone()).await;
+                if let Some(sig_str) = submitted {
+                    if let Some(_sig) = wait_for_confirmation(&sig_str, tag).await {
+                        info!(
+                            "✅ [ORPHAN_SWEEP] Sold orphaned token | MINT: {}",
+                            mint
+                        );
+                        return; // Success — done
+                    }
+                }
+            } else {
+                // No token data or zero balance — already sold or cleaned up
+                info!(
+                    "🧹 [ORPHAN_SWEEP] Token already cleaned | MINT: {}",
+                    mint
+                );
+                return;
+            }
+        }
+        
+        alert!(
+            "⚠️ [ORPHAN_SWEEP] Gave up after {} sweeps | MINT: {} | token remains in wallet",
+            sweep_delays.len(), mint
+        );
+    });
 }

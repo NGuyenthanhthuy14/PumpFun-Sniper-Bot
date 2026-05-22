@@ -97,7 +97,7 @@ impl TokenDatabaseSchema {
             return;
         }
 
-        if self.token_price < self.token_buying_point_price * self.override_stop_loss.unwrap_or(*STOP_LOSS)
+        if self.token_price < self.token_buying_point_price * self.override_stop_loss.unwrap_or(crate::modules::pre_buy_filter::tg_control::get_live_stop_loss())
             && self.sl_state != SLMode::Triggered
         {
             update!(
@@ -106,6 +106,14 @@ impl TokenDatabaseSchema {
                 self.pumpfun_struct.mint,
                 self.token_buying_point_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
                 self.token_price * PUMP_FUN_TOKEN_TOTAL_SUPPLY as f64,
+            );
+            // Telegram notification
+            crate::modules::pre_buy_filter::tg_notify::tg_send_price_event(
+                "SL",
+                &self.pumpfun_struct.mint.to_string(),
+                self.token_buying_point_price,
+                self.token_price,
+                &format!("SL: {:.0}%", crate::modules::pre_buy_filter::tg_control::get_live_stop_loss() * 100.0),
             );
             self.sl_state = SLMode::Triggered;
         }
@@ -137,6 +145,14 @@ impl TokenDatabaseSchema {
                         trailing_trigger,
                         self.token_price,
                     );
+                    // Telegram notification - trailing activated
+                    crate::modules::pre_buy_filter::tg_notify::tg_send_price_event(
+                        "TRAILING",
+                        &self.pumpfun_struct.mint.to_string(),
+                        self.token_buying_point_price,
+                        self.token_price,
+                        &format!("TP{} Trailing activated at {:.2}x", tp_idx + 1, trailing_trigger),
+                    );
                 }
 
                 // Check sell conditions while trailing is active
@@ -166,6 +182,19 @@ impl TokenDatabaseSchema {
                                 threshold_pct,
                                 planned_amount,
                                 self.tp_trailing_max_price,
+                            );
+                            // Telegram notification
+                            let (ev, detail) = if reached_tp {
+                                ("TP", format!("TP{} hit at {:.0}%", tp_idx + 1, threshold_pct))
+                            } else {
+                                ("TRAILING", format!("Trailing Stop — TP{} {:.0}%", tp_idx + 1, threshold_pct))
+                            };
+                            crate::modules::pre_buy_filter::tg_notify::tg_send_price_event(
+                                ev,
+                                &self.pumpfun_struct.mint.to_string(),
+                                self.token_buying_point_price,
+                                self.token_price,
+                                &detail,
                             );
                         } else {
                             self.next_tp_index_to_sell += 1;

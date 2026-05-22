@@ -1,0 +1,376 @@
+nohup: ignoring input
+23:07:10.291 INFO 
+············································································
+:                                                                          :
+:                                                                          :
+:     _____         _                                            _         :
+:    / ____|       (_)                                          | |        :
+:   | (___   _ __   _  _ __    ___  _ __   _ __ ___    ___    __| |  ___   :
+:    \___ \ | '_ \ | || '_ \  / _ \| '__| | '_ ` _ \  / _ \  / _` | / _ \  :
+:    ____) || | | || || |_) ||  __/| |    | | | | | || (_) || (_| ||  __/  :
+:   |_____/ |_| |_||_|| .__/  \___||_|    |_| |_| |_| \___/  \__,_| \___|  :
+:                     | |                                                  :
+:                     |_|                                                  :
+:                                                                          :
+:                                                                          :
+············································································
+🔄 Initializing HTTP client...
+🔥 Pre-warming Helius endpoint...
+✅ Helius endpoint ready (attempt 1): HTTP 500 Internal Server Error
+⏳ Loading 40 nonce accounts...
+  ⚠ Nonce account 9m4udJdwXMqqKwoGYWEnaYwsAmXjxyy8TVCKG5uM3H9F - failed to fetch
+  ⚠ Nonce account 2Sze5fKK6TxKfTro59M63BdeC6NRzDApCQsU14Zd7wQC - failed to fetch
+  ⚠ Nonce account 8ne6BNqoZij7rqETAmYaFeVHRNAjzpvHsHdsXfsTL9vz - failed to fetch
+  ⚠ Nonce account Fg2QwkKK3g1yZpQwbPER8PF5GvN9H3cRz4YF1eM77YVr - failed to fetch
+  ⚠ Nonce account FbwKruyZKTg6CVZsPXjm2b8UbmeXvM8Db1xq6vyQD2Np - failed to fetch
+  ⚠ Nonce account HGozvRJbAPdzbjoG4S4q3TmUiZkptBYn37sfZnZ2wMRH - failed to fetch
+  ⚠ Nonce account 85ppBKT2Tjo9u6QGLW5JqTdfmo4T5EW7BoLVsmPPHs1b - failed to fetch
+  ⚠ Nonce account FVgQbkvGKvmEyVpH8w6bjLdRPfnGid8wXpXbKmmw5F31 - failed to fetch
+  ⚠ Nonce account 9DrfiNUHZ1Ac5QabMZWZRzT65VB2wmtJHv4WUCZc92x - failed to fetch
+  ⚠ Nonce account 5Masg14VDntvMTCfVpNeAVTjwPqTcs9j3SHsXkX21WgP - failed to fetch
+  ⚠ Nonce account GvoAQsd5wgQf48vTDzYRb8nHisRksTbZTQTBPDfbM7cB - failed to fetch
+  ⚠ Nonce account 9NCkRSFc7HXZV2kYo7JpdymDWCGsLPSAgtb8aWgeuwk9 - failed to fetch
+  ⚠ Nonce account 2R61B6yEW28wFUPgfmbeNNcDd7gpW72WwKjEnMhpqpEh - failed to fetch
+  ⚠ Nonce account A7ja1zezkJ7Rig7rMxdW1schyKoep9e8tFTa9rvumQqY - failed to fetch
+  ⚠ Nonce account Emvx5zGGQBeGyxrihPw4kDum4eB2NH1TpHrsviBGfzRo - failed to fetch
+  ⚠ Nonce account 6xNdDrT1u9Zpab3fNQxBJ7HciXbhZiwZPPEsC2pem8Te - failed to fetch
+  ⚠ Nonce account 8CrvT4WqvjiEQVBRjTYQK11jWQXtS4X53mkxYaptb5cg - failed to fetch
+  ⚠ Nonce account 9osorzBN1UX9y9rncFUc3dY5xzmNfDubYKmS4an8Sxjc - failed to fetch
+  ⚠ Nonce account 7qBcF4zJq9NxG6BwDYTfMB7kkUtHqQ5BXE46Uip29j8G - failed to fetch
+  ⚠ Nonce account AfEFSBEYuEfdcuoG9VvCVpFvurZiQz242Y5QarHCyEhN - failed to fetch
+✅ Nonce pool ready: 20/40 accounts loaded
+23:07:10.500 INFO No-activity monitoring: ENABLED (threshold: 300 seconds)
+✅ Manual pattern loaded: ALL_PUMPFUN_FILTERED | instructions: None | TP: [150.0, 300.0]%
+23:07:10.500 INFO Loaded 1 manual pattern(s)
+23:07:10.500 INFO ══════════════════════════════════════════════════
+23:07:10.500 INFO   Phase 2 — Anti-Rug Intelligence Layer
+23:07:10.500 INFO   ────────────────────────────────────────────
+23:07:10.500 INFO   Genesis Detector:   ENABLED
+23:07:10.500 INFO     Max genesis buy:  50%
+🚀 Pattern API server listening on 0.0.0.0:3355
+23:07:10.500 INFO     Max single whale: 20%
+23:07:10.500 INFO     Slot window:      3 slots
+23:07:10.500 INFO     Max clusters:     3 wallets
+23:07:10.500 INFO   Wallet Profiler:    ENABLED
+23:07:10.500 INFO     Min wallet age:   24h
+23:07:10.500 INFO     Min TX history:   10
+23:07:10.500 INFO     Block CEX funded: true
+23:07:10.500 INFO     RPC timeout:      500ms
+23:07:10.500 INFO     Known CEX addrs:  25
+23:07:10.500 INFO   Metadata Checker:   ENABLED
+23:07:10.500 INFO     Require URI:      true
+23:07:10.500 INFO     Fetch URI JSON:   true
+23:07:10.500 INFO     Empty action:     warn
+23:07:10.500 INFO   ────────────────────────────────────────────
+23:07:10.500 INFO   Max Risk Score:     70
+23:07:10.500 INFO   Dynamic Sizing:     ENABLED
+23:07:10.500 INFO   Filter CSV Log:     filter_logs
+23:07:10.500 INFO   Telegram Notify:    DISABLED (set TG_BOT_TOKEN + TG_CHAT_ID)
+23:07:10.500 INFO ══════════════════════════════════════════════════
+23:07:11.842 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: De2C97F982n4XXTucGJodZ8DLzyDFumWDEcta3yVpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:11.932 INFO [WALLET_PROFILER] REJECT creator: Gvb7gd6XKESvx28JSDKSa8tCvYHkEvjeBC4E9bS2BSkL | risk: 70 | Low TX history: 1 < 10 min; Fresh wallet: 0h old < 24h min
+23:07:12.083 INFO 🔴 [FILTER_REJECT] MINT: De2C97F982n4XXTucGJodZ8DLzyDFumWDEcta3yVpump | creator: Gvb7gd6XKESvx28JSDKSa8tCvYHkEvjeBC4E9bS2BSkL | name: 'The Grieving Rabbit' | risk: 70.0 | [WALLET_PROFILER] Low TX history: 1 < 10 min; Fresh wallet: 0h old < 24h min (risk: 70.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:12.083 INFO [FILTER_LOG] Logging to: filter_logs/filter_audit_2026-05-14.csv
+23:07:12.083 INFO 🚫 [FILTER_SKIP] MINT: De2C97F982n4XXTucGJodZ8DLzyDFumWDEcta3yVpump | Risk: 70.0 | Manual pattern matched but filters rejected
+23:07:15.027 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 46D41RzyYJ1SqvxT8LbL4KUqNLYpquP5iLyTcRaEpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:15.281 INFO 🔴 [FILTER_REJECT] MINT: 46D41RzyYJ1SqvxT8LbL4KUqNLYpquP5iLyTcRaEpump | creator: 7tfjyczJtZRM2hrF4mzMufEMKnW98fhTEatWnRGai4TY | name: 'Diamond Hand' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:15.281 INFO 🚫 [FILTER_SKIP] MINT: 46D41RzyYJ1SqvxT8LbL4KUqNLYpquP5iLyTcRaEpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:07:25.386 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: G2jZoRcxSbVry6PpgFsW4WFLYNJaCghFDFYMf51Zpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:25.608 INFO 🔴 [FILTER_REJECT] MINT: G2jZoRcxSbVry6PpgFsW4WFLYNJaCghFDFYMf51Zpump | creator: j4thw6kXjwUFuhKmGggMnnThNoJ4roaFVQcdmvAz2Hr | name: 'Make Them Remember' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:25.608 INFO 🚫 [FILTER_SKIP] MINT: G2jZoRcxSbVry6PpgFsW4WFLYNJaCghFDFYMf51Zpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:07:27.652 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: EEenKubYTkMbmL6iUALRv7anCWqj5JXU2zGQ6117pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:27.815 INFO 🔴 [FILTER_REJECT] MINT: EEenKubYTkMbmL6iUALRv7anCWqj5JXU2zGQ6117pump | creator: CzbN6T1gKkKutvuPXcxNmV8FLqzjsDWebWmg9o8e2ZbU | name: '5493UFRE' | risk: 10.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:27.815 INFO 🚫 [FILTER_SKIP] MINT: EEenKubYTkMbmL6iUALRv7anCWqj5JXU2zGQ6117pump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:07:28.415 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: B3Ytu6iCmJS6mf2VhhAsEweWH2ij8GmSMvJg1qWuMGjf | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:28.467 INFO 🔴 [FILTER_REJECT] MINT: B3Ytu6iCmJS6mf2VhhAsEweWH2ij8GmSMvJg1qWuMGjf | creator: 9Aqvn1cpm8aC22orh3KXdpQJehCvbzvMJQPu6oesBPH9 | name: 'Ragnarok' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:28.467 INFO 🚫 [FILTER_SKIP] MINT: B3Ytu6iCmJS6mf2VhhAsEweWH2ij8GmSMvJg1qWuMGjf | Risk: 0.0 | Manual pattern matched but filters rejected
+23:07:28.962 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: GBQEhkkCvz3ZzAMQ8xASiJ3LWK48z85gyyuWsuDtpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:28.976 INFO [WALLET_PROFILER] REJECT creator: Ge1WoGBpUNrtEcoe4uF5p83PDqiFUJ1SKCu6uCnnKq7t | risk: 55 | Fresh wallet: 4h old < 24h min; Suspicious activity pattern: 43 TXs from low-history wallet
+23:07:30.964 INFO 🔴 [FILTER_REJECT] MINT: GBQEhkkCvz3ZzAMQ8xASiJ3LWK48z85gyyuWsuDtpump | creator: Ge1WoGBpUNrtEcoe4uF5p83PDqiFUJ1SKCu6uCnnKq7t | name: 'OG LEAK ON PUMP WTFF INSANE ????' | risk: 65.0 | [METADATA_CHECKER] URI unreachable: error sending request for url (https://ipfs.io/ipfs/bafkreifqklu2gzwiqi6ma6n6bkxqv52mipzuk3tm3vv5ewywo3z5q3malu) (risk: 10.0) | [WALLET_PROFILER] Fresh wallet: 4h old < 24h min; Suspicious activity pattern: 43 TXs from low-history wallet (risk: 55.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:30.964 INFO 🚫 [FILTER_SKIP] MINT: GBQEhkkCvz3ZzAMQ8xASiJ3LWK48z85gyyuWsuDtpump | Risk: 65.0 | Manual pattern matched but filters rejected
+23:07:30.973 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 8VtzosNyqo5VWdYqg3knYGbStuktLHSvo8XEfkSypump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:30.990 INFO [WALLET_PROFILER] REJECT creator: BFu9ppFKpxHN72x6kqz6Sc7p7CEv6jHBrj94sZJ2Ap5W | risk: 70 | Low TX history: 2 < 10 min; Fresh wallet: 0h old < 24h min
+23:07:31.005 INFO 🔴 [FILTER_REJECT] MINT: 8VtzosNyqo5VWdYqg3knYGbStuktLHSvo8XEfkSypump | creator: BFu9ppFKpxHN72x6kqz6Sc7p7CEv6jHBrj94sZJ2Ap5W | name: 'MR BEAST TOKEN' | risk: 70.0 | [WALLET_PROFILER] Low TX history: 2 < 10 min; Fresh wallet: 0h old < 24h min (risk: 70.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:31.005 INFO 🚫 [FILTER_SKIP] MINT: 8VtzosNyqo5VWdYqg3knYGbStuktLHSvo8XEfkSypump | Risk: 70.0 | Manual pattern matched but filters rejected
+23:07:39.868 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 5HxmGyvucQMktpceVMZWbGj5C154dFg7kGTmQ9FZpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:40.115 INFO 🔴 [FILTER_REJECT] MINT: 5HxmGyvucQMktpceVMZWbGj5C154dFg7kGTmQ9FZpump | creator: AJMdmWdSqtLai2nQ74urYZxyBzmaEFzvwvBip214b9dU | name: 'Sputify' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:40.115 INFO 🚫 [FILTER_SKIP] MINT: 5HxmGyvucQMktpceVMZWbGj5C154dFg7kGTmQ9FZpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:07:41.203 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: Cgf3WHj1hT4hbDJVRCaAzWhvJZxESoeaNGKfcakYpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:41.232 INFO 🔴 [FILTER_REJECT] MINT: Cgf3WHj1hT4hbDJVRCaAzWhvJZxESoeaNGKfcakYpump | creator: 3SbWm1zLKfV5Zo1Gdmvw3fsrGimjV6LAHzRxs9cuTPgF | name: 'YELLOW KITTEN CREW' | risk: 40.0 | [WALLET_PROFILER] Fresh wallet: 8h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:41.232 INFO 🚫 [FILTER_SKIP] MINT: Cgf3WHj1hT4hbDJVRCaAzWhvJZxESoeaNGKfcakYpump | Risk: 40.0 | Manual pattern matched but filters rejected
+23:07:53.037 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: CL5223F8dUjAgkLnG95N3UTWgJgVDjWekYc3grTGpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:53.319 INFO 🔴 [FILTER_REJECT] MINT: CL5223F8dUjAgkLnG95N3UTWgJgVDjWekYc3grTGpump | creator: HPRBXaMARD4wCijg3H9NDSH8JTVFwk3fe4PVes1Gemn8 | name: 'Diamond Hand' | risk: 5.0 | [METADATA_CHECKER] Duplicate name 'Diamond Hand' — possible copycat (risk: 5.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:53.319 INFO 🚫 [FILTER_SKIP] MINT: CL5223F8dUjAgkLnG95N3UTWgJgVDjWekYc3grTGpump | Risk: 5.0 | Manual pattern matched but filters rejected
+23:07:54.448 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: EM9eT5DLK3oebCRtBQ1h6MynU21LzVuZWFmpZkRY8HU2 | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:54.479 INFO 🔴 [FILTER_REJECT] MINT: EM9eT5DLK3oebCRtBQ1h6MynU21LzVuZWFmpZkRY8HU2 | creator: 9Aqvn1cpm8aC22orh3KXdpQJehCvbzvMJQPu6oesBPH9 | name: 'Nova Pump' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:54.479 INFO 🚫 [FILTER_SKIP] MINT: EM9eT5DLK3oebCRtBQ1h6MynU21LzVuZWFmpZkRY8HU2 | Risk: 0.0 | Manual pattern matched but filters rejected
+23:07:57.747 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: B8Kwtk3sTYZ1SM2NrVLb8vcLVbi59fgmdF7FRDS4gF67 | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:07:57.761 INFO 🔴 [FILTER_REJECT] MINT: B8Kwtk3sTYZ1SM2NrVLb8vcLVbi59fgmdF7FRDS4gF67 | creator: DP7hN92wyu5KR3kTFFZGqPCr7xYEapeyoXAqAD1jm9AG | name: 'Ran To Atlanta' | risk: 50.0 | [METADATA_CHECKER] URI unreachable: builder error for url (ipfs://QmXeEJZJYRnhUm74ceFa25dJkaBkT63zvKTFpEyJH314f9) (risk: 10.0) | [WALLET_PROFILER] Fresh wallet: 2h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:07:57.761 INFO 🚫 [FILTER_SKIP] MINT: B8Kwtk3sTYZ1SM2NrVLb8vcLVbi59fgmdF7FRDS4gF67 | Risk: 50.0 | Manual pattern matched but filters rejected
+23:08:04.321 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: BUvZPWTxsm3kN5BJ6MvKCeidUWPfmwgUuTa32Vuppump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:04.857 INFO 🔴 [FILTER_REJECT] MINT: BUvZPWTxsm3kN5BJ6MvKCeidUWPfmwgUuTa32Vuppump | creator: D5shRqViANmXh16KjUDyyxHJgvq9EhAhxdEzqQx578j4 | name: 'The Crying Rabbit' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:04.857 INFO 🚫 [FILTER_SKIP] MINT: BUvZPWTxsm3kN5BJ6MvKCeidUWPfmwgUuTa32Vuppump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:05.796 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: DumpwNNbgf799SwJBTwjW9ypWRKATvxPebur2Aticyjk | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:05.796 INFO 🔴 [FILTER_REJECT] MINT: DumpwNNbgf799SwJBTwjW9ypWRKATvxPebur2Aticyjk | creator: DP7hN92wyu5KR3kTFFZGqPCr7xYEapeyoXAqAD1jm9AG | name: 'White Bone' | risk: 50.0 | [METADATA_CHECKER] URI unreachable: builder error for url (ipfs://QmRyEGZomjNq9in6Sh8k1BKKR9zxxwzkXhJGW61LAn8kuF) (risk: 10.0) | [WALLET_PROFILER] Fresh wallet: 2h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:05.796 INFO 🚫 [FILTER_SKIP] MINT: DumpwNNbgf799SwJBTwjW9ypWRKATvxPebur2Aticyjk | Risk: 50.0 | Manual pattern matched but filters rejected
+23:08:06.182 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: F7v972VVnVEbnvgFwFowYT6nKYGZ95HtYqfK5tAwE79W | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:06.182 INFO 🔴 [FILTER_REJECT] MINT: F7v972VVnVEbnvgFwFowYT6nKYGZ95HtYqfK5tAwE79W | creator: DP7hN92wyu5KR3kTFFZGqPCr7xYEapeyoXAqAD1jm9AG | name: 'Fortworth (PARTYNEXTDOOR)' | risk: 50.0 | [METADATA_CHECKER] URI unreachable: builder error for url (ipfs://QmSK4SSoVe5HwWKNjzstryWik5KeZw44UTGmt63owq3eQh) (risk: 10.0) | [WALLET_PROFILER] Fresh wallet: 2h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:06.182 INFO 🚫 [FILTER_SKIP] MINT: F7v972VVnVEbnvgFwFowYT6nKYGZ95HtYqfK5tAwE79W | Risk: 50.0 | Manual pattern matched but filters rejected
+23:08:06.574 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: AwKRLQNfgu4fp3PDq8dkrjEnfqJ323FsHxCrgwRShHC | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:06.575 INFO 🔴 [FILTER_REJECT] MINT: AwKRLQNfgu4fp3PDq8dkrjEnfqJ323FsHxCrgwRShHC | creator: DP7hN92wyu5KR3kTFFZGqPCr7xYEapeyoXAqAD1jm9AG | name: 'Prioritizing' | risk: 50.0 | [METADATA_CHECKER] URI unreachable: builder error for url (ipfs://QmNSv8EkPFWuuxvx2oP4397XpT4rwfkwexpjACiTRt7qSc) (risk: 10.0) | [WALLET_PROFILER] Fresh wallet: 2h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:06.575 INFO 🚫 [FILTER_SKIP] MINT: AwKRLQNfgu4fp3PDq8dkrjEnfqJ323FsHxCrgwRShHC | Risk: 50.0 | Manual pattern matched but filters rejected
+23:08:07.597 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: Fxe6xxy5i5JiXkHBx7BouXvapZAjTNWpnh3xWwJpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:07.751 INFO 🔴 [FILTER_REJECT] MINT: Fxe6xxy5i5JiXkHBx7BouXvapZAjTNWpnh3xWwJpump | creator: CzbN6T1gKkKutvuPXcxNmV8FLqzjsDWebWmg9o8e2ZbU | name: '43UJFNE' | risk: 10.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:07.752 INFO 🚫 [FILTER_SKIP] MINT: Fxe6xxy5i5JiXkHBx7BouXvapZAjTNWpnh3xWwJpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:08:10.232 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: DG8t33T8kU4RUMkMne5Wj99JNTZhWrYXWNeEUWd9ybaW | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:10.262 INFO 🔴 [FILTER_REJECT] MINT: DG8t33T8kU4RUMkMne5Wj99JNTZhWrYXWNeEUWd9ybaW | creator: 9Aqvn1cpm8aC22orh3KXdpQJehCvbzvMJQPu6oesBPH9 | name: 'Turbo Ape' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:10.262 INFO 🚫 [FILTER_SKIP] MINT: DG8t33T8kU4RUMkMne5Wj99JNTZhWrYXWNeEUWd9ybaW | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:16.877 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 8YXFftSkPzCUyWJjRnKjbhiCekGEDmepENiZZprYpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:16.932 INFO 🔴 [FILTER_REJECT] MINT: 8YXFftSkPzCUyWJjRnKjbhiCekGEDmepENiZZprYpump | creator: CuY6s8UVtKgxfQzpqRUWsiabwkAi62j3ut8nTyxwXbU2 | name: 'incoinito' | risk: 10.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:16.933 INFO 🚫 [FILTER_SKIP] MINT: 8YXFftSkPzCUyWJjRnKjbhiCekGEDmepENiZZprYpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:08:20.376 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: G2Woa9vRAXoS7NKt8TZjQDVHsFttEZ24CdxKZTqDpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:20.465 INFO 🔴 [FILTER_REJECT] MINT: G2Woa9vRAXoS7NKt8TZjQDVHsFttEZ24CdxKZTqDpump | creator: EH1oGNizBQxMDddGuLWj6SxpKts338H891Gh4kqbrJ1K | name: 'vorix' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:20.465 INFO 🚫 [FILTER_SKIP] MINT: G2Woa9vRAXoS7NKt8TZjQDVHsFttEZ24CdxKZTqDpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:22.907 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: GM8dw4GN1DFoMrwoBy7veUwSu2mbeVaWok5obER2pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:22.919 INFO [WALLET_PROFILER] REJECT creator: EATqLkGmi5jbtZy5GVcZNZAkQSvDcefyBZtu3igfZXM2 | risk: 70 | Low TX history: 2 < 10 min; Fresh wallet: 1h old < 24h min
+23:08:23.194 INFO 🔴 [FILTER_REJECT] MINT: GM8dw4GN1DFoMrwoBy7veUwSu2mbeVaWok5obER2pump | creator: EATqLkGmi5jbtZy5GVcZNZAkQSvDcefyBZtu3igfZXM2 | name: 'RETARDED POKEMON' | risk: 70.0 | [WALLET_PROFILER] Low TX history: 2 < 10 min; Fresh wallet: 1h old < 24h min (risk: 70.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:23.194 INFO 🚫 [FILTER_SKIP] MINT: GM8dw4GN1DFoMrwoBy7veUwSu2mbeVaWok5obER2pump | Risk: 70.0 | Manual pattern matched but filters rejected
+23:08:25.391 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 6BMiA3t9jYDhizSDfkt6kAdSfR3Hrjyunmr8kGJKpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:25.477 INFO 🔴 [FILTER_REJECT] MINT: 6BMiA3t9jYDhizSDfkt6kAdSfR3Hrjyunmr8kGJKpump | creator: 76Fpb6jHhqjRU6voQm5mbPxtyV3kghmxugmUywTJZ7mn | name: 'MAN OF MAYHEM' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:25.477 INFO 🚫 [FILTER_SKIP] MINT: 6BMiA3t9jYDhizSDfkt6kAdSfR3Hrjyunmr8kGJKpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:26.393 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 21km41hL7XRFw6xZpB4YdTU11vcBJRzspP4DQPEYpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:26.406 INFO [WALLET_PROFILER] REJECT creator: 7E2D23PzixKxXNqgjCcP2o69bKxV5YVSqRXG4MytqZTs | risk: 70 | Low TX history: 3 < 10 min; Fresh wallet: 0h old < 24h min
+23:08:26.749 INFO 🔴 [FILTER_REJECT] MINT: 21km41hL7XRFw6xZpB4YdTU11vcBJRzspP4DQPEYpump | creator: 7E2D23PzixKxXNqgjCcP2o69bKxV5YVSqRXG4MytqZTs | name: 'Ice Jong-un' | risk: 70.0 | [WALLET_PROFILER] Low TX history: 3 < 10 min; Fresh wallet: 0h old < 24h min (risk: 70.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:26.750 INFO 🚫 [FILTER_SKIP] MINT: 21km41hL7XRFw6xZpB4YdTU11vcBJRzspP4DQPEYpump | Risk: 70.0 | Manual pattern matched but filters rejected
+23:08:31.974 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7B1ZrWh7iBYoSRjFP52cd1GasvN2Gi17tYh65Xnd9ymA | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:31.996 INFO 🔴 [FILTER_REJECT] MINT: 7B1ZrWh7iBYoSRjFP52cd1GasvN2Gi17tYh65Xnd9ymA | creator: 9Aqvn1cpm8aC22orh3KXdpQJehCvbzvMJQPu6oesBPH9 | name: 'Degen Sloth' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:31.996 INFO 🚫 [FILTER_SKIP] MINT: 7B1ZrWh7iBYoSRjFP52cd1GasvN2Gi17tYh65Xnd9ymA | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:37.306 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: FrFBpN78vAYMQbX8hZncvuPrtuN4aKL7ETpEcKr8pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:37.333 INFO 🔴 [FILTER_REJECT] MINT: FrFBpN78vAYMQbX8hZncvuPrtuN4aKL7ETpEcKr8pump | creator: DXocwT2cBiWyn5dtyY3t7K2DHeJ1EoNDafTLntwch3u | name: 'Onemilliondots' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:37.333 INFO 🚫 [FILTER_SKIP] MINT: FrFBpN78vAYMQbX8hZncvuPrtuN4aKL7ETpEcKr8pump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:49.742 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: DksD5Uog9KhcAZV7kwWnjAZo3Ls2fYvurm5wBoAGAipF | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:49.761 INFO 🔴 [FILTER_REJECT] MINT: DksD5Uog9KhcAZV7kwWnjAZo3Ls2fYvurm5wBoAGAipF | creator: 9Aqvn1cpm8aC22orh3KXdpQJehCvbzvMJQPu6oesBPH9 | name: 'Phoenix Token' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:49.761 INFO 🚫 [FILTER_SKIP] MINT: DksD5Uog9KhcAZV7kwWnjAZo3Ls2fYvurm5wBoAGAipF | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:50.331 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 8bkMExjkH2ZoUNkbwJVwugy99Dmn4CJTQG8bJiP9pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:50.639 INFO 🔴 [FILTER_REJECT] MINT: 8bkMExjkH2ZoUNkbwJVwugy99Dmn4CJTQG8bJiP9pump | creator: CScBTnmRDUpq2x2dqANUnDNQZHHVPE26dvZuQofmsrjY | name: 'Hack the Planet' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:50.640 INFO 🚫 [FILTER_SKIP] MINT: 8bkMExjkH2ZoUNkbwJVwugy99Dmn4CJTQG8bJiP9pump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:53.994 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 3J5yaVr9RNAGnH2fkmEktZw2NYNzhu55k48xbZcopump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:54.142 INFO 🔴 [FILTER_REJECT] MINT: 3J5yaVr9RNAGnH2fkmEktZw2NYNzhu55k48xbZcopump | creator: 923yorRvuaL9zFTGkSWhN2DkGXRBjPLiAsN9AzFHk68j | name: 'The White Somalian' | risk: 50.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [WALLET_PROFILER] Fresh wallet: 1h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:54.143 INFO 🚫 [FILTER_SKIP] MINT: 3J5yaVr9RNAGnH2fkmEktZw2NYNzhu55k48xbZcopump | Risk: 50.0 | Manual pattern matched but filters rejected
+23:08:54.360 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7xqpcigjFjt7nHhhY9uF72YaDHguinBNQchrej5Xpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:55.267 INFO 🔴 [FILTER_REJECT] MINT: 7xqpcigjFjt7nHhhY9uF72YaDHguinBNQchrej5Xpump | creator: AqsW2qxwaKKntSVKQKYBiyBjjR6UURGkWXzECTvQk116 | name: 'Official Trough' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:55.267 INFO 🚫 [FILTER_SKIP] MINT: 7xqpcigjFjt7nHhhY9uF72YaDHguinBNQchrej5Xpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:08:55.271 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: HsXZJPaScnSokFjVfFvdNeQ6zKnf5auxN9XtvauCpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:57.272 INFO 🔴 [FILTER_REJECT] MINT: HsXZJPaScnSokFjVfFvdNeQ6zKnf5auxN9XtvauCpump | creator: DVhwSE98dHBtEGnQcYyAiEzE2XFjGnGwwuv9n1Ypnre9 | name: 'The Goonisher' | risk: 10.0 | [METADATA_CHECKER] URI unreachable: error sending request for url (https://ipfs.io/ipfs/bafkreid5wihew2qwbekhgams6wdap6fkblnuphgq7ho7ft64mp5wdj3woy) (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:57.272 INFO 🚫 [FILTER_SKIP] MINT: HsXZJPaScnSokFjVfFvdNeQ6zKnf5auxN9XtvauCpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:08:57.273 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 4DccxovUWuX51KSfEjKXMuyKv6ccguwfjRsTeJh9wzk5 | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:08:57.327 INFO 🔴 [FILTER_REJECT] MINT: 4DccxovUWuX51KSfEjKXMuyKv6ccguwfjRsTeJh9wzk5 | creator: bwamJzztZsepfkteWRChggmXuiiCQvpLqPietdNfSXa | name: 'Trauma' | risk: 40.0 | [WALLET_PROFILER] Fresh wallet: 8h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:08:57.327 INFO 🚫 [FILTER_SKIP] MINT: 4DccxovUWuX51KSfEjKXMuyKv6ccguwfjRsTeJh9wzk5 | Risk: 40.0 | Manual pattern matched but filters rejected
+23:08:59.762 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: EGMW8GwMTDCGgGCAYJtqKbxtdRDs6PsD5AuNcqrDpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:01.763 INFO 🔴 [FILTER_REJECT] MINT: EGMW8GwMTDCGgGCAYJtqKbxtdRDs6PsD5AuNcqrDpump | creator: Ge1WoGBpUNrtEcoe4uF5p83PDqiFUJ1SKCu6uCnnKq7t | name: 'INSANE NARRA 8 MONTHS OLD!!!!' | risk: 65.0 | [METADATA_CHECKER] URI unreachable: error sending request for url (https://ipfs.io/ipfs/bafkreiftbchnfzjwpzw7rtoczs5sgmyjzdrexkb2tagmragsr35azluifq) (risk: 10.0) | [WALLET_PROFILER] Fresh wallet: 4h old < 24h min; Suspicious activity pattern: 43 TXs from low-history wallet (risk: 55.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:01.763 INFO 🚫 [FILTER_SKIP] MINT: EGMW8GwMTDCGgGCAYJtqKbxtdRDs6PsD5AuNcqrDpump | Risk: 65.0 | Manual pattern matched but filters rejected
+23:09:04.544 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: F92RKZcmMP1K5Nm4hRMCiHDC6E4QQH3oHrioLyxkpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:04.557 INFO [WALLET_PROFILER] REJECT creator: DAeZtaPXEV35r1MxTiGx9E43TkSG9xzkdXnovhx6Bk2e | risk: 85 | Low TX history: 8 < 10 min; Fresh wallet: 0h old < 24h min; Suspicious activity pattern: 8 TXs from low-history wallet
+23:09:04.808 INFO 🔴 [FILTER_REJECT] MINT: F92RKZcmMP1K5Nm4hRMCiHDC6E4QQH3oHrioLyxkpump | creator: DAeZtaPXEV35r1MxTiGx9E43TkSG9xzkdXnovhx6Bk2e | name: 'FartJapan' | risk: 85.0 | [WALLET_PROFILER] Low TX history: 8 < 10 min; Fresh wallet: 0h old < 24h min; Suspicious activity pattern: 8 TXs from low-history wallet (risk: 85.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:04.808 INFO 🚫 [FILTER_SKIP] MINT: F92RKZcmMP1K5Nm4hRMCiHDC6E4QQH3oHrioLyxkpump | Risk: 85.0 | Manual pattern matched but filters rejected
+23:09:08.234 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 33y1MrfnPCbEKUnQqFrJc2noLYQQjbWeazwoxfv5eYHp | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:08.549 INFO 🔴 [FILTER_REJECT] MINT: 33y1MrfnPCbEKUnQqFrJc2noLYQQjbWeazwoxfv5eYHp | creator: 9Aqvn1cpm8aC22orh3KXdpQJehCvbzvMJQPu6oesBPH9 | name: 'Rizz Coin' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:08.549 INFO 🚫 [FILTER_SKIP] MINT: 33y1MrfnPCbEKUnQqFrJc2noLYQQjbWeazwoxfv5eYHp | Risk: 0.0 | Manual pattern matched but filters rejected
+23:09:24.376 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: BmxEggtfeYJqeyqYgPaHzBXhPd3axUdmcyi78Na8pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:24.643 INFO 🔴 [FILTER_REJECT] MINT: BmxEggtfeYJqeyqYgPaHzBXhPd3axUdmcyi78Na8pump | creator: Gvb7gd6XKESvx28JSDKSa8tCvYHkEvjeBC4E9bS2BSkL | name: 'The Grieving Rabbit' | risk: 75.0 | [METADATA_CHECKER] Duplicate name 'The Grieving Rabbit' — possible copycat (risk: 5.0) | [WALLET_PROFILER] Low TX history: 1 < 10 min; Fresh wallet: 0h old < 24h min (risk: 70.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:24.643 INFO 🚫 [FILTER_SKIP] MINT: BmxEggtfeYJqeyqYgPaHzBXhPd3axUdmcyi78Na8pump | Risk: 75.0 | Manual pattern matched but filters rejected
+23:09:30.621 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7CNExkU3zuuren7cfNrrbE3zZsMCi6z8ydDxnNPEpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:30.981 INFO 🔴 [FILTER_REJECT] MINT: 7CNExkU3zuuren7cfNrrbE3zZsMCi6z8ydDxnNPEpump | creator: 3uBNHAG5tagLmvUeuz3XYemv4euCgXF7SK9j72awK4kb | name: 'ICELON' | risk: 40.0 | [WALLET_PROFILER] Fresh wallet: 21h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:30.981 INFO 🚫 [FILTER_SKIP] MINT: 7CNExkU3zuuren7cfNrrbE3zZsMCi6z8ydDxnNPEpump | Risk: 40.0 | Manual pattern matched but filters rejected
+23:09:31.584 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 5f6bWAeWwzRK1Dw5KptCh2JapZSciQAWRGuzXp1apump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:31.617 INFO 🔴 [FILTER_REJECT] MINT: 5f6bWAeWwzRK1Dw5KptCh2JapZSciQAWRGuzXp1apump | creator: 76Fpb6jHhqjRU6voQm5mbPxtyV3kghmxugmUywTJZ7mn | name: 'MAN OF MAYHEM' | risk: 15.0 | [METADATA_CHECKER] Duplicate name 'MAN OF MAYHEM' — possible copycat (risk: 15.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:31.617 INFO 🚫 [FILTER_SKIP] MINT: 5f6bWAeWwzRK1Dw5KptCh2JapZSciQAWRGuzXp1apump | Risk: 15.0 | Manual pattern matched but filters rejected
+23:09:41.559 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 42UFsXYqGdps1f4C8Cz3TrVn7kAjSV4nvjTdsYmWpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:41.883 INFO 🔴 [FILTER_REJECT] MINT: 42UFsXYqGdps1f4C8Cz3TrVn7kAjSV4nvjTdsYmWpump | creator: 3udiYkHEhgvaguyEHQHtiDyfMKopB9rxJdkJKqoDJFBF | name: 'Akita Inu' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:41.883 INFO 🚫 [FILTER_SKIP] MINT: 42UFsXYqGdps1f4C8Cz3TrVn7kAjSV4nvjTdsYmWpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:09:43.773 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 638akyTgZKYPpu1feCquV7rHwYzNWW8ecLqcWNAPpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:43.797 INFO 🔴 [FILTER_REJECT] MINT: 638akyTgZKYPpu1feCquV7rHwYzNWW8ecLqcWNAPpump | creator: EH1oGNizBQxMDddGuLWj6SxpKts338H891Gh4kqbrJ1K | name: 'vorix' | risk: 15.0 | [METADATA_CHECKER] Duplicate name 'vorix' — possible copycat (risk: 15.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:43.797 INFO 🚫 [FILTER_SKIP] MINT: 638akyTgZKYPpu1feCquV7rHwYzNWW8ecLqcWNAPpump | Risk: 15.0 | Manual pattern matched but filters rejected
+23:09:44.082 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: Db68Fw3JV9g1i5nhoVTbVL6u1Q7Z6Wji3aC337VWpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:44.109 INFO 🔴 [FILTER_REJECT] MINT: Db68Fw3JV9g1i5nhoVTbVL6u1Q7Z6Wji3aC337VWpump | creator: CScBTnmRDUpq2x2dqANUnDNQZHHVPE26dvZuQofmsrjY | name: 'Hack the Planet' | risk: 15.0 | [METADATA_CHECKER] Duplicate name 'Hack the Planet' — possible copycat (risk: 15.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:44.109 INFO 🚫 [FILTER_SKIP] MINT: Db68Fw3JV9g1i5nhoVTbVL6u1Q7Z6Wji3aC337VWpump | Risk: 15.0 | Manual pattern matched but filters rejected
+23:09:48.814 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: CFXNYixT89hnH75YE1uPUGUWDnJKVXQ7mvFRQNMJpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:49.074 INFO 🔴 [FILTER_REJECT] MINT: CFXNYixT89hnH75YE1uPUGUWDnJKVXQ7mvFRQNMJpump | creator: 4RDNo5BBAjQhmd1FcSPnzuA6UtUM4PLWuhirRczhLJCa | name: 'Habibi Iceman Maid Of Honour' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:49.074 INFO 🚫 [FILTER_SKIP] MINT: CFXNYixT89hnH75YE1uPUGUWDnJKVXQ7mvFRQNMJpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:09:51.418 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: E2jfcwpa12rvS1MBxks2JSkSYnhcKckRxWdgyxwzpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:51.448 INFO 🔴 [FILTER_REJECT] MINT: E2jfcwpa12rvS1MBxks2JSkSYnhcKckRxWdgyxwzpump | creator: 3SbWm1zLKfV5Zo1Gdmvw3fsrGimjV6LAHzRxs9cuTPgF | name: 'ORANGE KITTEN CREW' | risk: 40.0 | [WALLET_PROFILER] Fresh wallet: 8h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:51.448 INFO 🚫 [FILTER_SKIP] MINT: E2jfcwpa12rvS1MBxks2JSkSYnhcKckRxWdgyxwzpump | Risk: 40.0 | Manual pattern matched but filters rejected
+23:09:56.143 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 2pKvEuWn7BF1wRUeG6QH6Bt4zrCvdJ6WFPtYoNMZpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:56.155 INFO [WALLET_PROFILER] REJECT creator: 5t3PFiHKTtndraadNqGrhZ36Zc8e4gHYko7ZtM8jsTXc | risk: 70 | Low TX history: 4 < 10 min; Fresh wallet: 0h old < 24h min
+23:09:56.456 INFO 🔴 [FILTER_REJECT] MINT: 2pKvEuWn7BF1wRUeG6QH6Bt4zrCvdJ6WFPtYoNMZpump | creator: 5t3PFiHKTtndraadNqGrhZ36Zc8e4gHYko7ZtM8jsTXc | name: 'Iceman's Villain' | risk: 70.0 | [WALLET_PROFILER] Low TX history: 4 < 10 min; Fresh wallet: 0h old < 24h min (risk: 70.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:56.456 INFO 🚫 [FILTER_SKIP] MINT: 2pKvEuWn7BF1wRUeG6QH6Bt4zrCvdJ6WFPtYoNMZpump | Risk: 70.0 | Manual pattern matched but filters rejected
+23:09:57.644 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7tSNHSoxbzXNTvvh4PRLVGYtfuKnTjHzviztfwmmjgjS | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:09:57.964 INFO 🔴 [FILTER_REJECT] MINT: 7tSNHSoxbzXNTvvh4PRLVGYtfuKnTjHzviztfwmmjgjS | creator: 9Aqvn1cpm8aC22orh3KXdpQJehCvbzvMJQPu6oesBPH9 | name: 'Rekt Again' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:09:57.964 INFO 🚫 [FILTER_SKIP] MINT: 7tSNHSoxbzXNTvvh4PRLVGYtfuKnTjHzviztfwmmjgjS | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:02.226 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7SH6szpwVB6rgejcGV9HR9A1ugW9QnTomzD7h7yspump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:02.239 INFO [WALLET_PROFILER] REJECT creator: GtqWHzFaSJ4Lee5xtKLQSb13udzxx5EV6KMZ7Xdo8xtD | risk: 55 | Fresh wallet: 6h old < 24h min; Suspicious activity pattern: 27 TXs from low-history wallet
+23:10:02.522 INFO 🔴 [FILTER_REJECT] MINT: 7SH6szpwVB6rgejcGV9HR9A1ugW9QnTomzD7h7yspump | creator: GtqWHzFaSJ4Lee5xtKLQSb13udzxx5EV6KMZ7Xdo8xtD | name: 'Habibti Iceman Maid Of Honour' | risk: 55.0 | [WALLET_PROFILER] Fresh wallet: 6h old < 24h min; Suspicious activity pattern: 27 TXs from low-history wallet (risk: 55.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:02.522 INFO 🚫 [FILTER_SKIP] MINT: 7SH6szpwVB6rgejcGV9HR9A1ugW9QnTomzD7h7yspump | Risk: 55.0 | Manual pattern matched but filters rejected
+23:10:09.542 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 2WUMR2LLy9oNTA21xcLe4WbkDRyRk7GjydmDaLQTpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:09.598 INFO 🔴 [FILTER_REJECT] MINT: 2WUMR2LLy9oNTA21xcLe4WbkDRyRk7GjydmDaLQTpump | creator: HF2EGxkKXRhdR93ZN5fY925PpecZDwRfKwhag6mvFMLW | name: 'Oh My God' | risk: 10.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:09.598 INFO 🚫 [FILTER_SKIP] MINT: 2WUMR2LLy9oNTA21xcLe4WbkDRyRk7GjydmDaLQTpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:10:12.087 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: B7vBz3AuV4teAYMaFE5WDQ8xexV45BkZEygPLN7Kpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:12.235 INFO 🔴 [FILTER_REJECT] MINT: B7vBz3AuV4teAYMaFE5WDQ8xexV45BkZEygPLN7Kpump | creator: GFA2t9fZVY3jC7wDBPDB8FdsVNzLWgK44J4q7XpP476a | name: 'The Marxist Agents' | risk: 10.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:12.235 INFO 🚫 [FILTER_SKIP] MINT: B7vBz3AuV4teAYMaFE5WDQ8xexV45BkZEygPLN7Kpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:10:12.488 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: BhvFWG6iV4o9imSP35dGz8mnQknLDqBoPf7rYTJbpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:12.641 INFO 🔴 [FILTER_REJECT] MINT: BhvFWG6iV4o9imSP35dGz8mnQknLDqBoPf7rYTJbpump | creator: CzbN6T1gKkKutvuPXcxNmV8FLqzjsDWebWmg9o8e2ZbU | name: '43TRFREWF' | risk: 10.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:12.641 INFO 🚫 [FILTER_SKIP] MINT: BhvFWG6iV4o9imSP35dGz8mnQknLDqBoPf7rYTJbpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:10:13.513 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 4b3JpTekw411onQa6jRKfA4ccQ2Y3bEusYYx5hfQpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:13.525 INFO [WALLET_PROFILER] REJECT creator: EFTJWrJaKbPeQcKj9gjWYykiXnoRJM6UFziWQus3tMXB | risk: 55 | Fresh wallet: 0h old < 24h min; Suspicious activity pattern: 10 TXs from low-history wallet
+23:10:13.886 INFO 🔴 [FILTER_REJECT] MINT: 4b3JpTekw411onQa6jRKfA4ccQ2Y3bEusYYx5hfQpump | creator: EFTJWrJaKbPeQcKj9gjWYykiXnoRJM6UFziWQus3tMXB | name: 'Fishy' | risk: 55.0 | [WALLET_PROFILER] Fresh wallet: 0h old < 24h min; Suspicious activity pattern: 10 TXs from low-history wallet (risk: 55.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:13.886 INFO 🚫 [FILTER_SKIP] MINT: 4b3JpTekw411onQa6jRKfA4ccQ2Y3bEusYYx5hfQpump | Risk: 55.0 | Manual pattern matched but filters rejected
+23:10:13.889 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 5hmvxhHzi6qr234cW1czFUhgKCryFhHWDuDRHJikpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:14.127 INFO 🔴 [FILTER_REJECT] MINT: 5hmvxhHzi6qr234cW1czFUhgKCryFhHWDuDRHJikpump | creator: 5B79fMkcFeRTiwm7ehsZsFiKsC7m7n1Bgv9yLxPp9q2X | name: 'the man from the future' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:14.127 INFO 🚫 [FILTER_SKIP] MINT: 5hmvxhHzi6qr234cW1czFUhgKCryFhHWDuDRHJikpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:19.457 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 8hzmXspfQHB8NvGw9XyX4eaoFeDSS77XftqAuqwdpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:19.923 INFO 🔴 [FILTER_REJECT] MINT: 8hzmXspfQHB8NvGw9XyX4eaoFeDSS77XftqAuqwdpump | creator: Ge1WoGBpUNrtEcoe4uF5p83PDqiFUJ1SKCu6uCnnKq7t | name: 'GAKE SIDES IN' | risk: 55.0 | [WALLET_PROFILER] Fresh wallet: 4h old < 24h min; Suspicious activity pattern: 43 TXs from low-history wallet (risk: 55.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:19.923 INFO 🚫 [FILTER_SKIP] MINT: 8hzmXspfQHB8NvGw9XyX4eaoFeDSS77XftqAuqwdpump | Risk: 55.0 | Manual pattern matched but filters rejected
+23:10:19.925 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 4xbu3amRMXRv6Godn2EkHFmnS9pt6GSoFc5ycKq5pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:19.937 INFO [WALLET_PROFILER] REJECT creator: FWrEeUGojjE1DCrz6QyVe7u2TbhXRcumDKybKbpCugR2 | risk: 55 | Fresh wallet: 0h old < 24h min; Suspicious activity pattern: 10 TXs from low-history wallet
+23:10:20.131 INFO 🔴 [FILTER_REJECT] MINT: 4xbu3amRMXRv6Godn2EkHFmnS9pt6GSoFc5ycKq5pump | creator: FWrEeUGojjE1DCrz6QyVe7u2TbhXRcumDKybKbpCugR2 | name: '🐸 Exit Liquidity Frog' | risk: 55.0 | [WALLET_PROFILER] Fresh wallet: 0h old < 24h min; Suspicious activity pattern: 10 TXs from low-history wallet (risk: 55.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:20.131 INFO 🚫 [FILTER_SKIP] MINT: 4xbu3amRMXRv6Godn2EkHFmnS9pt6GSoFc5ycKq5pump | Risk: 55.0 | Manual pattern matched but filters rejected
+23:10:21.313 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 4fbbHZmgiytSTKjz7Z4Vzd2HZcPqRT7gGyAA2xUnpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:21.613 INFO 🔴 [FILTER_REJECT] MINT: 4fbbHZmgiytSTKjz7Z4Vzd2HZcPqRT7gGyAA2xUnpump | creator: FM1YCKED2KaqB8Uat8aB1nsffR1vezr7s6FAEieXJgke | name: 'Anita' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:21.613 INFO 🚫 [FILTER_SKIP] MINT: 4fbbHZmgiytSTKjz7Z4Vzd2HZcPqRT7gGyAA2xUnpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:31.748 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: DYsn2WQd9vB4AQtBntkVnRPsCKMMiq4KYoYnJBtSpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:31.997 INFO 🔴 [FILTER_REJECT] MINT: DYsn2WQd9vB4AQtBntkVnRPsCKMMiq4KYoYnJBtSpump | creator: 9h3VjeBhVYRfkGHSJd9PvmFFtUGxv1VPtSBXrmd9s7NE | name: 'Elliot Page Memes' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:31.997 INFO 🚫 [FILTER_SKIP] MINT: DYsn2WQd9vB4AQtBntkVnRPsCKMMiq4KYoYnJBtSpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:34.978 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 8CMwEakcRkNLSpUZYGc7mh2kYG6oopc7VdMqnUGzpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:35.238 INFO 🔴 [FILTER_REJECT] MINT: 8CMwEakcRkNLSpUZYGc7mh2kYG6oopc7VdMqnUGzpump | creator: C3idVbhn8kb5zgNYKE3jKrdtFD8SXVjugcbASMAkMbuo | name: 'habiman of honor ' | risk: 30.0 | [WALLET_PROFILER] Low TX history: 3 < 10 min (risk: 30.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:35.238 INFO 🚫 [FILTER_SKIP] MINT: 8CMwEakcRkNLSpUZYGc7mh2kYG6oopc7VdMqnUGzpump | Risk: 30.0 | Manual pattern matched but filters rejected
+23:10:35.423 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7cFuw3wPtNuFrxtkQY93GEP6dnTc3KJn8s7m7wyMpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:35.707 INFO 🔴 [FILTER_REJECT] MINT: 7cFuw3wPtNuFrxtkQY93GEP6dnTc3KJn8s7m7wyMpump | creator: 9AVeMVwzivhB4tCQ8ouMfcgFquBokRxKQQeKgTAiQLPG | name: 'FREE SAM BANKMAN FREID' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:35.707 INFO 🚫 [FILTER_SKIP] MINT: 7cFuw3wPtNuFrxtkQY93GEP6dnTc3KJn8s7m7wyMpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:48.049 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 365fzmT11WoXZsdkHutRXbC3MH1gzPxkWFjBdZXRpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:48.079 INFO 🔴 [FILTER_REJECT] MINT: 365fzmT11WoXZsdkHutRXbC3MH1gzPxkWFjBdZXRpump | creator: CScBTnmRDUpq2x2dqANUnDNQZHHVPE26dvZuQofmsrjY | name: 'Hack the Planet' | risk: 15.0 | [METADATA_CHECKER] Duplicate name 'Hack the Planet' — possible copycat (risk: 15.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:48.079 INFO 🚫 [FILTER_SKIP] MINT: 365fzmT11WoXZsdkHutRXbC3MH1gzPxkWFjBdZXRpump | Risk: 15.0 | Manual pattern matched but filters rejected
+23:10:48.227 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7m3vUeTMeiMq1ueAanPe5j99bfsNGi9o1ZMjrZhbpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:48.546 INFO 🔴 [FILTER_REJECT] MINT: 7m3vUeTMeiMq1ueAanPe5j99bfsNGi9o1ZMjrZhbpump | creator: 9BrA2KxXmMS1RcvLDZnaroBwh1gLZhFj97gcSqdgf3JW | name: 'Shadow Dance Kid' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:48.547 INFO 🚫 [FILTER_SKIP] MINT: 7m3vUeTMeiMq1ueAanPe5j99bfsNGi9o1ZMjrZhbpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:51.280 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 6WTGHa1Fos5CBMv1PFdtWocTFoG1hYfy4NvFiSPSpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:51.615 INFO 🔴 [FILTER_REJECT] MINT: 6WTGHa1Fos5CBMv1PFdtWocTFoG1hYfy4NvFiSPSpump | creator: DQwMMgqBdpn1wZgWAshfuAwHSLQXcwADg8WYtJP5Bx6U | name: 'Kang' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:51.615 INFO 🚫 [FILTER_SKIP] MINT: 6WTGHa1Fos5CBMv1PFdtWocTFoG1hYfy4NvFiSPSpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:51.824 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 9aoM1zmjETwdmikSPMBtVAmCXyehKAEDWmK9ejcw4jd | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:52.028 INFO 🔴 [FILTER_REJECT] MINT: 9aoM1zmjETwdmikSPMBtVAmCXyehKAEDWmK9ejcw4jd | creator: BT9PhhxAYF8XUhHZUACDAgwLpe7PDCaLAEtF9J2wzNwd | name: 'Sam Bankman-Freed' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:52.028 INFO 🚫 [FILTER_SKIP] MINT: 9aoM1zmjETwdmikSPMBtVAmCXyehKAEDWmK9ejcw4jd | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:53.513 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 9oGjoDhb62XL2fukPZ41BEzD6EmAr8TZMGKVSa5Ypump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:53.764 INFO 🔴 [FILTER_REJECT] MINT: 9oGjoDhb62XL2fukPZ41BEzD6EmAr8TZMGKVSa5Ypump | creator: DC99qH3jXiq5pPWQd6PjjJcCxTV593s58CLPxWGpEywt | name: 'FREE SAM BANKMAN FREED' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:53.764 INFO 🚫 [FILTER_SKIP] MINT: 9oGjoDhb62XL2fukPZ41BEzD6EmAr8TZMGKVSa5Ypump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:54.429 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7kduCHDiw1dLJC5o9yeGPfen68D2ttLvEQpCYx1ipump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:54.450 INFO 🔴 [FILTER_REJECT] MINT: 7kduCHDiw1dLJC5o9yeGPfen68D2ttLvEQpCYx1ipump | creator: EH1oGNizBQxMDddGuLWj6SxpKts338H891Gh4kqbrJ1K | name: 'vorix' | risk: 15.0 | [METADATA_CHECKER] Duplicate name 'vorix' — possible copycat (risk: 15.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:54.450 INFO 🚫 [FILTER_SKIP] MINT: 7kduCHDiw1dLJC5o9yeGPfen68D2ttLvEQpCYx1ipump | Risk: 15.0 | Manual pattern matched but filters rejected
+23:10:55.362 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 3JNa1mH6KvsQSe3XrMYrhPwXFmhSexywT8Yqs6TCpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:55.695 INFO 🔴 [FILTER_REJECT] MINT: 3JNa1mH6KvsQSe3XrMYrhPwXFmhSexywT8Yqs6TCpump | creator: DAeZtaPXEV35r1MxTiGx9E43TkSG9xzkdXnovhx6Bk2e | name: 'FartJordan' | risk: 85.0 | [WALLET_PROFILER] Low TX history: 8 < 10 min; Fresh wallet: 0h old < 24h min; Suspicious activity pattern: 8 TXs from low-history wallet (risk: 85.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:55.695 INFO 🚫 [FILTER_SKIP] MINT: 3JNa1mH6KvsQSe3XrMYrhPwXFmhSexywT8Yqs6TCpump | Risk: 85.0 | Manual pattern matched but filters rejected
+23:10:58.530 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 4Dz248ue5UUim1QvhnYfPs4sbkwJDX4RKn6MU8Cbpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:58.880 INFO 🔴 [FILTER_REJECT] MINT: 4Dz248ue5UUim1QvhnYfPs4sbkwJDX4RKn6MU8Cbpump | creator: BuAXJRuNyHDwVxbfFrWYtnDYGEPRP1KCuaVVr8SiuNYR | name: 'Yeye' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:58.880 INFO 🚫 [FILTER_SKIP] MINT: 4Dz248ue5UUim1QvhnYfPs4sbkwJDX4RKn6MU8Cbpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:10:59.665 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: EyvxmJGQ6MPHm8wv4odcGw1ucV8T5dAr1DAyBnG7pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:10:59.794 INFO 🔴 [FILTER_REJECT] MINT: EyvxmJGQ6MPHm8wv4odcGw1ucV8T5dAr1DAyBnG7pump | creator: EFaQQTGywnD4CjQQvTugUiyVT4LV9G6MsWqiub8X6unN | name: '  SAMUEL BANKMAN' | risk: 10.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:10:59.794 INFO 🚫 [FILTER_SKIP] MINT: EyvxmJGQ6MPHm8wv4odcGw1ucV8T5dAr1DAyBnG7pump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:11:05.778 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: Bi4cYNRDffuiqvpA5nawiD7dUVah5Lqs5zHjw5kEpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:06.061 INFO 🔴 [FILTER_REJECT] MINT: Bi4cYNRDffuiqvpA5nawiD7dUVah5Lqs5zHjw5kEpump | creator: HoQgL4phocxGcBNvZMQ2MLSAbVC8ik9Zeu39Ewm3KsRF | name: 'SAM BANKMAN FREED' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:06.061 INFO 🚫 [FILTER_SKIP] MINT: Bi4cYNRDffuiqvpA5nawiD7dUVah5Lqs5zHjw5kEpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:11:06.061 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 6Fxguoh93NBaHqLar1AGoso8qWuvPznzBM1WBu6uHSKj | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:06.175 INFO 🔴 [FILTER_REJECT] MINT: 6Fxguoh93NBaHqLar1AGoso8qWuvPznzBM1WBu6uHSKj | creator: C7adgyY9fMtWTH83ZuyLKpreB1vJppsQRHYj76NrrZJg | name: 'CRYPTO BIG TIMER' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:06.175 INFO 🚫 [FILTER_SKIP] MINT: 6Fxguoh93NBaHqLar1AGoso8qWuvPznzBM1WBu6uHSKj | Risk: 0.0 | Manual pattern matched but filters rejected
+23:11:06.630 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: EgwvckbuRVi7gfEBYuT2XrXtdHt2LjtRby1EKwbLpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:06.652 INFO 🔴 [FILTER_REJECT] MINT: EgwvckbuRVi7gfEBYuT2XrXtdHt2LjtRby1EKwbLpump | creator: 3SbWm1zLKfV5Zo1Gdmvw3fsrGimjV6LAHzRxs9cuTPgF | name: 'RAINBOW KITTEN CREW' | risk: 40.0 | [WALLET_PROFILER] Fresh wallet: 8h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:06.652 INFO 🚫 [FILTER_SKIP] MINT: EgwvckbuRVi7gfEBYuT2XrXtdHt2LjtRby1EKwbLpump | Risk: 40.0 | Manual pattern matched but filters rejected
+23:11:09.948 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: Dfu6Jj24hLMpjBhEWe9YGB2z9SY6JExLfXfZVRTapump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:10.257 INFO 🔴 [FILTER_REJECT] MINT: Dfu6Jj24hLMpjBhEWe9YGB2z9SY6JExLfXfZVRTapump | creator: 3GrxCaasCkTxSSVUap85Lsxe89aKRpj89dazZ5xz4vEN | name: 'FREE SAM BANKMAN FRIED' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:10.257 INFO 🚫 [FILTER_SKIP] MINT: Dfu6Jj24hLMpjBhEWe9YGB2z9SY6JExLfXfZVRTapump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:11:12.274 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7gC4BQpZQDUuQrTvzpE31CUTbzhK2puPAfoJ6JaDpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:14.275 INFO 🔴 [FILTER_REJECT] MINT: 7gC4BQpZQDUuQrTvzpE31CUTbzhK2puPAfoJ6JaDpump | creator: DYzyMQY7YzByJQpJVxu87HqfDbzXT3u6EbCvm5rs3tsU | name: 'Stability Coin' | risk: 10.0 | [METADATA_CHECKER] URI unreachable: error sending request for url (https://ipfs.io/ipfs/bafkreicbuupnco4q3boe26qsuadfsfmiuiltoiksh7j4cog33vtoek2364) (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:14.275 INFO 🚫 [FILTER_SKIP] MINT: 7gC4BQpZQDUuQrTvzpE31CUTbzhK2puPAfoJ6JaDpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:11:14.282 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: F7fjU6jzmqCFTp4YPY89q6JdmUdiot9897Fo9kfapump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:14.303 INFO 🔴 [FILTER_REJECT] MINT: F7fjU6jzmqCFTp4YPY89q6JdmUdiot9897Fo9kfapump | creator: GfQRMaFQhoWRMapyYfTnQNox35NDHsFC6Ye5p3Ykq3a3 | name: 'Good Night ' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:14.303 INFO 🚫 [FILTER_SKIP] MINT: F7fjU6jzmqCFTp4YPY89q6JdmUdiot9897Fo9kfapump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:11:17.044 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: CsFaUMessndiodCSLdQMhP5NZR6YZq4t9bpGCwD6BDKo | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:17.160 INFO 🔴 [FILTER_REJECT] MINT: CsFaUMessndiodCSLdQMhP5NZR6YZq4t9bpGCwD6BDKo | creator: C7adgyY9fMtWTH83ZuyLKpreB1vJppsQRHYj76NrrZJg | name: 'FREE SAM BANKMAN FRIED' | risk: 10.0 | [METADATA_CHECKER] Duplicate name 'FREE SAM BANKMAN FRIED' — possible copycat (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:17.160 INFO 🚫 [FILTER_SKIP] MINT: CsFaUMessndiodCSLdQMhP5NZR6YZq4t9bpGCwD6BDKo | Risk: 10.0 | Manual pattern matched but filters rejected
+23:11:18.994 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: BRtLqkc2wxzv8BNUQca3EdjwEdiTSgLE6nVw43WHpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:19.167 INFO 🔴 [FILTER_REJECT] MINT: BRtLqkc2wxzv8BNUQca3EdjwEdiTSgLE6nVw43WHpump | creator: GFA2t9fZVY3jC7wDBPDB8FdsVNzLWgK44J4q7XpP476a | name: 'FREED' | risk: 10.0 | [METADATA_CHECKER] URI returned HTTP 404 Not Found (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:19.167 INFO 🚫 [FILTER_SKIP] MINT: BRtLqkc2wxzv8BNUQca3EdjwEdiTSgLE6nVw43WHpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:11:21.743 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 5otMWxensXLZwLRvDRPG5MyP98fQBBfX7PVRWXc5pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:21.786 INFO 🔴 [FILTER_REJECT] MINT: 5otMWxensXLZwLRvDRPG5MyP98fQBBfX7PVRWXc5pump | creator: EFaQQTGywnD4CjQQvTugUiyVT4LV9G6MsWqiub8X6unN | name: 'SAM BANKMAN FREED' | risk: 30.0 | [METADATA_CHECKER] Duplicate name 'SAM BANKMAN FREED' — possible copycat; URI returned HTTP 404 Not Found (risk: 30.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:21.786 INFO 🚫 [FILTER_SKIP] MINT: 5otMWxensXLZwLRvDRPG5MyP98fQBBfX7PVRWXc5pump | Risk: 30.0 | Manual pattern matched but filters rejected
+23:11:26.882 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: Fco7rHLwwawATnCHW6tdKEpaHtG7b8paJf5HAb8hpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:26.944 INFO 🔴 [FILTER_REJECT] MINT: Fco7rHLwwawATnCHW6tdKEpaHtG7b8paJf5HAb8hpump | creator: EFaQQTGywnD4CjQQvTugUiyVT4LV9G6MsWqiub8X6unN | name: 'SAM BANKMAN FREED' | risk: 30.0 | [METADATA_CHECKER] Duplicate name 'SAM BANKMAN FREED' — possible copycat; URI returned HTTP 404 Not Found (risk: 30.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:26.944 INFO 🚫 [FILTER_SKIP] MINT: Fco7rHLwwawATnCHW6tdKEpaHtG7b8paJf5HAb8hpump | Risk: 30.0 | Manual pattern matched but filters rejected
+23:11:27.705 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: D9XggtmYcizahsAGvbyypTFBFv2gvWx8SKpUECdYpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:27.718 INFO [WALLET_PROFILER] REJECT creator: Co7Ko3sa1jMSNwSaekW6YhpBUn5b4Wng5AC57cUzcXBk | risk: 70 | Low TX history: 5 < 10 min; Fresh wallet: 0h old < 24h min
+23:11:28.005 INFO 🔴 [FILTER_REJECT] MINT: D9XggtmYcizahsAGvbyypTFBFv2gvWx8SKpUECdYpump | creator: Co7Ko3sa1jMSNwSaekW6YhpBUn5b4Wng5AC57cUzcXBk | name: 'DRAKEEEEEE' | risk: 70.0 | [WALLET_PROFILER] Low TX history: 5 < 10 min; Fresh wallet: 0h old < 24h min (risk: 70.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:28.005 INFO 🚫 [FILTER_SKIP] MINT: D9XggtmYcizahsAGvbyypTFBFv2gvWx8SKpUECdYpump | Risk: 70.0 | Manual pattern matched but filters rejected
+23:11:36.109 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: G61W9Hm9TsyXe5jhv1EAszuzS14YrUKm1tA639g7zz4n | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:36.392 INFO 🔴 [FILTER_REJECT] MINT: G61W9Hm9TsyXe5jhv1EAszuzS14YrUKm1tA639g7zz4n | creator: BCuAu2fiJUX9UoREdobaecaAgcUGULm9X5a13r6ducwT | name: 'SAM BANKMAN FRIED' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:36.393 INFO 🚫 [FILTER_SKIP] MINT: G61W9Hm9TsyXe5jhv1EAszuzS14YrUKm1tA639g7zz4n | Risk: 0.0 | Manual pattern matched but filters rejected
+23:11:36.679 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 8t2T417JQRz42gpMet3wS3A4e6NjFRJEzQQoncHR1MF4 | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:36.790 INFO 🔴 [FILTER_REJECT] MINT: 8t2T417JQRz42gpMet3wS3A4e6NjFRJEzQQoncHR1MF4 | creator: C7adgyY9fMtWTH83ZuyLKpreB1vJppsQRHYj76NrrZJg | name: 'Sam Bankman-Fried' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:36.790 INFO 🚫 [FILTER_SKIP] MINT: 8t2T417JQRz42gpMet3wS3A4e6NjFRJEzQQoncHR1MF4 | Risk: 0.0 | Manual pattern matched but filters rejected
+23:11:37.260 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: H3QZbYPZJeu9BTtzA684KPsYLrij5ivoPbnQYPTCpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:39.261 INFO 🔴 [FILTER_REJECT] MINT: H3QZbYPZJeu9BTtzA684KPsYLrij5ivoPbnQYPTCpump | creator: G5Dve3VbUf5gNaEW3BuFjfftfyadiG4sZCEQRisKaDeP | name: 'SRN — clean sci-fi' | risk: 10.0 | [METADATA_CHECKER] URI unreachable: error sending request for url (https://ipfs.io/ipfs/bafkreihexmyldmqkp6ucdsyjhe2zaziuh2wjd6ipfzjanwnddrz7lgvv7a) (risk: 10.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:39.261 INFO 🚫 [FILTER_SKIP] MINT: H3QZbYPZJeu9BTtzA684KPsYLrij5ivoPbnQYPTCpump | Risk: 10.0 | Manual pattern matched but filters rejected
+23:11:39.261 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: FHx3eywsvUiAsGABAhAvU5LMZGpx5KpzZJiRHmefpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:39.382 INFO 🔴 [FILTER_REJECT] MINT: FHx3eywsvUiAsGABAhAvU5LMZGpx5KpzZJiRHmefpump | creator: gangJEP5geDHjPVRhDS5dTF5e6GtRvtNogMEEVs91RV | name: 'Bored Tired Confused' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:39.382 INFO 🚫 [FILTER_SKIP] MINT: FHx3eywsvUiAsGABAhAvU5LMZGpx5KpzZJiRHmefpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:11:41.572 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 5YT6e2RJA2xvx61Gk47b5j2Nsz7CPFdS6ciTu91pc94S | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:41.690 INFO 🔴 [FILTER_REJECT] MINT: 5YT6e2RJA2xvx61Gk47b5j2Nsz7CPFdS6ciTu91pc94S | creator: C7adgyY9fMtWTH83ZuyLKpreB1vJppsQRHYj76NrrZJg | name: 'CRYPTO BIG TIMER' | risk: 5.0 | [METADATA_CHECKER] Duplicate name 'CRYPTO BIG TIMER' — possible copycat (risk: 5.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:41.690 INFO 🚫 [FILTER_SKIP] MINT: 5YT6e2RJA2xvx61Gk47b5j2Nsz7CPFdS6ciTu91pc94S | Risk: 5.0 | Manual pattern matched but filters rejected
+23:11:42.293 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 4FPWK7uNgiFazLk3DG85mUwMrcdFfbxgPLFwYvHSpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:42.331 INFO 🔴 [FILTER_REJECT] MINT: 4FPWK7uNgiFazLk3DG85mUwMrcdFfbxgPLFwYvHSpump | creator: 3SbWm1zLKfV5Zo1Gdmvw3fsrGimjV6LAHzRxs9cuTPgF | name: 'RED KITTEN CREW' | risk: 40.0 | [WALLET_PROFILER] Fresh wallet: 8h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:42.332 INFO 🚫 [FILTER_SKIP] MINT: 4FPWK7uNgiFazLk3DG85mUwMrcdFfbxgPLFwYvHSpump | Risk: 40.0 | Manual pattern matched but filters rejected
+23:11:44.670 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 62Hf2GvJoXraMQCWBYRmq5GTZaAMKh5MpWUN4dN5pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:44.728 INFO 🔴 [FILTER_REJECT] MINT: 62Hf2GvJoXraMQCWBYRmq5GTZaAMKh5MpWUN4dN5pump | creator: ArkdCAPErAo6KdVDTFA32YKnqaD7jfXsESFoyxQzDgnu | name: 'SAM BANKMAN FREED' | risk: 30.0 | [METADATA_CHECKER] Duplicate name 'SAM BANKMAN FREED' — possible copycat; URI returned HTTP 404 Not Found (risk: 30.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:44.728 INFO 🚫 [FILTER_SKIP] MINT: 62Hf2GvJoXraMQCWBYRmq5GTZaAMKh5MpWUN4dN5pump | Risk: 30.0 | Manual pattern matched but filters rejected
+23:11:44.828 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: CwgP14iN7KoiQ8ma9KjFAzokoj62Jz5kJNJMSX6Ypump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:45.053 INFO 🔴 [FILTER_REJECT] MINT: CwgP14iN7KoiQ8ma9KjFAzokoj62Jz5kJNJMSX6Ypump | creator: AYEHKbGooTCishm755ArC88YZPJ29Rfh3b4q2hpyJPAQ | name: 'Break The Ceiling' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:45.053 INFO 🚫 [FILTER_SKIP] MINT: CwgP14iN7KoiQ8ma9KjFAzokoj62Jz5kJNJMSX6Ypump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:11:47.171 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: BLjGo7mJ5VgxWkAELKVMqoJD3R6sspinCUNK6jxCvSMg | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:47.294 INFO 🔴 [FILTER_REJECT] MINT: BLjGo7mJ5VgxWkAELKVMqoJD3R6sspinCUNK6jxCvSMg | creator: C7adgyY9fMtWTH83ZuyLKpreB1vJppsQRHYj76NrrZJg | name: 'CRYPTO BIG TIMER' | risk: 5.0 | [METADATA_CHECKER] Duplicate name 'CRYPTO BIG TIMER' — possible copycat (risk: 5.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:47.295 INFO 🚫 [FILTER_SKIP] MINT: BLjGo7mJ5VgxWkAELKVMqoJD3R6sspinCUNK6jxCvSMg | Risk: 5.0 | Manual pattern matched but filters rejected
+23:11:51.596 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 4zVgTT4EnfE2dyZm99v1PwMbCU3PQWX8Qgwp8Psppump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:11:51.840 INFO 🔴 [FILTER_REJECT] MINT: 4zVgTT4EnfE2dyZm99v1PwMbCU3PQWX8Qgwp8Psppump | creator: HPRBXaMARD4wCijg3H9NDSH8JTVFwk3fe4PVes1Gemn8 | name: 'Sam Bankman-Freed' | risk: 5.0 | [METADATA_CHECKER] Duplicate name 'Sam Bankman-Freed' — possible copycat (risk: 5.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:11:51.841 INFO 🚫 [FILTER_SKIP] MINT: 4zVgTT4EnfE2dyZm99v1PwMbCU3PQWX8Qgwp8Psppump | Risk: 5.0 | Manual pattern matched but filters rejected
+23:12:03.134 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: DGSER24Yov6pcaqfWgpwtULQjq6UZ3CNKJpMtBRMpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:03.300 INFO 🔴 [FILTER_REJECT] MINT: DGSER24Yov6pcaqfWgpwtULQjq6UZ3CNKJpMtBRMpump | creator: AYEHKbGooTCishm755ArC88YZPJ29Rfh3b4q2hpyJPAQ | name: 'Break The Ceiling' | risk: 30.0 | [METADATA_CHECKER] Duplicate name 'Break The Ceiling' — possible copycat; URI returned HTTP 404 Not Found (risk: 30.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:03.300 INFO 🚫 [FILTER_SKIP] MINT: DGSER24Yov6pcaqfWgpwtULQjq6UZ3CNKJpMtBRMpump | Risk: 30.0 | Manual pattern matched but filters rejected
+23:12:03.915 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: Lfp6uJ4o9Lje8PucKHuBAR9KsdAr3Wi13Gaxcj4pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:04.208 INFO 🔴 [FILTER_REJECT] MINT: Lfp6uJ4o9Lje8PucKHuBAR9KsdAr3Wi13Gaxcj4pump | creator: QddGWiZ37sqxrdiKVQiBVTShKXyBt5AdC51PiGffMcr | name: 'ICE COIN' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:04.208 INFO 🚫 [FILTER_SKIP] MINT: Lfp6uJ4o9Lje8PucKHuBAR9KsdAr3Wi13Gaxcj4pump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:12:14.017 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 7qSdjMK7Xr2QY9JcqYghcosyqyfXcpknmVXGK7rfuck | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:14.980 INFO 🔴 [FILTER_REJECT] MINT: 7qSdjMK7Xr2QY9JcqYghcosyqyfXcpknmVXGK7rfuck | creator: 6erFyjJx1XTvzcPSzLiQ2VNWbV7c1djtdXyDBmHwReU8 | name: 'Just a chill Iceman' | risk: 30.0 | [WALLET_PROFILER] Low TX history: 1 < 10 min (risk: 30.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:14.981 INFO 🚫 [FILTER_SKIP] MINT: 7qSdjMK7Xr2QY9JcqYghcosyqyfXcpknmVXGK7rfuck | Risk: 30.0 | Manual pattern matched but filters rejected
+23:12:15.168 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: Anfx2ZSTt7psdKaLbcpnD1smtGZMTjqekoPuojB3pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:17.170 INFO 🔴 [FILTER_REJECT] MINT: Anfx2ZSTt7psdKaLbcpnD1smtGZMTjqekoPuojB3pump | creator: EYSkHaMgSJp6ZRiqoFTkBnqSwtTTQ5eWppRKAqFEY1HQ | name: 'WOJAK' | risk: 50.0 | [METADATA_CHECKER] URI unreachable: error sending request for url (https://ipfs.io/ipfs/bafkreibw2k52imvodmcw234oauwdob3q3zskbhqtkldsp7kpht4lkj5luu) (risk: 10.0) | [WALLET_PROFILER] Fresh wallet: 20h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:17.170 INFO 🚫 [FILTER_SKIP] MINT: Anfx2ZSTt7psdKaLbcpnD1smtGZMTjqekoPuojB3pump | Risk: 50.0 | Manual pattern matched but filters rejected
+23:12:19.328 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 3mG12LFKLQrdPJYzNmnQTaPKNv7StbtX1H7L3Cohpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:19.543 INFO 🔴 [FILTER_REJECT] MINT: 3mG12LFKLQrdPJYzNmnQTaPKNv7StbtX1H7L3Cohpump | creator: Gx1TxVLtsf9T62KxxmqHX61i5SYDEs71bhids7Xez1Rs | name: 'CRYPTO BIG TIMER' | risk: 5.0 | [METADATA_CHECKER] Duplicate name 'CRYPTO BIG TIMER' — possible copycat (risk: 5.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:19.543 INFO 🚫 [FILTER_SKIP] MINT: 3mG12LFKLQrdPJYzNmnQTaPKNv7StbtX1H7L3Cohpump | Risk: 5.0 | Manual pattern matched but filters rejected
+23:12:21.794 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 3Jm12J2R4hMwnhjr1aaAzevz2SLTvU7r2YFhXge6pump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:22.121 INFO 🔴 [FILTER_REJECT] MINT: 3Jm12J2R4hMwnhjr1aaAzevz2SLTvU7r2YFhXge6pump | creator: 9AVeMVwzivhB4tCQ8ouMfcgFquBokRxKQQeKgTAiQLPG | name: 'FREE SAM BANKMAN FRIED' | risk: 5.0 | [METADATA_CHECKER] Duplicate name 'FREE SAM BANKMAN FRIED' — possible copycat (risk: 5.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:22.121 INFO 🚫 [FILTER_SKIP] MINT: 3Jm12J2R4hMwnhjr1aaAzevz2SLTvU7r2YFhXge6pump | Risk: 5.0 | Manual pattern matched but filters rejected
+23:12:23.090 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: GncnnAGE8aviseHLy7KsFKQbUKGTYe8th8xT39sApump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:23.115 INFO 🔴 [FILTER_REJECT] MINT: GncnnAGE8aviseHLy7KsFKQbUKGTYe8th8xT39sApump | creator: 3SbWm1zLKfV5Zo1Gdmvw3fsrGimjV6LAHzRxs9cuTPgF | name: 'SOL KITTEN CREW' | risk: 40.0 | [WALLET_PROFILER] Fresh wallet: 8h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:23.115 INFO 🚫 [FILTER_SKIP] MINT: GncnnAGE8aviseHLy7KsFKQbUKGTYe8th8xT39sApump | Risk: 40.0 | Manual pattern matched but filters rejected
+23:12:30.054 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: BqR3Gyt9QZwaDS5qEaQdCf32UBxRn3Fpp858BGZScQ2B | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:30.187 INFO 🔴 [FILTER_REJECT] MINT: BqR3Gyt9QZwaDS5qEaQdCf32UBxRn3Fpp858BGZScQ2B | creator: BCuAu2fiJUX9UoREdobaecaAgcUGULm9X5a13r6ducwT | name: 'CRYPTO BIG TIMER' | risk: 5.0 | [METADATA_CHECKER] Duplicate name 'CRYPTO BIG TIMER' — possible copycat (risk: 5.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:30.187 INFO 🚫 [FILTER_SKIP] MINT: BqR3Gyt9QZwaDS5qEaQdCf32UBxRn3Fpp858BGZScQ2B | Risk: 5.0 | Manual pattern matched but filters rejected
+23:12:30.210 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: 5Qy5h9KesxNRYg1ow88YFeu5zmMr8H94qeoEXSnfpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:30.264 INFO 🔴 [FILTER_REJECT] MINT: 5Qy5h9KesxNRYg1ow88YFeu5zmMr8H94qeoEXSnfpump | creator: 3ekX3FqtR6yhohn3MGhnMQFX4R9mpeVAjNonbnzhgUNn | name: 'Mayhem Farmer' | risk: 40.0 | [WALLET_PROFILER] Fresh wallet: 20h old < 24h min (risk: 40.0) | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:30.264 INFO 🚫 [FILTER_SKIP] MINT: 5Qy5h9KesxNRYg1ow88YFeu5zmMr8H94qeoEXSnfpump | Risk: 40.0 | Manual pattern matched but filters rejected
+23:12:31.907 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: GoumAYNwcr5vaxZQuRfnYqtqEpgwv9xDepS3F87cpump | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:33.529 INFO 🔴 [FILTER_REJECT] MINT: GoumAYNwcr5vaxZQuRfnYqtqEpgwv9xDepS3F87cpump | creator: 4igA7P7MNnnghdrm9FpXGUr9mnXCUuV1MiHvsb4hoyoQ | name: 'Goose and the Juice' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:33.529 INFO 🚫 [FILTER_SKIP] MINT: GoumAYNwcr5vaxZQuRfnYqtqEpgwv9xDepS3F87cpump | Risk: 0.0 | Manual pattern matched but filters rejected
+23:12:39.881 ALRT [Stop-Tracking]		*Mint: GBQEhkkCvz3ZzAMQ8xASiJ3LWK48z85gyyuWsuDtpump	*No activity in last 300 seconds
+23:12:40.159 INFO [MANUAL_MATCH] ALL_PUMPFUN_FILTERED | MINT: APp6g137xquRn7qT32dnTpqE6R2eZdosN5LgdYzcNbma | Buy: 0.0010 SOL | SL: 50% | TP: [150.0, 300.0]%
+23:12:40.287 INFO 🔴 [FILTER_REJECT] MINT: APp6g137xquRn7qT32dnTpqE6R2eZdosN5LgdYzcNbma | creator: 7E9jfxCczubz4FXkkVKzUMHXGwzJxyppC4m7y3ew8ATg | name: 'BIG TIMER CRYPTO' | risk: 0.0 | [BOT_CONTROL] Bot is manually STOPPED from Telegram (risk: 100.0)
+23:12:40.287 INFO 🚫 [FILTER_SKIP] MINT: APp6g137xquRn7qT32dnTpqE6R2eZdosN5LgdYzcNbma | Risk: 0.0 | Manual pattern matched but filters rejected
+23:12:40.513 INFO [GENESIS_DETECTOR] Cleanup: removed 8 stale entries (97 → 89)
+23:12:44.888 ALRT [Stop-Tracking]		*Mint: B3Ytu6iCmJS6mf2VhhAsEweWH2ij8GmSMvJg1qWuMGjf	*No activity in last 300 seconds
+bash: line 1: ./defi_sniper_phase2: Is a directory

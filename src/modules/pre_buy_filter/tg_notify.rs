@@ -119,3 +119,128 @@ pub fn tg_send_filter_result(
             .await;
     });
 }
+
+/// Send a trade execution result notification to Telegram (non-blocking)
+/// Called when a BUY or SELL transaction is confirmed or fails on-chain.
+pub fn tg_send_trade_result(
+    action: &str,       // "BUY" or "SELL"
+    success: bool,
+    signature: &str,
+    tag: &str,
+) {
+    if !tg_notify_enabled() {
+        return;
+    }
+
+    let emoji = if success { "✅" } else { "❌" };
+    let status = if success { "SUCCESS" } else { "FAILED" };
+
+    // Extract mint from tag if present (format: "[BUY] MINT: xxx | ...")
+    let mint_info = tag.split("MINT: ")
+        .nth(1)
+        .unwrap_or(tag)
+        .split(" |")
+        .next()
+        .unwrap_or("unknown");
+
+    let sol_info = tag.split("Buy: ")
+        .nth(1)
+        .or_else(|| tag.split("AMT: ").nth(1))
+        .unwrap_or("")
+        .split(" |")
+        .next()
+        .unwrap_or("");
+
+    let solscan_link = format!("https://solscan.io/tx/{}", signature);
+
+    let message = format!(
+        "{} <b>{} {}</b>\n\n\
+         🔑 <b>Mint:</b> <code>{}</code>\n\
+         💰 <b>Amount:</b> {}\n\
+         🔗 <a href=\"{}\">View on Solscan</a>",
+        emoji, action, status,
+        mint_info,
+        sol_info,
+        solscan_link,
+    );
+
+    let token = TG_BOT_TOKEN.clone();
+    let chat_id = TG_CHAT_ID.clone();
+
+    tokio::spawn(async move {
+        let url = format!(
+            "https://api.telegram.org/bot{}/sendMessage",
+            token
+        );
+        let client = reqwest::Client::new();
+        let _ = client.post(&url)
+            .json(&serde_json::json!({
+                "chat_id": chat_id,
+                "text": message,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": true,
+            }))
+            .timeout(std::time::Duration::from_secs(5))
+            .send()
+            .await;
+    });
+}
+
+/// Send a price event notification (SL / TP / Trailing Stop triggered)
+pub fn tg_send_price_event(
+    event: &str,        // "SL" | "TP" | "TRAILING"
+    mint: &str,
+    buy_price: f64,
+    current_price: f64,
+    extra: &str,        // e.g. "TP1 (150%)" or "Trailing Stop"
+) {
+    if !tg_notify_enabled() {
+        return;
+    }
+
+    let pnl_pct = if buy_price > 0.0 {
+        (current_price / buy_price - 1.0) * 100.0
+    } else { 0.0 };
+
+    let (emoji, title) = match event {
+        "SL"       => ("🔴", "Stop Loss Triggered"),
+        "TP"       => ("🟢", "Take Profit Triggered"),
+        "TRAILING" => ("🟡", "Trailing Stop Triggered"),
+        _          => ("⚪", event),
+    };
+
+    let mint_short = if mint.len() > 12 {
+        format!("{}...{}", &mint[..6], &mint[mint.len()-4..])
+    } else { mint.to_string() };
+
+    let message = format!(
+        "{} <b>{}</b>\n\n\
+         🔑 <b>Mint:</b> <code>{}</code>\n\
+         📋 <b>Detail:</b> {}\n\
+         📈 <b>PnL:</b> {}{:.1}%\n\
+         🔗 <a href=\"https://solscan.io/token/{}\">View on Solscan</a>",
+        emoji, title,
+        mint_short,
+        extra,
+        if pnl_pct >= 0.0 { "+" } else { "" }, pnl_pct,
+        mint,
+    );
+
+    let token = TG_BOT_TOKEN.clone();
+    let chat_id = TG_CHAT_ID.clone();
+
+    tokio::spawn(async move {
+        let url = format!("https://api.telegram.org/bot{}/sendMessage", token);
+        let client = reqwest::Client::new();
+        let _ = client.post(&url)
+            .json(&serde_json::json!({
+                "chat_id": chat_id,
+                "text": message,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": true,
+            }))
+            .timeout(std::time::Duration::from_secs(5))
+            .send()
+            .await;
+    });
+}

@@ -1,0 +1,10 @@
+{
+  "wallets": [
+    {
+      "label": "Wallet 2",
+      "private_key": "5phpe7qUZfnLCsC1jdvWaWLX6nfo1MkrWf2xsamMEPo9x8wTwVbsH6jJWWQN9j9asjXZZFdmppyyFfL7oxsMdah",
+      "pubkey": "GYdRZNWe2hdSsSspJLyMNPThaTid6KTzAjKwsKGsem4m",
+      "active": true
+    }
+  ]
+}

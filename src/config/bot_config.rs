@@ -25,12 +25,13 @@ pub fn get_buy_tx_remain_counter() -> i32 {
 
 //Wallet key
 pub static SIGNER_KEYPAIR: Lazy<Keypair> = Lazy::new(|| {
-    let wallet: Keypair = Keypair::from_base58_string(&CONFIG.wallet_config.private_key);
-    wallet
+    let pk = std::env::var("PRIVATE_KEY").unwrap_or_else(|_| CONFIG.wallet_config.private_key.clone());
+    Keypair::from_base58_string(&pk)
 });
 
 pub static SIGNER_PUBKEY: Lazy<Pubkey> = Lazy::new(|| {
-    let wallet: Keypair = Keypair::from_base58_string(&CONFIG.wallet_config.private_key);
+    let pk = std::env::var("PRIVATE_KEY").unwrap_or_else(|_| CONFIG.wallet_config.private_key.clone());
+    let wallet = Keypair::from_base58_string(&pk);
     wallet.pubkey()
 });
 
@@ -71,7 +72,7 @@ pub static ZERO_SLOT_API_KEY: Lazy<String> = Lazy::new(|| CONFIG.landing_service
 pub static HELIUS_API_KEY: Lazy<String> = Lazy::new(|| CONFIG.landing_service_config.helius_api_key.clone());
 
 pub static ZERO_SLOT_ENDPOINT: Lazy<String> = Lazy::new(|| format!("http://de1.0slot.trade?api-key={}", *ZERO_SLOT_API_KEY));
-pub static HELIUS_ENDPOINT: Lazy<String> = Lazy::new(|| "http://fra-sender.helius-rpc.com/fast".to_string());
+pub static HELIUS_ENDPOINT: Lazy<String> = Lazy::new(|| format!("http://fra-sender.helius-rpc.com/fast?api-key={}", *HELIUS_API_KEY));
 
 //Fee
 pub static BUY_COMPUTE_UNIT_LIMIT: Lazy<u64> =
@@ -117,3 +118,83 @@ pub static MIN_BUY_MULTIPLIER: Lazy<f64> = Lazy::new(|| CONFIG.risk_scoring.min_
 // Filter Logging
 pub static FILTER_LOG_ENABLED: Lazy<bool> = Lazy::new(|| CONFIG.filter_log.enabled);
 pub static FILTER_LOG_DIR: Lazy<String> = Lazy::new(|| CONFIG.filter_log.log_dir.clone());
+
+// ══════════════════════════════════════════════════════════════════════
+// Phase 2 — Buy Guard (Rate Limiter + Position Control)
+// ══════════════════════════════════════════════════════════════════════
+//
+// Prevents the bot from draining SOL by rapid-fire buying.
+// Three safety mechanisms:
+//   1. Max concurrent open positions (default: 3)
+//   2. Cooldown between consecutive buys (default: 500ms)
+//   3. Minimum SOL balance floor (default: 0.05 SOL)
+
+pub static MAX_OPEN_POSITIONS: Lazy<usize> = Lazy::new(|| CONFIG.buy_guard.max_open_positions);
+pub static BUY_COOLDOWN_MS: Lazy<u64> = Lazy::new(|| CONFIG.buy_guard.buy_cooldown_ms);
+pub static MIN_SOL_BALANCE: Lazy<f64> = Lazy::new(|| CONFIG.buy_guard.min_sol_balance);
+
+use std::sync::atomic::AtomicU64;
+
+/// Tracks the number of currently open positions (bought but not yet sold).
+pub static OPEN_POSITION_COUNT: AtomicI32 = AtomicI32::new(0);
+
+/// Tracks the timestamp (ms) of the last BUY submission for cooldown.
+pub static LAST_BUY_TIMESTAMP_MS: AtomicU64 = AtomicU64::new(0);
+
+/// Increment open position count (called after BUY is submitted)
+pub fn increment_open_positions() {
+    OPEN_POSITION_COUNT.fetch_add(1, Ordering::SeqCst);
+}
+
+/// Decrement open position count (called after SELL is confirmed)
+pub fn decrement_open_positions() {
+    let prev = OPEN_POSITION_COUNT.fetch_sub(1, Ordering::SeqCst);
+    if prev <= 0 {
+        // Prevent underflow — clamp to 0
+        OPEN_POSITION_COUNT.store(0, Ordering::SeqCst);
+    }
+}
+
+/// Get current open position count
+pub fn get_open_positions() -> i32 {
+    OPEN_POSITION_COUNT.load(Ordering::SeqCst)
+}
+
+/// Check if a new BUY is allowed by all three guard conditions.
+/// Returns (allowed, reason) for logging.
+pub fn buy_guard_check() -> (bool, String) {
+    // 1. Check max open positions
+    let current_positions = get_open_positions();
+    let max_pos = *MAX_OPEN_POSITIONS as i32;
+    if current_positions >= max_pos {
+        return (false, format!(
+            "MAX_POSITIONS: {}/{} open positions", current_positions, max_pos
+        ));
+    }
+
+    // 2. Check cooldown
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64;
+    let last_buy = LAST_BUY_TIMESTAMP_MS.load(Ordering::SeqCst);
+    let cooldown = *BUY_COOLDOWN_MS;
+    if last_buy > 0 && now_ms.saturating_sub(last_buy) < cooldown {
+        return (false, format!(
+            "COOLDOWN: {}ms since last buy (min: {}ms)",
+            now_ms.saturating_sub(last_buy), cooldown
+        ));
+    }
+
+    (true, "OK".to_string())
+}
+
+/// Record that a BUY was just submitted (updates timestamp + position count)
+pub fn record_buy_submitted() {
+    let now_ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64;
+    LAST_BUY_TIMESTAMP_MS.store(now_ms, Ordering::SeqCst);
+    increment_open_positions();
+}

@@ -33,6 +33,8 @@ pub struct Config {
     pub risk_scoring: RiskScoringConfig,
     #[serde(default = "default_filter_log")]
     pub filter_log: FilterLogConfig,
+    #[serde(default = "default_buy_guard")]
+    pub buy_guard: BuyGuardConfig,
 }
 
 // ── Phase 2 config defaults (used when TOML sections are absent) ──
@@ -82,6 +84,14 @@ fn default_filter_log() -> FilterLogConfig {
     FilterLogConfig {
         enabled: true,
         log_dir: "filter_logs".to_string(),
+    }
+}
+
+fn default_buy_guard() -> BuyGuardConfig {
+    BuyGuardConfig {
+        max_open_positions: 3,
+        buy_cooldown_ms: 500,
+        min_sol_balance: 0.05,
     }
 }
 

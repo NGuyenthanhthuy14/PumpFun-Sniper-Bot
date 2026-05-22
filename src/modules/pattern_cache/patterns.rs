@@ -74,13 +74,13 @@ pub fn get_raw_manual_patterns() -> Vec<ManualPatternRaw> {
             dev_buy_instruction_data: None,        // Không lọc buy data
             bundle_buy_cu_limit: None,
             bundle_buy_cu_price: None,
-            stop_loss: Some(50.0),                 // Cắt lỗ 50%
+            stop_loss: None,                       // Use live Telegram Stop Loss
             take_profit: vec![150.0, 300.0],       // Chốt lời 150% và 300%
             sell_amounts: Some(vec![50.0, 50.0]),  // Bán 50% ở mỗi mốc
             token_version: None,                   // Cả V1 và V2
             alt_addresses: None,
             mint_tx_version: None,
-            buy_amount_sol: Some(0.001),           // Mua 0.001 SOL (an toàn)
+            buy_amount_sol: None,                  // Use live Telegram Buy Amount
         },
     ]
 }

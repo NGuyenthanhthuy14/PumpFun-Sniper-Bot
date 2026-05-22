@@ -1,7 +1,7 @@
 use pumpfun_sniper::*;
 use yellowstone_grpc_proto::geyser::SubscribeRequestFilterTransactions;
 
-const PATTERN_SERVER_PORT: u16 = 3355;
+const PATTERN_SERVER_PORT: u16 = 3356;
 
 #[tokio::main]
 async fn main() {

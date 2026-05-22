@@ -54,7 +54,7 @@ pub async fn run_pre_buy_filters(ctx: &FilterContext) -> AggregatedFilterResult 
     let any_hard_fail = results.iter().any(|r| !r.passed);
     let total_risk: f64 = results.iter().map(|r| r.risk_score).sum::<f64>().max(0.0);
 
-    let mut should_buy = !any_hard_fail && total_risk < *MAX_TOTAL_RISK_SCORE;
+    let mut should_buy = !any_hard_fail && total_risk < crate::modules::pre_buy_filter::tg_control::get_live_max_risk();
     if warn_only {
         should_buy = true;
     }
@@ -70,8 +70,9 @@ pub async fn run_pre_buy_filters(ctx: &FilterContext) -> AggregatedFilterResult 
     }
 
     // Dynamic position sizing based on risk
-    let buy_amount_multiplier = if should_buy && *ENABLE_DYNAMIC_SIZING && total_risk > 0.0 {
-        let raw_multiplier = 1.0 - (total_risk / *MAX_TOTAL_RISK_SCORE);
+    let buy_amount_multiplier = if should_buy && crate::modules::pre_buy_filter::tg_control::get_live_dynamic_sizing() && total_risk > 0.0 {
+        let live_max_risk = crate::modules::pre_buy_filter::tg_control::get_live_max_risk();
+        let raw_multiplier = 1.0 - (total_risk / live_max_risk);
         raw_multiplier.max(*MIN_BUY_MULTIPLIER).min(1.0)
     } else if should_buy {
         1.0

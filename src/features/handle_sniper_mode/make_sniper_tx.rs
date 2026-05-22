@@ -12,24 +12,46 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
             let buy_tx_remaining_counter = get_buy_tx_remain_counter();
 
             if !*DEV_MODE || buy_tx_remaining_counter != 0 {
+                // ══════════════════════════════════════════════════════════
+                // Phase 2 — BUY GUARD: Kill-switch before executing buy
+                // ══════════════════════════════════════════════════════════
+                let (guard_ok, guard_reason) = buy_guard_check();
+                if !guard_ok {
+                    info!(
+                        "🛑 [BUY_GUARD] BLOCKED | MINT: {} | Reason: {}",
+                        token_data.token_mint, guard_reason
+                    );
+                    // Reset signal so it doesn't keep retrying
+                    token_data.token_trade_signal = TokenTradeSignal::None;
+                    let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
+                    continue;
+                }
+                // ══════════════════════════════════════════════════════════
+
                 decrese_buy_tx_remain_counter();
 
-                let base_buy_sol = token_data.override_buy_amount_sol.unwrap_or(*BUY_AMOUNT_SOL);
-                let dynamic_buy_sol = DYNAMIC_BUY.adjusted_buy_amount(&token_data.matched_pattern_label, base_buy_sol);
-                // Phase 2: Apply filter-based position sizing multiplier
-                let buy_sol = dynamic_buy_sol * token_data.filter_buy_multiplier;
+                let base_buy_sol = token_data.override_buy_amount_sol.unwrap_or(crate::modules::pre_buy_filter::tg_control::get_live_buy_amount_sol());
+                let buy_sol = if crate::modules::pre_buy_filter::tg_control::get_live_dynamic_sizing() {
+                    let dynamic_buy_sol = DYNAMIC_BUY.adjusted_buy_amount(&token_data.matched_pattern_label, base_buy_sol);
+                    // Phase 2: Apply filter-based position sizing multiplier
+                    let final_buy = dynamic_buy_sol * token_data.filter_buy_multiplier;
+                    // Ensure minimum floor of 50% of base amount
+                    final_buy.max(base_buy_sol * 0.5)
+                } else {
+                    // Dynamic sizing OFF — use exact base buy amount, no reduction
+                    base_buy_sol
+                };
                 if (buy_sol - base_buy_sol).abs() > 1e-9 {
                     info!(
                         "\n💰 [DYNAMIC_BUY] Buy amount adjusted\n\
                          │  Pattern:      {}\n\
                          │  Mint:         {}\n\
                          │  Base Buy:     {:.4} SOL\n\
-                         │  Dynamic:      {:.4} SOL  ({:.1}x)\n\
                          │  Filter Mul:   {:.2}x\n\
                          │  Final Buy:    {:.4} SOL\n\
                          └──────────────────────",
                         token_data.matched_pattern_label, token_data.token_mint,
-                        base_buy_sol, dynamic_buy_sol, dynamic_buy_sol / base_buy_sol,
+                        base_buy_sol,
                         token_data.filter_buy_multiplier, buy_sol,
                     );
                 }
@@ -44,13 +66,22 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
 
                 token_data.token_trade_signal = TokenTradeSignal::EntrySubmitted;
 
-                let sl_pct = token_data.override_stop_loss.unwrap_or(*STOP_LOSS) * 100.0;
+                let sl_pct = token_data.override_stop_loss.unwrap_or(
+                    crate::modules::pre_buy_filter::tg_control::get_live_stop_loss()
+                ) * 100.0;
                 let tag = format!(
                     "[BUY] MINT: {} | Buy: {:.4} SOL | SL: {:.0}%",
                     token_data.token_mint, buy_sol, sl_pct,
                 );
 
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
+
+                // Phase 2: Record buy in guard (update cooldown + position count)
+                record_buy_submitted();
+                info!(
+                    "📊 [BUY_GUARD] Positions: {}/{} | MINT: {}",
+                    get_open_positions(), *MAX_OPEN_POSITIONS, token_data.token_mint
+                );
 
                 (ConfirmType::Buy, ix, tag)
             } else {
@@ -79,6 +110,7 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                 token_data.tracked_sl_state = SLMode::Triggered;
                 token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
+
 
                 let tag = format!(
                     "[SELL]\t*SL triggered\t*MINT: {}\t*MC: {}\t*AMOUNT: {}",
@@ -109,6 +141,7 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                 token_data.tracked_sl_state = SLMode::Triggered;
                 token_data.token_sell_status = TokenSellStatus::SellTradeSubmitted;
                 let _ = TOKEN_DB.upsert(token_data.token_mint, token_data.clone());
+
 
                 let tag = format!(
                     "[SELL] SL triggered | MINT: {} | MC: {:.2} | AMT: {}",
@@ -202,10 +235,19 @@ pub async fn make_sniper_tx(trade_token_data_map: &HashMap<Pubkey, TokenDatabase
                         let _ = confirm_sell_with_retry(mint, sell_amount, ix, tag).await;
                     }
                     ConfirmType::Buy => {
-                        let _ = confirm(ix, tag).await;
+                        let result = confirm(ix, tag).await;
+                        if result.is_none() {
+                            // BUY failed or timed out — release position slot
+                            decrement_open_positions();
+                            info!(
+                                "📊 [BUY_FAILED] Position released | Positions: {}/{} | MINT: {}",
+                                get_open_positions(), *MAX_OPEN_POSITIONS, mint
+                            );
+                        }
                     }
                 }
             });
         }
     }
 }
+

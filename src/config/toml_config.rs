@@ -157,3 +157,13 @@ pub struct FilterLogConfig {
     /// Directory for filter audit logs (default: "filter_logs")
     pub log_dir: String,
 }
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct BuyGuardConfig {
+    /// Maximum number of open positions at any time (default: 3)
+    pub max_open_positions: usize,
+    /// Minimum milliseconds between consecutive BUY transactions (default: 500)
+    pub buy_cooldown_ms: u64,
+    /// Stop buying if wallet SOL balance drops below this amount (default: 0.05)
+    pub min_sol_balance: f64,
+}
